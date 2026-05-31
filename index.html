@@ -1038,6 +1038,7 @@ const S={
 function gs(){try{return Object.assign({streak:0,lastDate:'',totalMins:0,todayMins:0,todayDate:'',badges:[],sessions:[],pin:'0000'},JSON.parse(localStorage.getItem('lb')||'{}'));}catch{return{streak:0,lastDate:'',totalMins:0,todayMins:0,todayDate:'',badges:[],sessions:[],pin:'0000'};}}
 function ss(d){try{localStorage.setItem('lb',JSON.stringify(d));}catch{}}
 function today(){return new Date().toISOString().split('T')[0];}
+function todayStr(){return today();}
 
 /* ══════════════════════════════════════
    SCREENS / MODULE
