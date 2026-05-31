@@ -797,9 +797,9 @@ function handleSignIn(response) {
 
 function proceedFromSignIn() {
     const name = document.getElementById('signInName').value.trim();
-    const age  = document.getElementById('signInAge').value;
-    if (!name) { alert('Please enter the child\'s name!'); return; }
-    if (!age)  { alert('Please select an age group!'); return; }
+    const age  = selectedAge || document.getElementById('signInAge').value;
+    if (!name) { alert('Please enter a name!'); return; }
+    if (!age)  { alert('Please pick an age group!'); return; }
 
     S.name = name; S.age = age;
 
@@ -809,10 +809,8 @@ function proceedFromSignIn() {
         av.src = S.user.picture; av.style.display = 'block';
     }
     document.getElementById('userNameHud').textContent = name;
-    // Pre-fill welcome screen too
     document.getElementById('childName').value = name;
     document.getElementById('ageGroup').value = age;
-
     show('welcomeScreen');
 }
 
