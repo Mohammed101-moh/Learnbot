@@ -1,287 +1,322 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
-    <title>LearnBot — Earn Your Screen Time</title>
-    <script src="https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/dist/face-api.min.js"></script>
-    <style>
-        :root {
-            --primary: #5B4FE8;
-            --primary-light: #8B80F8;
-            --success: #10B981;
-            --warning: #F59E0B;
-            --danger: #EF4444;
-            --bg: #EEF2FF;
-            --card: #FFFFFF;
-            --text: #1E293B;
-            --muted: #64748B;
-            --radius: 20px;
-        }
-        * { margin:0; padding:0; box-sizing:border-box; }
-        body { font-family:'Segoe UI',system-ui,sans-serif; background:var(--bg); color:var(--text); height:100vh; overflow:hidden; }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>LearnBot — Earn Your Screen Time</title>
+<script src="https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh@0.4.1633559619/face_mesh.js" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils@0.3.1632432234/camera_utils.js" crossorigin="anonymous"></script>
+<style>
+:root {
+    --bg:      #080C18;
+    --bg2:     #0D1225;
+    --card:    #111827;
+    --card2:   #1C2537;
+    --primary: #6C63FF;
+    --pglow:   rgba(108,99,255,.35);
+    --success: #00FF88;
+    --sglow:   rgba(0,255,136,.3);
+    --warn:    #FFB800;
+    --danger:  #FF4444;
+    --gold:    #FFD700;
+    --text:    #E2E8F0;
+    --muted:   #64748B;
+    --r:       14px;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(--text);height:100vh;overflow:hidden;}
 
-        /* ── SCREENS ── */
-        .screen { display:none; height:100vh; }
-        .screen.active { display:flex; }
+/* ── SCREENS ── */
+.screen{display:none;height:100vh;}
+.screen.active{display:flex;}
 
-        /* ══════════════════════════════════════
-           WELCOME
-        ══════════════════════════════════════ */
-        #welcomeScreen {
-            flex-direction:column; align-items:center; justify-content:center;
-            padding:1.5rem; gap:1rem;
-            background:linear-gradient(160deg,#EEF2FF 0%,#DDD6FE 100%);
-            overflow-y:auto;
-        }
-        .mascot { font-size:5rem; animation:float 3s ease-in-out infinite; }
-        @keyframes float { 0%,100%{transform:translateY(0) rotate(-3deg)} 50%{transform:translateY(-12px) rotate(3deg)} }
+/* ═══════════════════════════════
+   WELCOME
+═══════════════════════════════ */
+#welcomeScreen{
+    flex-direction:column;align-items:center;justify-content:center;
+    padding:1.5rem;gap:1rem;overflow-y:auto;
+    background:radial-gradient(ellipse at 50% 0%, #1a0a3e 0%, #080C18 70%);
+}
+.glow-title{
+    font-size:3.2rem;font-weight:900;letter-spacing:-.02em;
+    background:linear-gradient(135deg,#6C63FF,#A78BFA,#00FF88);
+    -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+    filter:drop-shadow(0 0 20px rgba(108,99,255,.5));
+}
+.tagline{color:var(--muted);font-size:.95rem;}
 
-        .welcome-title {
-            font-size:2.8rem; font-weight:900;
-            background:linear-gradient(135deg,#5B4FE8,#A78BFA);
-            -webkit-background-clip:text; -webkit-text-fill-color:transparent;
-        }
-        .welcome-sub { color:var(--muted); font-size:1rem; }
+/* Animated mascot */
+.mascot-wrap{position:relative;width:100px;height:100px;}
+.bot-body{
+    width:80px;height:80px;background:var(--card2);border-radius:20px;
+    border:3px solid var(--primary);position:absolute;top:10px;left:10px;
+    display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;
+    box-shadow:0 0 20px var(--pglow);animation:botFloat 3s ease-in-out infinite;
+}
+@keyframes botFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
+.bot-eyes{display:flex;gap:10px;}
+.bot-eye{
+    width:14px;height:14px;background:var(--success);border-radius:50%;
+    box-shadow:0 0 8px var(--sglow);animation:botBlink 4s ease-in-out infinite;
+}
+@keyframes botBlink{0%,88%,100%{transform:scaleY(1)}94%{transform:scaleY(.08)}}
+.bot-mouth{width:24px;height:3px;background:var(--success);border-radius:3px;transition:all .3s;}
+.bot-antenna{position:absolute;top:0;left:50%;transform:translateX(-50%);width:4px;height:14px;background:var(--primary);border-radius:2px;}
+.bot-antenna::after{content:'';position:absolute;top:-5px;left:50%;transform:translateX(-50%);width:8px;height:8px;background:var(--gold);border-radius:50%;box-shadow:0 0 8px var(--gold);}
 
-        /* Streak banner */
-        .streak-banner {
-            background:linear-gradient(135deg,#F59E0B,#FCD34D);
-            border-radius:50px; padding:.5rem 1.5rem;
-            font-weight:800; font-size:.95rem; color:#78350F;
-            display:none; align-items:center; gap:.4rem;
-        }
+/* Streak */
+.streak-chip{
+    background:linear-gradient(135deg,#92400E,#D97706);
+    border-radius:50px;padding:.4rem 1.1rem;font-weight:800;font-size:.88rem;
+    display:none;align-items:center;gap:.4rem;
+    box-shadow:0 4px 15px rgba(217,119,6,.4);
+}
 
-        /* Module tabs */
-        .module-tabs { display:flex; gap:.6rem; }
-        .tab {
-            flex:1; padding:.75rem 1rem; border-radius:14px;
-            border:2px solid transparent; background:white;
-            cursor:pointer; font-size:.9rem; font-weight:700;
-            transition:all .2s; text-align:center;
-        }
-        .tab:hover { border-color:var(--primary); }
-        .tab.active { background:var(--primary); color:white; border-color:var(--primary); }
-        .tab .tab-icon { font-size:1.4rem; display:block; margin-bottom:.2rem; }
+/* Module cards */
+.module-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:.75rem;width:100%;max-width:420px;}
+.mod-card{
+    background:var(--card);border:2px solid var(--card2);border-radius:var(--r);
+    padding:1rem .75rem;cursor:pointer;transition:all .25s;text-align:center;
+}
+.mod-card:hover{border-color:var(--primary);transform:translateY(-2px);}
+.mod-card.active{border-color:var(--primary);background:rgba(108,99,255,.15);box-shadow:0 0 20px var(--pglow);}
+.mod-icon{font-size:1.8rem;margin-bottom:.3rem;}
+.mod-label{font-size:.78rem;font-weight:700;color:var(--muted);}
+.mod-card.active .mod-label{color:var(--primary);}
 
-        /* Setup card */
-        .setup-card {
-            background:white; border-radius:24px; padding:1.75rem;
-            width:100%; max-width:420px;
-            box-shadow:0 12px 50px rgba(91,79,232,.15);
-        }
-        .form-row { display:grid; grid-template-columns:1fr 1fr; gap:.75rem; }
-        .form-group { margin-bottom:1rem; }
-        label { display:block; font-size:.78rem; font-weight:700; color:var(--muted); text-transform:uppercase; letter-spacing:.06em; margin-bottom:.4rem; }
-        input,select { width:100%; padding:.75rem 1rem; border:2px solid #E2E8F0; border-radius:12px; font-size:.95rem; font-family:inherit; transition:border-color .2s; background:#FAFAFA; }
-        input:focus,select:focus { outline:none; border-color:var(--primary); background:white; }
+/* Setup form */
+.setup-card{background:var(--card);border-radius:20px;padding:1.5rem;width:100%;max-width:420px;border:1px solid var(--card2);}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:.75rem;}
+.form-group{margin-bottom:.875rem;}
+label{display:block;font-size:.72rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.07em;margin-bottom:.35rem;}
+input,select{
+    width:100%;padding:.7rem 1rem;background:var(--bg2);border:1.5px solid var(--card2);
+    border-radius:10px;font-size:.9rem;color:var(--text);font-family:inherit;transition:border-color .2s;
+}
+input:focus,select:focus{outline:none;border-color:var(--primary);}
+select option{background:var(--card);}
+.btn-go{
+    width:100%;background:linear-gradient(135deg,#6C63FF,#8B80F8);
+    color:white;border:none;padding:.95rem;border-radius:50px;
+    font-size:1.05rem;font-weight:800;cursor:pointer;
+    box-shadow:0 6px 25px rgba(108,99,255,.5);transition:transform .2s,box-shadow .2s;
+}
+.btn-go:hover{transform:translateY(-2px);box-shadow:0 10px 35px rgba(108,99,255,.6);}
+.parent-btn{
+    position:fixed;top:1rem;right:1rem;background:var(--card);border:1.5px solid var(--card2);
+    border-radius:50px;padding:.45rem 1rem;font-size:.8rem;font-weight:700;color:var(--muted);
+    cursor:pointer;transition:all .2s;z-index:100;
+}
+.parent-btn:hover{border-color:var(--primary);color:var(--primary);}
 
-        .btn-primary {
-            width:100%; background:linear-gradient(135deg,#5B4FE8,#8B80F8);
-            color:white; border:none; padding:1rem; border-radius:50px;
-            font-size:1.05rem; font-weight:800; cursor:pointer;
-            box-shadow:0 6px 20px rgba(91,79,232,.4);
-            transition:transform .2s, box-shadow .2s;
-        }
-        .btn-primary:hover { transform:translateY(-2px); box-shadow:0 10px 30px rgba(91,79,232,.5); }
+/* ═══════════════════════════════
+   LOADING
+═══════════════════════════════ */
+#loadingScreen{flex-direction:column;align-items:center;justify-content:center;gap:1.25rem;
+    background:radial-gradient(ellipse at 50% 0%,#1a0a3e,#080C18 70%);}
+.spinner{width:52px;height:52px;border:4px solid rgba(108,99,255,.2);border-top-color:var(--primary);border-radius:50%;animation:spin .8s linear infinite;}
+@keyframes spin{to{transform:rotate(360deg)}}
+#loadMsg{font-size:1rem;font-weight:600;color:var(--primary);}
+.load-steps{display:flex;flex-direction:column;gap:.4rem;}
+.load-step{font-size:.83rem;color:var(--muted);display:flex;align-items:center;gap:.5rem;}
+.load-step.done{color:var(--success);}
 
-        /* Parent button */
-        .parent-btn {
-            position:fixed; top:1rem; right:1rem;
-            background:white; border:none; border-radius:50px;
-            padding:.5rem 1rem; font-size:.85rem; font-weight:700;
-            color:var(--muted); cursor:pointer; box-shadow:0 2px 12px rgba(0,0,0,.1);
-            transition:all .2s; z-index:100;
-        }
-        .parent-btn:hover { background:var(--primary); color:white; }
+/* ═══════════════════════════════
+   SESSION — GAME UI
+═══════════════════════════════ */
+#sessionScreen{flex-direction:column;height:100vh;overflow:hidden;}
 
-        /* ══════════════════════════════════════
-           LOADING
-        ══════════════════════════════════════ */
-        #loadingScreen { flex-direction:column; align-items:center; justify-content:center; gap:1.25rem; background:linear-gradient(160deg,#EEF2FF,#DDD6FE); }
-        .spinner { width:56px; height:56px; border:5px solid rgba(91,79,232,.15); border-top-color:var(--primary); border-radius:50%; animation:spin .9s linear infinite; }
-        @keyframes spin { to{transform:rotate(360deg)} }
-        .load-step { font-size:.88rem; color:var(--muted); display:flex; align-items:center; gap:.5rem; }
-        .load-step.done { color:var(--success); }
+/* HUD */
+.hud{
+    background:var(--card);border-bottom:1px solid var(--card2);
+    padding:.6rem 1.25rem;display:flex;align-items:center;gap:1rem;flex-shrink:0;
+    box-shadow:0 2px 20px rgba(0,0,0,.4);
+}
+.hud-logo{font-size:1.1rem;font-weight:900;background:linear-gradient(135deg,#6C63FF,#00FF88);-webkit-background-clip:text;-webkit-text-fill-color:transparent;white-space:nowrap;}
+.hud-center{flex:1;display:flex;align-items:center;gap:1rem;justify-content:center;}
 
-        /* ══════════════════════════════════════
-           SESSION
-        ══════════════════════════════════════ */
-        #sessionScreen { flex-direction:column; height:100vh; }
+/* Focus bar HUD */
+.focus-hud{display:flex;align-items:center;gap:.6rem;}
+.focus-hud-label{font-size:.72rem;font-weight:700;color:var(--muted);white-space:nowrap;}
+.focus-track-hud{width:120px;height:10px;background:rgba(255,255,255,.08);border-radius:10px;overflow:hidden;}
+.focus-fill-hud{height:100%;border-radius:10px;transition:width .5s ease,background .5s;}
+.focus-pct{font-size:.78rem;font-weight:700;min-width:28px;}
 
-        .sess-header {
-            background:white; padding:.75rem 1.25rem;
-            display:flex; align-items:center; justify-content:space-between;
-            box-shadow:0 2px 10px rgba(0,0,0,.07); flex-shrink:0; z-index:10;
-        }
-        .logo { font-size:1.2rem; font-weight:900; color:var(--primary); display:flex; align-items:center; gap:.3rem; }
-        .header-pills { display:flex; gap:.6rem; align-items:center; }
-        .pill { background:var(--bg); border-radius:50px; padding:.4rem .9rem; font-size:.85rem; font-weight:600; color:var(--muted); }
-        .pill b { color:var(--primary); }
-        .earn-badge { border-radius:50px; padding:.35rem .85rem; font-size:.78rem; font-weight:700; transition:all .4s; }
-        .earn-badge.on  { background:#D1FAE5; color:#065F46; }
-        .earn-badge.off { background:#FEE2E2; color:#991B1B; }
-        .btn-end { background:#F1F5F9; border:none; border-radius:50px; padding:.55rem 1.25rem; font-size:.85rem; font-weight:700; cursor:pointer; transition:background .2s; }
-        .btn-end:hover { background:#E2E8F0; }
+/* Stat chips */
+.hud-chip{background:var(--bg2);border-radius:50px;padding:.35rem .85rem;font-size:.8rem;font-weight:600;color:var(--muted);display:flex;align-items:center;gap:.35rem;white-space:nowrap;}
+.hud-chip b{color:var(--text);}
+.earn-chip{border-radius:50px;padding:.35rem .85rem;font-size:.75rem;font-weight:700;transition:all .4s;}
+.earn-chip.on{background:rgba(0,255,136,.15);color:var(--success);box-shadow:0 0 10px var(--sglow);}
+.earn-chip.off{background:rgba(255,68,68,.1);color:var(--danger);}
+.btn-end-hud{background:var(--card2);border:none;border-radius:50px;padding:.45rem 1.1rem;font-size:.8rem;font-weight:700;color:var(--muted);cursor:pointer;transition:all .2s;margin-left:auto;}
+.btn-end-hud:hover{background:var(--danger);color:white;}
 
-        .sess-body { flex:1; display:grid; grid-template-columns:280px 1fr; gap:1rem; padding:1rem; overflow:hidden; min-height:0; }
+/* Body */
+.sess-body{flex:1;display:grid;grid-template-columns:260px 1fr;gap:1rem;padding:1rem;overflow:hidden;min-height:0;}
 
-        /* Left column */
-        .left-col { display:flex; flex-direction:column; gap:.75rem; overflow:hidden; }
-        .camera-box { background:#0F172A; border-radius:var(--radius); overflow:hidden; position:relative; aspect-ratio:4/3; flex-shrink:0; }
-        #video { width:100%; height:100%; object-fit:cover; transform:scaleX(-1); }
-        #faceCanvas { position:absolute; top:0; left:0; width:100%; height:100%; pointer-events:none; transform:scaleX(-1); }
-        .cam-label { position:absolute; bottom:8px; left:10px; background:rgba(0,0,0,.55); color:white; font-size:.7rem; font-weight:600; padding:.25rem .6rem; border-radius:20px; }
+/* LEFT PANEL */
+.left-panel{display:flex;flex-direction:column;gap:.75rem;overflow:hidden;}
 
-        .focus-card { background:white; border-radius:var(--radius); padding:1rem 1.1rem; box-shadow:0 2px 10px rgba(0,0,0,.06); flex-shrink:0; }
-        .card-label { font-size:.72rem; font-weight:700; color:var(--muted); text-transform:uppercase; letter-spacing:.07em; margin-bottom:.6rem; }
-        .focus-track { background:#F1F5F9; border-radius:10px; height:14px; overflow:hidden; margin-bottom:.4rem; }
-        .focus-fill { height:100%; border-radius:10px; transition:width .6s ease, background-color .6s; }
-        .focus-meta { display:flex; justify-content:space-between; font-size:.8rem; }
-        .focus-state { font-weight:700; }
+/* Camera */
+.cam-wrap{position:relative;background:#000;border-radius:var(--r);overflow:hidden;aspect-ratio:4/3;flex-shrink:0;border:2px solid var(--card2);}
+#video{width:100%;height:100%;object-fit:cover;transform:scaleX(-1);}
+#faceCanvas{position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none;transform:scaleX(-1);}
+.cam-hud{position:absolute;bottom:0;left:0;right:0;background:linear-gradient(transparent,rgba(0,0,0,.8));padding:.5rem .6rem .4rem;display:flex;align-items:center;justify-content:space-between;}
+.cam-status{font-size:.68rem;font-weight:700;color:var(--success);}
+.cam-dot{width:7px;height:7px;border-radius:50%;background:var(--success);animation:camPulse 2s ease-in-out infinite;}
+@keyframes camPulse{0%,100%{opacity:1}50%{opacity:.3}}
 
-        .time-bank {
-            background:linear-gradient(145deg,#5B4FE8,#A78BFA);
-            border-radius:var(--radius); padding:1rem 1.1rem;
-            color:white; text-align:center; flex-shrink:0;
-        }
-        .bank-label { font-size:.68rem; text-transform:uppercase; letter-spacing:.08em; opacity:.75; }
-        .bank-value { font-size:2.4rem; font-weight:900; line-height:1.1; }
-        .bank-sub { font-size:.72rem; opacity:.7; }
+/* Engagement breakdown */
+.engage-card{background:var(--card);border-radius:var(--r);padding:.875rem;border:1px solid var(--card2);flex-shrink:0;}
+.engage-title{font-size:.68rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.07em;margin-bottom:.65rem;}
+.signal-row{display:flex;align-items:center;gap:.5rem;margin-bottom:.4rem;}
+.signal-name{font-size:.72rem;color:var(--muted);width:60px;flex-shrink:0;}
+.signal-bar{flex:1;height:7px;background:rgba(255,255,255,.07);border-radius:5px;overflow:hidden;}
+.signal-fill{height:100%;border-radius:5px;transition:width .6s ease;}
+.signal-val{font-size:.68rem;font-weight:700;min-width:24px;text-align:right;}
 
-        /* Bot bubble */
-        .bot-bubble { background:white; border-radius:var(--radius); padding:.875rem; box-shadow:0 2px 10px rgba(0,0,0,.06); font-size:.87rem; font-weight:500; line-height:1.45; flex:1; display:flex; align-items:flex-start; gap:.5rem; min-height:0; }
-        .bot-avatar { font-size:1.4rem; flex-shrink:0; }
+/* Time bank */
+.bank-card{
+    background:linear-gradient(135deg,rgba(108,99,255,.2),rgba(0,255,136,.1));
+    border:1.5px solid var(--primary);border-radius:var(--r);padding:.875rem;
+    text-align:center;position:relative;overflow:hidden;flex-shrink:0;
+}
+.bank-card::before{content:'';position:absolute;top:-50%;left:-50%;width:200%;height:200%;background:radial-gradient(circle,rgba(108,99,255,.06) 0%,transparent 60%);animation:bankGlow 4s linear infinite;}
+@keyframes bankGlow{to{transform:rotate(360deg)}}
+.bank-label{font-size:.65rem;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);}
+.bank-value{font-size:2.4rem;font-weight:900;color:var(--gold);text-shadow:0 0 20px rgba(255,215,0,.4);line-height:1.1;}
+.bank-sub{font-size:.68rem;color:var(--muted);}
 
-        /* Right column */
-        .right-col { display:flex; flex-direction:column; gap:.75rem; min-height:0; }
-        .book-card { background:white; border-radius:var(--radius); padding:1.5rem 1.75rem; flex:1; box-shadow:0 2px 10px rgba(0,0,0,.06); overflow-y:auto; min-height:0; }
-        .book-header { display:flex; align-items:center; gap:.5rem; margin-bottom:1rem; flex-wrap:wrap; }
-        .book-icon { font-size:1.3rem; }
-        .book-title-text { font-size:1.15rem; font-weight:800; color:var(--primary); }
-        .module-badge { background:var(--bg); color:var(--primary); border-radius:20px; padding:.2rem .7rem; font-size:.72rem; font-weight:700; }
-        #readingText { font-size:1.45rem; line-height:2.1; color:var(--text); }
-        .word { display:inline-block; border-radius:6px; padding:.05em .18em; margin:0 .06em; transition:all .25s; }
-        .word.current { background:#FEF9C3; color:#78350F; font-weight:700; box-shadow:0 2px 8px rgba(245,158,11,.3); }
-        .word.read { background:#DCFCE7; color:#14532D; }
+/* Bot */
+.bot-card{background:var(--card);border-radius:var(--r);border:1px solid var(--card2);padding:.875rem;flex:1;display:flex;align-items:center;gap:.75rem;min-height:0;}
+.bot-mini{width:52px;height:52px;background:var(--bg2);border-radius:14px;border:2px solid var(--primary);flex-shrink:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;box-shadow:0 0 12px var(--pglow);}
+.bot-mini-eyes{display:flex;gap:6px;}
+.bot-mini-eye{width:9px;height:9px;background:var(--success);border-radius:50%;box-shadow:0 0 6px var(--sglow);animation:botBlink 4s ease-in-out infinite;}
+.bot-mini-mouth{width:16px;height:2px;background:var(--success);border-radius:2px;transition:all .3s;}
+.bot-text{font-size:.8rem;line-height:1.45;color:var(--text);flex:1;}
 
-        .voice-bar { background:white; border-radius:var(--radius); padding:.8rem 1.1rem; box-shadow:0 2px 10px rgba(0,0,0,.06); display:flex; align-items:center; gap:.75rem; flex-shrink:0; }
-        .mic-icon { font-size:1.3rem; transition:transform .2s; }
-        .mic-icon.on { animation:pulse 1.2s ease-in-out infinite; }
-        @keyframes pulse { 0%,100%{transform:scale(1)} 50%{transform:scale(1.3)} }
-        .voice-text { flex:1; font-size:.83rem; color:var(--muted); font-style:italic; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
-        .prog-wrap { display:flex; align-items:center; gap:.5rem; }
-        .prog-track { width:110px; height:10px; background:#F1F5F9; border-radius:10px; overflow:hidden; }
-        .prog-fill { height:100%; background:var(--success); border-radius:10px; transition:width .5s ease; }
-        .prog-pct { font-size:.8rem; font-weight:700; color:var(--success); min-width:30px; }
+/* FLOATING COINS */
+.coin{position:absolute;font-size:.75rem;font-weight:800;color:var(--gold);text-shadow:0 0 8px var(--gold);pointer-events:none;animation:coinUp 1.4s ease-out forwards;z-index:50;}
+@keyframes coinUp{0%{opacity:1;transform:translateY(0) scale(1)}100%{opacity:0;transform:translateY(-60px) scale(.6)}}
 
-        /* ══════════════════════════════════════
-           SUMMARY
-        ══════════════════════════════════════ */
-        #summaryScreen { flex-direction:column; align-items:center; justify-content:center; padding:1.5rem; background:linear-gradient(160deg,#EEF2FF,#DDD6FE); overflow-y:auto; }
-        .summary-card { background:white; border-radius:28px; padding:2rem 2.25rem; max-width:500px; width:100%; box-shadow:0 16px 60px rgba(91,79,232,.18); text-align:center; }
-        .summary-emoji { font-size:4rem; margin-bottom:.5rem; }
-        .summary-name { font-size:.95rem; color:var(--muted); }
-        .earned-big { font-size:5rem; font-weight:900; background:linear-gradient(135deg,#5B4FE8,#A78BFA); -webkit-background-clip:text; -webkit-text-fill-color:transparent; line-height:1; }
-        .earned-unit { font-size:1rem; color:var(--muted); margin-bottom:1.25rem; }
-        .bonus-strip { background:linear-gradient(135deg,#10B981,#34D399); color:white; border-radius:14px; padding:.8rem; font-weight:700; font-size:.9rem; margin-bottom:1.25rem; display:none; }
+/* RIGHT PANEL */
+.right-panel{display:flex;flex-direction:column;gap:.75rem;min-height:0;}
+.book-card{background:var(--card);border-radius:var(--r);border:1px solid var(--card2);padding:1.5rem 1.75rem;flex:1;overflow-y:auto;min-height:0;position:relative;}
+.book-header{display:flex;align-items:center;gap:.5rem;margin-bottom:1.1rem;}
+.book-icon-el{font-size:1.25rem;}
+.book-title-el{font-size:1.1rem;font-weight:800;color:var(--primary);}
+.mod-tag{background:rgba(108,99,255,.2);color:var(--primary);border-radius:20px;padding:.2rem .7rem;font-size:.68rem;font-weight:700;}
+#readingText{font-size:1.45rem;line-height:2.15;color:var(--text);}
+.word{display:inline-block;border-radius:6px;padding:.05em .18em;margin:0 .06em;transition:all .2s;}
+.word.current{background:rgba(255,184,0,.2);color:var(--warn);font-weight:700;box-shadow:0 0 10px rgba(255,184,0,.3);}
+.word.read{background:rgba(0,255,136,.12);color:#4ade80;}
 
-        /* Badges */
-        .badges-section { margin-bottom:1.25rem; }
-        .badges-title { font-size:.78rem; font-weight:700; color:var(--muted); text-transform:uppercase; letter-spacing:.07em; margin-bottom:.6rem; }
-        .badges-row { display:flex; flex-wrap:wrap; gap:.5rem; justify-content:center; }
-        .badge-chip { background:var(--bg); border-radius:50px; padding:.4rem .9rem; font-size:.82rem; font-weight:700; display:flex; align-items:center; gap:.3rem; }
-        .badge-chip.new { background:linear-gradient(135deg,#FEF3C7,#FDE68A); color:#92400E; animation:popIn .5s cubic-bezier(.34,1.56,.64,1); }
-        @keyframes popIn { 0%{transform:scale(0)} 100%{transform:scale(1)} }
-        .badge-chip.earned { background:#EDE9FE; color:#5B21B6; }
+/* Voice bar */
+.voice-bar{background:var(--card);border-radius:var(--r);border:1px solid var(--card2);padding:.75rem 1rem;display:flex;align-items:center;gap:.75rem;flex-shrink:0;}
+.mic-el{font-size:1.2rem;}
+.mic-el.on{animation:micPulse 1s ease-in-out infinite;}
+@keyframes micPulse{0%,100%{transform:scale(1)}50%{transform:scale(1.3);filter:drop-shadow(0 0 6px var(--success));}}
+.voice-txt{flex:1;font-size:.8rem;color:var(--muted);font-style:italic;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;}
+.prog-wrap{display:flex;align-items:center;gap:.5rem;}
+.prog-track{width:100px;height:8px;background:rgba(255,255,255,.06);border-radius:8px;overflow:hidden;}
+.prog-fill{height:100%;background:var(--success);border-radius:8px;transition:width .5s ease;}
+.prog-pct{font-size:.75rem;font-weight:700;color:var(--success);min-width:30px;}
 
-        .stats-grid { display:grid; grid-template-columns:1fr 1fr; gap:.75rem; margin-bottom:1.25rem; }
-        .stat-box { background:var(--bg); border-radius:14px; padding:.9rem; }
-        .stat-val { font-size:1.75rem; font-weight:900; color:var(--primary); }
-        .stat-name { font-size:.74rem; color:var(--muted); margin-top:.1rem; }
-        .btn-group { display:flex; gap:.75rem; }
-        .btn-outline { flex:1; background:transparent; border:2px solid var(--primary); color:var(--primary); padding:.8rem; border-radius:50px; font-size:.95rem; font-weight:700; cursor:pointer; transition:all .2s; }
-        .btn-outline:hover { background:var(--primary); color:white; }
-        .btn-filled { flex:1; background:linear-gradient(135deg,#5B4FE8,#8B80F8); border:none; color:white; padding:.8rem; border-radius:50px; font-size:.95rem; font-weight:700; cursor:pointer; box-shadow:0 4px 15px rgba(91,79,232,.35); transition:transform .2s; }
-        .btn-filled:hover { transform:translateY(-1px); }
+/* ═══════════════════════════════
+   SUMMARY
+═══════════════════════════════ */
+#summaryScreen{flex-direction:column;align-items:center;justify-content:center;padding:1.5rem;overflow-y:auto;
+    background:radial-gradient(ellipse at 50% 0%,#1a0a3e,#080C18 70%);}
+.sum-card{background:var(--card);border:1px solid var(--card2);border-radius:24px;padding:2rem;max-width:480px;width:100%;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,.5);}
+.sum-emoji{font-size:4rem;margin-bottom:.5rem;}
+.sum-name{font-size:.9rem;color:var(--muted);}
+.sum-earned{font-size:5rem;font-weight:900;color:var(--gold);text-shadow:0 0 30px rgba(255,215,0,.4);line-height:1;}
+.sum-unit{font-size:.95rem;color:var(--muted);margin-bottom:1.25rem;}
+.bonus-strip{background:linear-gradient(135deg,rgba(0,255,136,.2),rgba(0,255,136,.05));border:1px solid var(--success);color:var(--success);border-radius:12px;padding:.75rem;font-weight:700;font-size:.88rem;margin-bottom:1.25rem;display:none;}
+.badges-section{margin-bottom:1.25rem;display:none;}
+.badges-title{font-size:.72rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.07em;margin-bottom:.6rem;}
+.badges-row{display:flex;flex-wrap:wrap;gap:.4rem;justify-content:center;}
+.badge-chip{border-radius:50px;padding:.35rem .85rem;font-size:.78rem;font-weight:700;display:flex;align-items:center;gap:.3rem;}
+.badge-chip.new{background:rgba(255,215,0,.15);color:var(--gold);border:1px solid rgba(255,215,0,.3);animation:popIn .5s cubic-bezier(.34,1.56,.64,1);}
+@keyframes popIn{0%{transform:scale(0)}100%{transform:scale(1)}}
+.badge-chip.earned{background:rgba(108,99,255,.15);color:var(--primary);border:1px solid rgba(108,99,255,.3);}
+.stats-grid{display:grid;grid-template-columns:1fr 1fr;gap:.75rem;margin-bottom:1.25rem;}
+.stat-box{background:var(--bg2);border-radius:12px;padding:.875rem;}
+.stat-val{font-size:1.7rem;font-weight:900;color:var(--primary);}
+.stat-name{font-size:.72rem;color:var(--muted);margin-top:.1rem;}
+.btn-group{display:flex;gap:.75rem;}
+.btn-outline{flex:1;background:transparent;border:1.5px solid var(--primary);color:var(--primary);padding:.8rem;border-radius:50px;font-size:.9rem;font-weight:700;cursor:pointer;transition:all .2s;}
+.btn-outline:hover{background:rgba(108,99,255,.15);}
+.btn-filled{flex:1;background:linear-gradient(135deg,#6C63FF,#8B80F8);border:none;color:white;padding:.8rem;border-radius:50px;font-size:.9rem;font-weight:700;cursor:pointer;box-shadow:0 4px 20px rgba(108,99,255,.4);transition:transform .2s;}
+.btn-filled:hover{transform:translateY(-1px);}
 
-        /* ══════════════════════════════════════
-           PARENT DASHBOARD
-        ══════════════════════════════════════ */
-        #parentScreen { flex-direction:column; align-items:center; padding:1.5rem; background:#0F172A; overflow-y:auto; }
-        .parent-card { background:#1E293B; border-radius:24px; padding:1.75rem; width:100%; max-width:600px; color:white; margin-bottom:1rem; }
-        .parent-card h2 { font-size:1.25rem; font-weight:800; margin-bottom:1rem; display:flex; align-items:center; gap:.5rem; }
-        .parent-stat-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:.75rem; }
-        .p-stat { background:#0F172A; border-radius:14px; padding:1rem; text-align:center; }
-        .p-stat-val { font-size:2rem; font-weight:900; color:#A78BFA; }
-        .p-stat-name { font-size:.72rem; color:#64748B; margin-top:.2rem; }
-        .session-list { display:flex; flex-direction:column; gap:.5rem; }
-        .sess-row { background:#0F172A; border-radius:12px; padding:.75rem 1rem; display:flex; align-items:center; justify-content:space-between; font-size:.85rem; }
-        .sess-row .date { color:#94A3B8; }
-        .sess-row .mins { color:#A78BFA; font-weight:800; }
-        .sess-row .focus-dot { width:10px; height:10px; border-radius:50%; }
-        .pin-screen { display:flex; flex-direction:column; align-items:center; justify-content:center; gap:1rem; min-height:100vh; }
-        .pin-title { font-size:1.5rem; font-weight:800; color:white; }
-        .pin-sub { font-size:.9rem; color:#64748B; }
-        .pin-input { background:#1E293B; border:2px solid #334155; color:white; font-size:2rem; text-align:center; letter-spacing:.5rem; width:200px; border-radius:14px; padding:.75rem; }
-        .pin-input:focus { outline:none; border-color:#A78BFA; }
-        .btn-parent { background:linear-gradient(135deg,#5B4FE8,#8B80F8); color:white; border:none; padding:.875rem 2.5rem; border-radius:50px; font-size:1rem; font-weight:700; cursor:pointer; }
-        .btn-back { background:transparent; border:2px solid #334155; color:#94A3B8; padding:.5rem 1.25rem; border-radius:50px; font-size:.85rem; font-weight:700; cursor:pointer; margin-top:.5rem; transition:all .2s; }
-        .btn-back:hover { border-color:#A78BFA; color:#A78BFA; }
-        .all-badges-row { display:flex; flex-wrap:wrap; gap:.5rem; }
-        .p-badge { border-radius:50px; padding:.35rem .9rem; font-size:.8rem; font-weight:700; }
-        .p-badge.unlocked { background:#312E81; color:#A78BFA; }
-        .p-badge.locked { background:#1E293B; color:#334155; }
+/* ═══════════════════════════════
+   PARENT
+═══════════════════════════════ */
+#parentScreen{flex-direction:column;align-items:center;padding:1.5rem;background:var(--bg);overflow-y:auto;}
+.pin-screen{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1rem;min-height:100vh;width:100%;}
+.pin-title{font-size:1.4rem;font-weight:800;color:var(--text);}
+.pin-sub{font-size:.85rem;color:var(--muted);}
+.pin-input{background:var(--card);border:2px solid var(--card2);color:var(--text);font-size:2rem;text-align:center;letter-spacing:.5rem;width:200px;border-radius:12px;padding:.75rem;}
+.pin-input:focus{outline:none;border-color:var(--primary);}
+.btn-parent{background:linear-gradient(135deg,#6C63FF,#8B80F8);color:white;border:none;padding:.85rem 2.5rem;border-radius:50px;font-size:.95rem;font-weight:700;cursor:pointer;}
+.btn-back{background:transparent;border:1.5px solid var(--card2);color:var(--muted);padding:.5rem 1.25rem;border-radius:50px;font-size:.82rem;font-weight:700;cursor:pointer;transition:all .2s;}
+.btn-back:hover{border-color:var(--primary);color:var(--primary);}
+.dash-content{width:100%;max-width:580px;display:none;flex-direction:column;gap:.875rem;}
+.p-card{background:var(--card);border:1px solid var(--card2);border-radius:18px;padding:1.5rem;}
+.p-card h2{font-size:1.1rem;font-weight:800;margin-bottom:1rem;display:flex;align-items:center;gap:.4rem;}
+.p-stat-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:.75rem;}
+.p-stat{background:var(--bg2);border-radius:12px;padding:.875rem;text-align:center;}
+.p-stat-val{font-size:1.9rem;font-weight:900;color:var(--primary);}
+.p-stat-name{font-size:.68rem;color:var(--muted);margin-top:.15rem;}
+.sess-list{display:flex;flex-direction:column;gap:.4rem;}
+.sess-row{background:var(--bg2);border-radius:10px;padding:.65rem 1rem;display:flex;align-items:center;justify-content:space-between;font-size:.82rem;}
+.sess-date{color:var(--muted);}
+.sess-mins{color:var(--gold);font-weight:800;}
+.all-bdg{display:flex;flex-wrap:wrap;gap:.4rem;}
+.p-badge{border-radius:50px;padding:.3rem .85rem;font-size:.76rem;font-weight:700;}
+.p-badge.on{background:rgba(108,99,255,.2);color:var(--primary);border:1px solid rgba(108,99,255,.3);}
+.p-badge.off{background:var(--bg2);color:var(--muted);}
+#pinErr{color:var(--danger);font-size:.82rem;display:none;}
 
-        /* ══════════════════════════════════════
-           CONFETTI
-        ══════════════════════════════════════ */
-        .confetti-piece { position:fixed; width:10px; height:10px; border-radius:2px; top:-10px; animation:confettiFall linear forwards; pointer-events:none; z-index:9999; }
-        @keyframes confettiFall { to { transform:translateY(110vh) rotate(720deg); } }
+/* ── TOAST ── */
+.toast{position:fixed;bottom:20px;right:20px;background:var(--card);border-left:4px solid var(--success);border-radius:12px;padding:.875rem 1.25rem;box-shadow:0 8px 30px rgba(0,0,0,.5);z-index:9999;transform:translateY(130%);transition:transform .35s cubic-bezier(.34,1.56,.64,1);max-width:280px;}
+.toast.show{transform:translateY(0);}
+.toast-t{font-weight:800;font-size:.88rem;margin-bottom:.15rem;}
+.toast-b{font-size:.78rem;color:var(--muted);}
 
-        /* ══════════════════════════════════════
-           TOAST
-        ══════════════════════════════════════ */
-        .toast { position:fixed; bottom:20px; right:20px; background:white; border-left:5px solid var(--success); border-radius:14px; padding:.875rem 1.25rem; box-shadow:0 8px 30px rgba(0,0,0,.14); z-index:9999; transform:translateY(130%); transition:transform .35s cubic-bezier(.34,1.56,.64,1); max-width:280px; }
-        .toast.show { transform:translateY(0); }
-        .toast-title { font-weight:800; margin-bottom:.15rem; }
-        .toast-body { font-size:.82rem; color:var(--muted); }
-
-        /* Hadith card */
-        .hadith-box { background:linear-gradient(135deg,#1E1B4B,#312E81); color:white; border-radius:20px; padding:1.5rem; text-align:center; margin-bottom:.75rem; }
-        .hadith-label { font-size:.72rem; text-transform:uppercase; letter-spacing:.1em; opacity:.6; margin-bottom:.5rem; }
-        .hadith-text { font-size:1.05rem; line-height:1.65; font-style:italic; margin-bottom:.75rem; }
-        .hadith-source { font-size:.75rem; opacity:.5; }
-        .bonus-label { background:rgba(255,255,255,.15); border-radius:20px; padding:.4rem 1rem; font-size:.82rem; font-weight:700; display:inline-block; }
-    </style>
+/* ── CONFETTI ── */
+.confetti-p{position:fixed;width:9px;height:9px;border-radius:2px;top:-10px;pointer-events:none;z-index:9999;animation:cFall linear forwards;}
+@keyframes cFall{to{transform:translateY(110vh) rotate(720deg);opacity:0}}
+</style>
 </head>
 <body>
 
-<!-- ══════════════ WELCOME ══════════════ -->
+<!-- ══════ WELCOME ══════ -->
 <div id="welcomeScreen" class="screen active">
     <button class="parent-btn" onclick="openParent()">🔒 Parent</button>
-
-    <div class="mascot">🤖</div>
-    <h1 class="welcome-title">LearnBot</h1>
-    <p class="welcome-sub">Read. Learn. Earn your screen time! 🎮</p>
-
-    <div class="streak-banner" id="streakBanner">
-        🔥 <span id="streakText">3 day streak!</span> Keep it going!
-    </div>
-
-    <!-- Module tabs -->
-    <div class="module-tabs" style="width:100%;max-width:420px">
-        <div class="tab active" onclick="selectModule('reading')" id="tab-reading">
-            <span class="tab-icon">📚</span> Reading
-        </div>
-        <div class="tab" onclick="selectModule('quran')" id="tab-quran">
-            <span class="tab-icon">🕌</span> Quran
-        </div>
-        <div class="tab" onclick="selectModule('hadith')" id="tab-hadith">
-            <span class="tab-icon">⭐</span> Daily Bonus
+    <div class="mascot-wrap">
+        <div class="bot-antenna"></div>
+        <div class="bot-body">
+            <div class="bot-eyes"><div class="bot-eye"></div><div class="bot-eye"></div></div>
+            <div class="bot-mouth"></div>
         </div>
     </div>
-
+    <h1 class="glow-title">LearnBot</h1>
+    <p class="tagline">Read. Learn. Earn your screen time! 🎮</p>
+    <div class="streak-chip" id="streakChip">🔥 <span id="streakTxt">3 day streak!</span></div>
+    <div class="module-grid">
+        <div class="mod-card active" id="mod-reading" onclick="pickMod('reading')">
+            <div class="mod-icon">📚</div><div class="mod-label">Reading</div>
+        </div>
+        <div class="mod-card" id="mod-quran" onclick="pickMod('quran')">
+            <div class="mod-icon">🕌</div><div class="mod-label">Quran</div>
+        </div>
+        <div class="mod-card" id="mod-hadith" onclick="pickMod('hadith')">
+            <div class="mod-icon">⭐</div><div class="mod-label">Daily Bonus</div>
+        </div>
+    </div>
     <div class="setup-card">
         <div class="form-row">
             <div class="form-group">
@@ -299,7 +334,7 @@
             </div>
         </div>
         <div class="form-group">
-            <label>Today's learning goal</label>
+            <label>Today's goal</label>
             <select id="readingGoal">
                 <option value="5">5 minutes</option>
                 <option value="10" selected>10 minutes</option>
@@ -307,72 +342,100 @@
                 <option value="20">20 minutes</option>
             </select>
         </div>
-        <button class="btn-primary" onclick="startSetup()">Let's Go! 🚀</button>
+        <button class="btn-go" onclick="startSetup()">Let's Go! 🚀</button>
     </div>
 </div>
 
-<!-- ══════════════ LOADING ══════════════ -->
+<!-- ══════ LOADING ══════ -->
 <div id="loadingScreen" class="screen">
-    <div style="font-size:5rem;animation:float 2s ease-in-out infinite">🤖</div>
+    <div style="font-size:4rem;animation:botFloat 2s ease-in-out infinite">🤖</div>
     <div class="spinner"></div>
-    <p id="loadingText" style="font-size:1.1rem;font-weight:700;color:var(--primary)">Getting ready…</p>
-    <div style="display:flex;flex-direction:column;gap:.4rem">
-        <div class="load-step" id="step1"><span>⏳</span> Loading face detection AI</div>
-        <div class="load-step" id="step2"><span>⏳</span> Starting camera</div>
-        <div class="load-step" id="step3"><span>⏳</span> Setting up voice recognition</div>
+    <p id="loadMsg">Loading AI models…</p>
+    <div class="load-steps">
+        <div class="load-step" id="ls1"><span>⏳</span> Loading MediaPipe Face Mesh</div>
+        <div class="load-step" id="ls2"><span>⏳</span> Starting camera</div>
+        <div class="load-step" id="ls3"><span>⏳</span> Setting up voice recognition</div>
     </div>
 </div>
 
-<!-- ══════════════ SESSION ══════════════ -->
+<!-- ══════ SESSION ══════ -->
 <div id="sessionScreen" class="screen">
-    <div class="sess-header">
-        <div class="logo">🤖 LearnBot</div>
-        <div class="header-pills">
-            <div class="pill">⏱ <b id="sessTimer">00:00</b></div>
-            <div class="pill">🎮 <b id="earnedDisplay">0.0</b> min</div>
-            <div class="earn-badge off" id="earnBadge">⏸ Paused</div>
+    <!-- HUD -->
+    <div class="hud">
+        <div class="hud-logo">🤖 LearnBot</div>
+        <div class="hud-center">
+            <div class="focus-hud">
+                <span class="focus-hud-label">🎯 FOCUS</span>
+                <div class="focus-track-hud"><div class="focus-fill-hud" id="focusFillHud" style="width:50%"></div></div>
+                <span class="focus-pct" id="focusPct">50</span>
+            </div>
+            <div class="hud-chip">⏱ <b id="sessTimer">00:00</b></div>
+            <div class="hud-chip">🎮 <b id="earnedDisp">0.0</b> min</div>
+            <div class="earn-chip off" id="earnChip">⏸ Paused</div>
         </div>
-        <button class="btn-end" onclick="confirmEnd()">End Session ✅</button>
+        <button class="btn-end-hud" onclick="confirmEnd()">End ✅</button>
     </div>
 
+    <!-- Body -->
     <div class="sess-body">
-        <div class="left-col">
-            <div class="camera-box">
+        <!-- LEFT -->
+        <div class="left-panel">
+            <div class="cam-wrap" id="camWrap">
                 <video id="video" autoplay muted playsinline></video>
                 <canvas id="faceCanvas"></canvas>
-                <div class="cam-label" id="camLabel">📷 Watching…</div>
-            </div>
-            <div class="focus-card">
-                <div class="card-label">🎯 Focus Score</div>
-                <div class="focus-track"><div class="focus-fill" id="focusFill" style="width:50%"></div></div>
-                <div class="focus-meta">
-                    <span class="focus-state" id="focusState">Detecting…</span>
-                    <span id="focusNum">50/100</span>
+                <div class="cam-hud">
+                    <span class="cam-status" id="camStatus">Watching…</span>
+                    <div class="cam-dot"></div>
                 </div>
             </div>
-            <div class="time-bank">
-                <div class="bank-label">🎮 Screen Time Bank</div>
-                <div class="bank-value" id="bankValue">0.0</div>
+
+            <div class="engage-card">
+                <div class="engage-title">🧠 Engagement Signals</div>
+                <div class="signal-row">
+                    <span class="signal-name">Head</span>
+                    <div class="signal-bar"><div class="signal-fill" id="sig-head" style="width:50%;background:var(--primary)"></div></div>
+                    <span class="signal-val" id="sval-head">50</span>
+                </div>
+                <div class="signal-row">
+                    <span class="signal-name">Eyes</span>
+                    <div class="signal-bar"><div class="signal-fill" id="sig-eyes" style="width:50%;background:var(--success)"></div></div>
+                    <span class="signal-val" id="sval-eyes">50</span>
+                </div>
+                <div class="signal-row">
+                    <span class="signal-name">Gaze</span>
+                    <div class="signal-bar"><div class="signal-fill" id="sig-gaze" style="width:50%;background:var(--warn)"></div></div>
+                    <span class="signal-val" id="sval-gaze">50</span>
+                </div>
+            </div>
+
+            <div class="bank-card" id="bankArea">
+                <div class="bank-label">🎮 SCREEN TIME BANK</div>
+                <div class="bank-value" id="bankVal">0.0</div>
                 <div class="bank-sub">minutes earned</div>
             </div>
-            <div class="bot-bubble">
-                <div class="bot-avatar">🤖</div>
-                <div id="botText">Hi! Read the passage out loud — I'll earn you screen time for every minute you read and focus! 📚</div>
+
+            <div class="bot-card">
+                <div class="bot-mini" id="botMini">
+                    <div class="bot-mini-eyes"><div class="bot-mini-eye" id="bEyeL"></div><div class="bot-mini-eye" id="bEyeR"></div></div>
+                    <div class="bot-mini-mouth" id="bMouth"></div>
+                </div>
+                <div class="bot-text" id="botTxt">Hi! Read the text out loud — I'm watching your focus and listening to your voice! 📚</div>
             </div>
         </div>
 
-        <div class="right-col">
-            <div class="book-card" id="bookCard">
+        <!-- RIGHT -->
+        <div class="right-panel">
+            <div class="book-card">
                 <div class="book-header">
-                    <span class="book-icon" id="bookIcon">📖</span>
-                    <span class="book-title-text" id="bookTitle">Loading…</span>
-                    <span class="module-badge" id="moduleBadge">Reading</span>
+                    <span class="book-icon-el" id="bkIcon">📖</span>
+                    <span class="book-title-el" id="bkTitle">Loading…</span>
+                    <span class="mod-tag" id="bkTag">Reading</span>
                 </div>
                 <div id="readingText"></div>
             </div>
             <div class="voice-bar">
-                <div class="mic-icon" id="micIcon">🎙️</div>
-                <div class="voice-text" id="voiceText">Listening… read the text aloud!</div>
+                <div class="mic-el" id="micEl">🎙️</div>
+                <div class="voice-txt" id="voiceTxt">Listening… read the text aloud!</div>
                 <div class="prog-wrap">
                     <div class="prog-track"><div class="prog-fill" id="progFill" style="width:0%"></div></div>
                     <div class="prog-pct" id="progPct">0%</div>
@@ -382,25 +445,23 @@
     </div>
 </div>
 
-<!-- ══════════════ SUMMARY ══════════════ -->
+<!-- ══════ SUMMARY ══════ -->
 <div id="summaryScreen" class="screen">
-    <div class="summary-card">
-        <div class="summary-emoji" id="summaryEmoji">🎉</div>
-        <div class="summary-name" id="summaryName">Great session!</div>
-        <div class="earned-big" id="summaryEarned">0</div>
-        <div class="earned-unit">minutes of screen time earned</div>
+    <div class="sum-card">
+        <div class="sum-emoji" id="sumEmoji">🎉</div>
+        <div class="sum-name" id="sumName">Great session!</div>
+        <div class="sum-earned" id="sumEarned">0</div>
+        <div class="sum-unit">minutes of screen time earned</div>
         <div class="bonus-strip" id="bonusStrip">⭐ Bonus! Amazing focus — +5 extra minutes!</div>
-
-        <div class="badges-section" id="badgesSection" style="display:none">
-            <div class="badges-title">🏅 Badges Earned</div>
-            <div class="badges-row" id="newBadgesRow"></div>
+        <div class="badges-section" id="badgesSec">
+            <div class="badges-title">🏅 Badges</div>
+            <div class="badges-row" id="badgesRow"></div>
         </div>
-
         <div class="stats-grid">
-            <div class="stat-box"><div class="stat-val" id="statFocus">—</div><div class="stat-name">Avg Focus</div></div>
-            <div class="stat-box"><div class="stat-val" id="statAcc">—</div><div class="stat-name">Reading Progress</div></div>
-            <div class="stat-box"><div class="stat-val" id="statSess">—</div><div class="stat-name">Time Active</div></div>
-            <div class="stat-box"><div class="stat-val" id="statWords">—</div><div class="stat-name">Words Read</div></div>
+            <div class="stat-box"><div class="stat-val" id="sStat1">—</div><div class="stat-name">Avg Focus</div></div>
+            <div class="stat-box"><div class="stat-val" id="sStat2">—</div><div class="stat-name">Reading Progress</div></div>
+            <div class="stat-box"><div class="stat-val" id="sStat3">—</div><div class="stat-name">Time Active</div></div>
+            <div class="stat-box"><div class="stat-val" id="sStat4">—</div><div class="stat-name">Words Read</div></div>
         </div>
         <div class="btn-group">
             <button class="btn-outline" onclick="readMore()">📚 Read More</button>
@@ -409,741 +470,653 @@
     </div>
 </div>
 
-<!-- ══════════════ PARENT DASHBOARD ══════════════ -->
-<div id="parentScreen" class="screen" style="flex-direction:column;align-items:center;padding:1.5rem;background:#0F172A;overflow-y:auto">
-
-    <!-- PIN entry -->
+<!-- ══════ PARENT ══════ -->
+<div id="parentScreen" class="screen">
     <div class="pin-screen" id="pinScreen">
-        <div style="font-size:4rem">🔒</div>
+        <div style="font-size:3.5rem">🔒</div>
         <div class="pin-title">Parent Dashboard</div>
         <div class="pin-sub">Enter your 4-digit PIN (default: 0000)</div>
         <input class="pin-input" type="password" maxlength="4" id="pinInput" placeholder="••••" />
         <button class="btn-parent" onclick="checkPin()">Unlock</button>
         <button class="btn-back" onclick="show('welcomeScreen')">← Back</button>
-        <div style="color:#EF4444;font-size:.85rem;margin-top:.25rem;display:none" id="pinError">Wrong PIN. Try again.</div>
+        <div id="pinErr">Wrong PIN. Try again.</div>
     </div>
-
-    <!-- Dashboard content -->
-    <div style="width:100%;max-width:600px;display:none;flex-direction:column;gap:1rem" id="dashContent">
-        <div style="display:flex;align-items:center;justify-content:space-between;color:white;padding:.5rem 0">
-            <h1 style="font-size:1.4rem;font-weight:900">📊 Parent Dashboard</h1>
+    <div class="dash-content" id="dashContent">
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:.25rem 0">
+            <h1 style="font-size:1.3rem;font-weight:900">📊 Parent Dashboard</h1>
             <button class="btn-back" onclick="lockParent()">🔒 Lock</button>
         </div>
-
-        <!-- Overview -->
-        <div class="parent-card">
+        <div class="p-card">
             <h2>📈 Overview</h2>
-            <div class="parent-stat-grid">
-                <div class="p-stat"><div class="p-stat-val" id="pToday">0m</div><div class="p-stat-name">Earned Today</div></div>
-                <div class="p-stat"><div class="p-stat-val" id="pStreak">🔥 0</div><div class="p-stat-name">Day Streak</div></div>
-                <div class="p-stat"><div class="p-stat-val" id="pTotal">0m</div><div class="p-stat-name">Total Earned</div></div>
+            <div class="p-stat-grid">
+                <div class="p-stat"><div class="p-stat-val" id="pToday">0m</div><div class="p-stat-name">Today</div></div>
+                <div class="p-stat"><div class="p-stat-val" id="pStreak">🔥0</div><div class="p-stat-name">Streak</div></div>
+                <div class="p-stat"><div class="p-stat-val" id="pTotal">0m</div><div class="p-stat-name">Total</div></div>
             </div>
         </div>
-
-        <!-- Badges -->
-        <div class="parent-card">
+        <div class="p-card">
             <h2>🏅 Badges</h2>
-            <div class="all-badges-row" id="allBadgesRow"></div>
+            <div class="all-bdg" id="allBdg"></div>
         </div>
-
-        <!-- Session history -->
-        <div class="parent-card">
-            <h2>📋 Recent Sessions</h2>
-            <div class="session-list" id="sessionList"><div style="color:#64748B;font-size:.9rem">No sessions yet.</div></div>
+        <div class="p-card">
+            <h2>📋 Sessions</h2>
+            <div class="sess-list" id="sessList"><div style="color:var(--muted);font-size:.85rem">No sessions yet.</div></div>
         </div>
-
-        <!-- Change PIN -->
-        <div class="parent-card">
-            <h2>⚙️ Settings</h2>
+        <div class="p-card">
+            <h2>⚙️ Change PIN</h2>
             <div style="display:flex;gap:.75rem;align-items:flex-end">
-                <div style="flex:1">
-                    <label style="color:#94A3B8;font-size:.78rem;text-transform:uppercase;letter-spacing:.06em;margin-bottom:.4rem;display:block">Change PIN</label>
-                    <input type="password" maxlength="4" id="newPinInput" placeholder="New 4-digit PIN" style="background:#0F172A;border:2px solid #334155;color:white;border-radius:12px;padding:.65rem 1rem;width:100%;font-size:.95rem" />
-                </div>
-                <button onclick="changePin()" style="background:#5B4FE8;color:white;border:none;border-radius:12px;padding:.72rem 1.25rem;font-weight:700;cursor:pointer;white-space:nowrap">Save PIN</button>
+                <div style="flex:1"><label>New 4-digit PIN</label><input type="password" maxlength="4" id="newPin" placeholder="••••" /></div>
+                <button onclick="changePin()" style="background:var(--primary);color:white;border:none;border-radius:10px;padding:.72rem 1.25rem;font-weight:700;cursor:pointer">Save</button>
             </div>
         </div>
-
         <button class="btn-back" onclick="show('welcomeScreen')" style="align-self:center">← Back to App</button>
     </div>
 </div>
 
 <!-- Toast -->
-<div class="toast" id="toast"><div class="toast-title" id="toastTitle">—</div><div class="toast-body" id="toastBody">—</div></div>
+<div class="toast" id="toast"><div class="toast-t" id="toastT">—</div><div class="toast-b" id="toastB">—</div></div>
 
 <script>
-/* ══════════════════════════════════════════════
-   CONTENT LIBRARY
-══════════════════════════════════════════════ */
+/* ══════════════════════════════════════
+   CONTENT
+══════════════════════════════════════ */
 const LIBRARY = {
-    reading: {
-        easy: [
-            { title:"The Big Red Ball", text:"Tom has a big red ball. The ball is round and soft. Tom likes to play with his ball in the park. He throws it up high. The ball goes up and comes back down. Tom catches it and smiles. Playing with a ball is so much fun!" },
-            { title:"My Little Cat", text:"I have a little cat. Her name is Mia. Mia has soft white fur. She likes to sleep in the sun. She drinks milk from a small bowl. I love my cat. She is my best friend." },
-            { title:"The Rain", text:"The rain falls down from the sky. It makes the grass grow green. The flowers drink the rain. The birds hide in the trees. I put on my boots and jump in the puddles. Rain is fun!" }
+    reading:{
+        easy:[
+            {title:"The Big Red Ball",text:"Tom has a big red ball. The ball is round and soft. Tom likes to play with his ball in the park. He throws it up high. The ball goes up and comes back down. Tom catches it and smiles. Playing with a ball is so much fun!"},
+            {title:"My Little Cat",text:"I have a little cat. Her name is Mia. She has soft white fur. She likes to sleep in the sun. She drinks milk from a small bowl. I love my cat. She is my best friend."},
+            {title:"The Rain",text:"The rain falls down from the sky. It makes the grass grow green. The flowers drink the rain. The birds hide in the trees. I put on my boots and jump in the puddles. Rain is so much fun!"}
         ],
-        medium: [
-            { title:"The Amazing Ocean", text:"The ocean is one of the most amazing places on Earth. It covers more than half of our planet. Many creatures live in the ocean from tiny fish to giant whales. Dolphins swim in groups called pods. They are very smart animals. Octopuses have eight arms and can change colour to hide from danger. The ocean is full of wonderful surprises." },
-            { title:"How Plants Grow", text:"Plants need three things to grow: sunlight, water, and soil. A tiny seed is planted in the ground. Roots grow down to drink water. The stem pushes up through the soil towards the light. Leaves open up to collect sunlight. The plant uses sunlight and water to make its own food. This amazing process is called photosynthesis." },
-            { title:"The Honey Bee", text:"Honey bees are some of the most important insects on Earth. They live together in large groups called colonies. Worker bees fly from flower to flower collecting sweet nectar. They bring it back to the hive where it is turned into honey. Bees also carry pollen between flowers which helps plants grow fruit and seeds. Without bees many of our fruits and vegetables would not exist." }
+        medium:[
+            {title:"The Amazing Ocean",text:"The ocean is one of the most amazing places on Earth. It covers more than half of our planet. Many creatures live in the ocean from tiny fish to giant whales. Dolphins swim in groups called pods. They are very smart animals. Octopuses have eight arms and can change colour to hide from danger."},
+            {title:"How Plants Grow",text:"Plants need three things to grow: sunlight, water, and soil. A tiny seed is planted in the ground. Roots grow down to drink water. The stem pushes up through the soil towards the light. Leaves open up to collect sunlight. The plant uses sunlight and water to make its own food. This process is called photosynthesis."},
+            {title:"The Honey Bee",text:"Honey bees are some of the most important insects on Earth. They live together in large groups called colonies. Worker bees fly from flower to flower collecting sweet nectar. They bring it back to the hive where it is turned into honey. Without bees many of our fruits and vegetables would not exist."}
         ],
-        hard: [
-            { title:"The Solar System", text:"Our solar system is made up of the Sun and everything that orbits around it. There are eight planets: Mercury, Venus, Earth, Mars, Jupiter, Saturn, Uranus, and Neptune. Mercury is the smallest and closest to the Sun while Neptune is the farthest away. Jupiter is the largest planet so big that all the other planets could fit inside it. Saturn is famous for its beautiful rings made of ice and rock." },
-            { title:"The Water Cycle", text:"The water cycle describes how water moves continuously around our planet. When the Sun heats water in oceans and rivers it evaporates and rises into the air as water vapour. As this vapour rises higher it cools and condenses into tiny water droplets forming clouds. When enough droplets collect they fall back to Earth as rain or snow. This water flows into rivers and oceans where the cycle begins again." },
-            { title:"The Human Brain", text:"The human brain is the most complex organ in the known universe. It contains about eighty six billion neurons which are specialised cells that send and receive electrical signals. These neurons are connected by trillions of synapses forming an incredibly complex network. The brain controls every thought, movement, memory, and feeling we experience. It is divided into different regions each responsible for different functions such as language, vision, and emotion." }
+        hard:[
+            {title:"The Solar System",text:"Our solar system is made up of the Sun and everything that orbits around it. There are eight planets: Mercury Venus Earth Mars Jupiter Saturn Uranus and Neptune. Mercury is the smallest and closest to the Sun while Neptune is the farthest away. Jupiter is the largest planet so big that all the other planets could fit inside it."},
+            {title:"The Water Cycle",text:"The water cycle describes how water moves continuously around our planet. When the Sun heats water in oceans and rivers it evaporates and rises into the air as water vapour. As this vapour rises higher it cools and condenses into tiny water droplets forming clouds. When enough droplets collect they fall back to Earth as rain or snow."},
+            {title:"The Human Brain",text:"The human brain is the most complex organ in the known universe. It contains about eighty six billion neurons which are specialised cells that send and receive electrical signals. These neurons are connected by trillions of synapses forming an incredibly complex network. The brain controls every thought movement memory and feeling we experience."}
         ]
     },
-    quran: [
-        { title:"Surah Al-Fatiha", icon:"🕌",
-          text:"Bismillah ir-rahman ir-raheem. Alhamdu lillahi rabb il-aalameen. Ar-rahman ir-raheem. Maliki yawm id-deen. Iyyaka nabudu wa iyyaka nastaeen. Ihdina as-sirat al-mustaqeem. Sirat alladhina anamta alayhim ghayri al-maghdubi alayhim wa la ad-dalleen. Ameen." },
-        { title:"Surah Al-Ikhlas", icon:"🕌",
-          text:"Bismillah ir-rahman ir-raheem. Qul huwa Allahu ahad. Allahu as-samad. Lam yalid wa lam yulad. Wa lam yakun lahu kufuwan ahad." },
-        { title:"Surah Al-Falaq", icon:"🕌",
-          text:"Bismillah ir-rahman ir-raheem. Qul aoodhu bi rabb il-falaq. Min sharri ma khalaq. Wa min sharri ghasiqin idha waqab. Wa min sharri an-naffathati fi al-uqad. Wa min sharri hasidin idha hasad." },
-        { title:"Surah An-Nas", icon:"🕌",
-          text:"Bismillah ir-rahman ir-raheem. Qul aoodhu bi rabb in-nas. Malik in-nas. Ilah in-nas. Min sharri al-waswas al-khannas. Alladhi yuwaswisu fi sudur in-nas. Min al-jinnati wa an-nas." }
+    quran:[
+        {title:"Surah Al-Fatiha",icon:"🕌",text:"Bismillah ir-rahman ir-raheem. Alhamdu lillahi rabb il-aalameen. Ar-rahman ir-raheem. Maliki yawm id-deen. Iyyaka nabudu wa iyyaka nastaeen. Ihdina as-sirat al-mustaqeem. Sirat alladhina anamta alayhim ghayri al-maghdubi alayhim wa la ad-dalleen. Ameen."},
+        {title:"Surah Al-Ikhlas",icon:"🕌",text:"Bismillah ir-rahman ir-raheem. Qul huwa Allahu ahad. Allahu as-samad. Lam yalid wa lam yulad. Wa lam yakun lahu kufuwan ahad."},
+        {title:"Surah Al-Falaq",icon:"🕌",text:"Bismillah ir-rahman ir-raheem. Qul aoodhu bi rabb il-falaq. Min sharri ma khalaq. Wa min sharri ghasiqin idha waqab. Wa min sharri an-naffathati fi al-uqad. Wa min sharri hasidin idha hasad."},
+        {title:"Surah An-Nas",icon:"🕌",text:"Bismillah ir-rahman ir-raheem. Qul aoodhu bi rabb in-nas. Malik in-nas. Ilah in-nas. Min sharri al-waswas al-khannas. Alladhi yuwaswisu fi sudur in-nas. Min al-jinnati wa an-nas."}
     ],
-    hadith: [
-        { title:"Hadith of the Day", icon:"⭐", bonus:5,
-          text:"The Prophet Muhammad peace be upon him said: Smiling in the face of your brother is an act of charity. Be kind to people, for kindness is a great virtue. Always speak the truth and help those in need." },
-        { title:"Fun Islamic Fact", icon:"⭐", bonus:5,
-          text:"Did you know that the word Quran means the recitation in Arabic. The Quran was revealed to the Prophet Muhammad over twenty three years. It has one hundred and fourteen surahs and over six thousand verses. Muslims all over the world memorise the Quran by heart." },
-        { title:"Daily Wisdom", icon:"⭐", bonus:5,
-          text:"The Prophet Muhammad peace be upon him said: Seek knowledge from the cradle to the grave. Learning is one of the most beloved acts in Islam. Every Muslim man and woman is required to seek knowledge. Reading and learning makes us better people." }
+    hadith:[
+        {title:"Hadith of the Day",icon:"⭐",bonus:5,text:"The Prophet Muhammad peace be upon him said: Smiling in the face of your brother is an act of charity. Be kind to people for kindness is a great virtue. Always speak the truth and help those in need."},
+        {title:"Fun Islamic Fact",icon:"⭐",bonus:5,text:"Did you know that the word Quran means the recitation in Arabic. The Quran was revealed to the Prophet Muhammad over twenty three years. It has one hundred and fourteen surahs and over six thousand verses. Muslims all over the world memorise the Quran by heart."},
+        {title:"Daily Wisdom",icon:"⭐",bonus:5,text:"The Prophet Muhammad peace be upon him said: Seek knowledge from the cradle to the grave. Learning is one of the most beloved acts in Islam. Every Muslim man and woman is required to seek knowledge. Reading and learning makes us better people."}
     ]
 };
 
-const ALL_BADGES = [
-    { id:'first_read',    icon:'📖', label:'First Read',    desc:'Complete your first session' },
-    { id:'focus_star',   icon:'👁️',  label:'Focus Star',   desc:'Achieve 80%+ focus in a session' },
-    { id:'bookworm',     icon:'🐛', label:'Bookworm',      desc:'Read 100+ words total' },
-    { id:'quran_star',   icon:'🕌', label:'Quran Star',    desc:'Complete a Quran passage' },
-    { id:'streak3',      icon:'🔥', label:'On Fire!',      desc:'3 day reading streak' },
-    { id:'earner',       icon:'💰', label:'Big Earner',    desc:'Earn 30+ minutes total' },
-    { id:'daily_bonus',  icon:'⭐', label:'Daily Bonus',   desc:'Complete a daily hadith/fact' },
-    { id:'perfectday',   icon:'🏆', label:'Perfect Day',   desc:'Earn 10 minutes in one session' },
+const ALL_BADGES=[
+    {id:'first_read',icon:'📖',label:'First Read'},
+    {id:'focus_star',icon:'👁️',label:'Focus Star'},
+    {id:'bookworm',icon:'🐛',label:'Bookworm'},
+    {id:'quran_star',icon:'🕌',label:'Quran Star'},
+    {id:'streak3',icon:'🔥',label:'On Fire!'},
+    {id:'earner',icon:'💰',label:'Big Earner'},
+    {id:'daily_bonus',icon:'⭐',label:'Daily Bonus'},
+    {id:'perfectday',icon:'🏆',label:'Perfect Day'}
 ];
 
-const BOT_MSG = {
-    focused:    ["Amazing focus! Keep reading! 🌟","You're doing great! 💪","Screen time is piling up! 🎮","Super reader! 📚","You're on fire! 🔥"],
-    reading:    ["I can hear you! Great job! 🎙️","Beautiful reading! 🌈","Keep going, word by word! 👍"],
-    distracted: ["Hey! Come back — look at the screen! 👀","Your time is paused — let's focus! ⏸️","Almost there! Eyes on the book! 💪"],
-    silent:     ["Read out loud so I can hear you! 🗣️","Use your voice! 📢","I'm listening — start reading! 🎙️"],
-    milestone:  ["🎉 Milestone! Amazing work!","⭐ Fantastic — keep going!","🏆 You're a champion!"]
+const BOT={
+    focused:["Amazing focus! Keep reading! 🌟","You're on fire! 🔥","Screen time is piling up! 🎮","Super reader! 📚"],
+    reading:["I can hear you! Great! 🎙️","Beautiful reading! 🌈","Word by word — perfect! 👍"],
+    distracted:["Hey! Look at the screen! 👀","Time is paused — focus up! ⏸️","Come back! 💪"],
+    silent:["Read out loud! I'm listening! 🗣️","Use your voice! 📢","Start reading! 🎙️"],
+    milestone:["🎉 Milestone unlocked!","⭐ Fantastic — keep going!","🏆 Champion!"]
 };
 
-/* ══════════════════════════════════════════════
+/* ══════════════════════════════════════
    STATE
-══════════════════════════════════════════════ */
-const S = {
-    name:'', age:'medium', goal:10, module:'reading',
-    sessionSecs:0, earnedSecs:0,
-    focusScore:50, focusSum:0, focusSamples:0,
-    words:[], wordIdx:0, wordsRead:0,
-    lastSpeechTime:0, lastBotTime:0, lastBotKind:'',
-    lastMilestone:0, passage:null,
-    faceTimer:null, mainTimer:null,
-    cameraOk:false, speechOk:false, recognition:null,
-    sessionActive:false
+══════════════════════════════════════ */
+const S={
+    name:'',age:'medium',goal:10,module:'reading',
+    sessionSecs:0,earnedSecs:0,
+    focusScore:50,focusSum:0,focusSamples:0,
+    words:[],wordIdx:0,wordsRead:0,
+    lastSpeech:0,lastBot:0,lastBotKind:'',lastMilestone:0,
+    passage:null,faceTimer:null,mainTimer:null,
+    cameraOk:false,speechOk:false,recognition:null,
+    active:false,faceMesh:null,mpCamera:null,
+    signals:{head:50,eyes:50,gaze:50}
 };
 
-/* ══════════════════════════════════════════════
-   LOCAL STORAGE
-══════════════════════════════════════════════ */
-function loadStore() {
-    try { return JSON.parse(localStorage.getItem('learnbot') || '{}'); } catch { return {}; }
-}
-function saveStore(data) {
-    try { localStorage.setItem('learnbot', JSON.stringify(data)); } catch {}
-}
-function getStore() {
-    return Object.assign({ streak:0, lastDate:'', totalMins:0, todayMins:0, todayDate:'', badges:[], sessions:[], pin:'0000' }, loadStore());
-}
-function updateStreak() {
-    const st = getStore();
-    const today = todayStr();
-    if (st.lastDate === today) return st;
-    const yesterday = new Date(); yesterday.setDate(yesterday.getDate()-1);
-    const yStr = yesterday.toISOString().split('T')[0];
-    st.streak = (st.lastDate === yStr) ? st.streak + 1 : 1;
-    st.lastDate = today;
-    st.todayMins = 0;
-    st.todayDate = today;
-    saveStore(st);
-    return st;
-}
-function todayStr() { return new Date().toISOString().split('T')[0]; }
-function saveSession(earnedMins, avgFocus, wordsRead, module) {
-    const st = getStore();
-    st.totalMins   = (st.totalMins || 0) + earnedMins;
-    st.todayMins   = (st.todayDate === todayStr() ? (st.todayMins||0) : 0) + earnedMins;
-    st.todayDate   = todayStr();
-    st.sessions    = [{ date:todayStr(), mins:earnedMins, focus:avgFocus, words:wordsRead, module }, ...(st.sessions||[])].slice(0,20);
-    checkAndAwardBadges(st, earnedMins, avgFocus, wordsRead, module);
-    saveStore(st);
-    return st;
-}
+/* ══════════════════════════════════════
+   STORAGE
+══════════════════════════════════════ */
+function gs(){try{return Object.assign({streak:0,lastDate:'',totalMins:0,todayMins:0,todayDate:'',badges:[],sessions:[],pin:'0000'},JSON.parse(localStorage.getItem('lb')||'{}'));}catch{return{streak:0,lastDate:'',totalMins:0,todayMins:0,todayDate:'',badges:[],sessions:[],pin:'0000'};}}
+function ss(d){try{localStorage.setItem('lb',JSON.stringify(d));}catch{}}
+function today(){return new Date().toISOString().split('T')[0];}
 
-/* ══════════════════════════════════════════════
-   BADGES
-══════════════════════════════════════════════ */
-function checkAndAwardBadges(st, earnedMins, avgFocus, wordsRead, module) {
-    const prev = st.badges || [];
-    const award = (id) => { if (!prev.includes(id)) prev.push(id); };
-    if (!prev.includes('first_read'))   award('first_read');
-    if (avgFocus >= 80)                 award('focus_star');
-    if ((st.totalMins||0) >= 10)       award('earner');   // recheck after update
-    if (module === 'quran')             award('quran_star');
-    if (module === 'hadith')            award('daily_bonus');
-    if ((st.streak||0) >= 3)           award('streak3');
-    if (earnedMins >= 10)              award('perfectday');
-    const totalWords = (st.sessions||[]).reduce((a,s)=>a+(s.words||0),0) + wordsRead;
-    if (totalWords >= 100)             award('bookworm');
-    st.badges = prev;
-}
-function getNewBadges(prevBadges, newBadges) {
-    return newBadges.filter(b => !prevBadges.includes(b));
-}
+/* ══════════════════════════════════════
+   SCREENS / MODULE
+══════════════════════════════════════ */
+function show(id){document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));document.getElementById(id).classList.add('active');}
+function pickMod(m){S.module=m;document.querySelectorAll('.mod-card').forEach(c=>c.classList.remove('active'));document.getElementById('mod-'+m).classList.add('active');}
 
-/* ══════════════════════════════════════════════
-   SCREENS
-══════════════════════════════════════════════ */
-function show(id) {
-    document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-    document.getElementById(id).classList.add('active');
-}
-
-/* ══════════════════════════════════════════════
-   MODULE SELECTION
-══════════════════════════════════════════════ */
-function selectModule(m) {
-    S.module = m;
-    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-    document.getElementById('tab-' + m).classList.add('active');
-}
-
-/* ══════════════════════════════════════════════
+/* ══════════════════════════════════════
    WELCOME INIT
-══════════════════════════════════════════════ */
-function initWelcome() {
-    const st = getStore();
-    if (st.streak >= 2) {
-        document.getElementById('streakBanner').style.display = 'flex';
-        document.getElementById('streakText').textContent = st.streak + ' day streak!';
-    }
-    if (st.sessions && st.sessions.length > 0) {
-        const last = st.sessions[0];
-        document.getElementById('childName').value = last.name || '';
-    }
-}
-initWelcome();
+══════════════════════════════════════ */
+(function initWelcome(){
+    const st=gs();
+    if(st.streak>=2){document.getElementById('streakChip').style.display='flex';document.getElementById('streakTxt').textContent=st.streak+' day streak!';}
+})();
 
-/* ══════════════════════════════════════════════
-   START SETUP
-══════════════════════════════════════════════ */
-async function startSetup() {
-    const name = document.getElementById('childName').value.trim();
-    const age  = document.getElementById('ageGroup').value;
-    const goal = parseInt(document.getElementById('readingGoal').value);
-    if (!name) { alert('Please enter your name!'); return; }
-    if (!age)  { alert('Please choose your age group!'); return; }
-
-    S.name = name; S.age = age; S.goal = goal;
+/* ══════════════════════════════════════
+   SETUP
+══════════════════════════════════════ */
+async function startSetup(){
+    const name=document.getElementById('childName').value.trim();
+    const age=document.getElementById('ageGroup').value;
+    const goal=parseInt(document.getElementById('readingGoal').value);
+    if(!name){alert('Please enter your name!');return;}
+    if(!age){alert('Please choose your age group!');return;}
+    S.name=name;S.age=age;S.goal=goal;
     show('loadingScreen');
 
-    // Step 1: Face models
-    setStep('step1','loading');
-    try {
-        const MODEL = 'https://cdn.jsdelivr.net/gh/justadudewhohacks/face-api.js@0.22.2/weights';
-        await faceapi.nets.tinyFaceDetector.loadFromUri(MODEL);
-        await faceapi.nets.faceExpressionNet.loadFromUri(MODEL);
-        setStep('step1','done');
-    } catch(e) { setStep('step1','fail'); }
+    // MediaPipe Face Mesh
+    setLS('ls1','loading');
+    try{
+        await loadMediaPipe();
+        setLS('ls1','done');
+    }catch(e){setLS('ls1','fail');console.warn('MediaPipe failed:',e);}
 
-    // Step 2: Camera
-    setStep('step2','loading');
-    try {
-        const stream = await navigator.mediaDevices.getUserMedia({ video:{ facingMode:'user', width:640 }, audio:false });
-        const vid = document.getElementById('video');
-        vid.srcObject = stream;
-        await new Promise(r => { vid.onloadedmetadata = () => { vid.play(); r(); }; });
-        S.cameraOk = true;
-        setStep('step2','done');
-    } catch(e) {
-        setStep('step2','fail');
-        document.querySelector('.camera-box').innerHTML = '<div style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;color:#475569;gap:.5rem"><span style="font-size:2.5rem">📷</span><span style="font-size:.8rem">Camera unavailable</span></div>';
-    }
+    // Camera
+    setLS('ls2','loading');
+    try{
+        const stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:'user',width:640,height:480},audio:false});
+        const vid=document.getElementById('video');
+        vid.srcObject=stream;
+        await new Promise(r=>{vid.onloadedmetadata=()=>{vid.play();r();};});
+        S.cameraOk=true;
+        setLS('ls2','done');
+        if(S.faceMesh) startMediaPipe(vid);
+    }catch(e){setLS('ls2','fail');document.getElementById('camWrap').innerHTML='<div style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;color:var(--muted);gap:.5rem"><span style="font-size:2rem">📷</span><span style="font-size:.75rem">Camera unavailable</span></div>';}
 
-    // Step 3: Speech
-    setStep('step3','loading');
-    const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
-    if (SR) {
-        S.recognition = new SR();
-        S.recognition.continuous = true;
-        S.recognition.interimResults = true;
-        S.recognition.lang = 'en-US';
-        S.recognition.onresult = onSpeechResult;
-        S.recognition.onerror  = (e) => { if (e.error !== 'no-speech') console.warn('SR:', e.error); };
-        S.recognition.onend    = () => { if (S.sessionActive) { try { S.recognition.start(); } catch(e){} } };
-        S.speechOk = true;
-        setStep('step3','done');
-    } else {
-        setStep('step3','fail');
-    }
+    // Speech
+    setLS('ls3','loading');
+    const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+    if(SR){
+        S.recognition=new SR();
+        S.recognition.continuous=true;
+        S.recognition.interimResults=true;
+        S.recognition.lang='en-US';
+        S.recognition.onresult=onSpeech;
+        S.recognition.onerror=e=>{if(e.error!=='no-speech')console.warn('SR:',e.error);};
+        S.recognition.onend=()=>{if(S.active){try{S.recognition.start();}catch(e){}}};
+        S.speechOk=true;
+        setLS('ls3','done');
+    }else{setLS('ls3','fail');}
 
-    await sleep(600);
+    await sleep(500);
     beginSession();
 }
 
-function setStep(id, state) {
-    const el = document.getElementById(id);
-    const icons = { loading:'🔄', done:'✅', fail:'⚠️' };
-    el.querySelector('span').textContent = icons[state];
-    if (state === 'done') el.classList.add('done');
+function setLS(id,state){
+    const el=document.getElementById(id);
+    el.querySelector('span').textContent={loading:'🔄',done:'✅',fail:'⚠️'}[state];
+    if(state==='done')el.classList.add('done');
 }
 
-/* ══════════════════════════════════════════════
-   SESSION
-══════════════════════════════════════════════ */
-function beginSession() {
-    Object.assign(S, {
-        sessionSecs:0, earnedSecs:0,
-        focusScore:50, focusSum:0, focusSamples:0,
-        wordIdx:0, wordsRead:0,
-        lastSpeechTime:0, lastBotTime:0, lastBotKind:'',
-        lastMilestone:0, sessionActive:true
+/* ══════════════════════════════════════
+   MEDIAPIPE FACE MESH
+══════════════════════════════════════ */
+async function loadMediaPipe(){
+    return new Promise((resolve,reject)=>{
+        if(typeof FaceMesh==='undefined'){reject(new Error('FaceMesh not loaded'));return;}
+        S.faceMesh=new FaceMesh({
+            locateFile:f=>`https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh@0.4.1633559619/${f}`
+        });
+        S.faceMesh.setOptions({
+            maxNumFaces:1,
+            refineLandmarks:true,
+            minDetectionConfidence:0.55,
+            minTrackingConfidence:0.55
+        });
+        S.faceMesh.onResults(onFaceResults);
+        S.faceMesh.initialize().then(resolve).catch(reject);
+    });
+}
+
+function startMediaPipe(vid){
+    if(typeof Camera==='undefined'||!S.faceMesh)return;
+    S.mpCamera=new Camera(vid,{
+        onFrame:async()=>{
+            if(S.active&&S.faceMesh){
+                try{await S.faceMesh.send({image:vid});}catch(e){}
+            }
+        },
+        width:640,height:480
+    });
+    S.mpCamera.start();
+}
+
+/* ══════════════════════════════════════
+   FACE RESULTS — ENGAGEMENT ANALYSIS
+══════════════════════════════════════ */
+function onFaceResults(results){
+    const cnv=document.getElementById('faceCanvas');
+    const vid=document.getElementById('video');
+    cnv.width=vid.videoWidth||640;
+    cnv.height=vid.videoHeight||480;
+    const ctx=cnv.getContext('2d');
+    ctx.clearRect(0,0,cnv.width,cnv.height);
+
+    if(!results.multiFaceLandmarks||!results.multiFaceLandmarks.length){
+        // No face detected
+        S.focusScore=Math.max(0,S.focusScore-4);
+        S.signals={head:0,eyes:0,gaze:0};
+        document.getElementById('camStatus').textContent='⚠️ No face detected!';
+        botSay('distracted');
+        updateFocusUI();
+        return;
+    }
+
+    const lm=results.multiFaceLandmarks[0];
+    const W=cnv.width,H=cnv.height;
+
+    // ── 1. HEAD YAW (is child facing screen?) ──
+    const nose  =lm[1];
+    const lCheek=lm[234];
+    const rCheek=lm[454];
+    const faceW =Math.abs(rCheek.x-lCheek.x);
+    const midX  =(lCheek.x+rCheek.x)/2;
+    const yaw   =faceW>0?Math.abs(nose.x-midX)/faceW:0;
+    const headScore=clamp(1-yaw*3.5,0,1);
+
+    // ── 2. EYE OPENNESS (EAR) ──
+    const lEAR=calcEAR(lm,[33,160,158,133,153,144]);
+    const rEAR=calcEAR(lm,[362,385,387,263,373,380]);
+    const avgEAR=(lEAR+rEAR)/2;
+    const eyeScore=clamp((avgEAR-0.12)/0.18,0,1);
+
+    // ── 3. IRIS GAZE (refineLandmarks gives pts 468-477) ──
+    let gazeScore=0.65;
+    if(lm.length>468&&lm[468]){
+        const lIris=lm[468];
+        const lEL=lm[33],lER=lm[133];
+        const eyeW=Math.abs(lER.x-lEL.x);
+        const eyeCX=(lEL.x+lER.x)/2;
+        const off=eyeW>0?Math.abs(lIris.x-eyeCX)/(eyeW*0.5):0;
+        gazeScore=clamp(1-off*1.8,0,1);
+    }
+
+    // ── WEIGHTED ENGAGEMENT SCORE ──
+    const raw=(headScore*0.4)+(eyeScore*0.35)+(gazeScore*0.25);
+    const target=raw*100;
+    S.focusScore=S.focusScore*0.75+target*0.25; // smooth
+    S.signals={head:Math.round(headScore*100),eyes:Math.round(eyeScore*100),gaze:Math.round(gazeScore*100)};
+    S.focusSum+=S.focusScore;S.focusSamples++;
+    updateFocusUI();
+    document.getElementById('camStatus').textContent='📷 Tracking…';
+
+    // ── DRAW FACE MESH ──
+    const col=S.focusScore>65?'#00FF88':S.focusScore>40?'#FFB800':'#FF4444';
+    drawMesh(ctx,lm,W,H,col,avgEAR,gazeScore);
+
+    if(S.focusScore>70)botSay('focused');
+    else if(S.focusScore<40)botSay('distracted');
+}
+
+function calcEAR(lm,[p1,p2,p3,p4,p5,p6]){
+    const v1=d2(lm[p2],lm[p6]);
+    const v2=d2(lm[p3],lm[p5]);
+    const h =d2(lm[p1],lm[p4]);
+    return h<1e-4?0:(v1+v2)/(2*h);
+}
+function d2(a,b){return Math.sqrt((a.x-b.x)**2+(a.y-b.y)**2);}
+function clamp(v,mn,mx){return Math.min(mx,Math.max(mn,v));}
+
+function drawMesh(ctx,lm,W,H,col,ear,gaze){
+    // Convert normalised coords to pixels (note: video is mirrored via CSS)
+    const px=(l,i)=>({x:lm[i].x*W,y:lm[i].y*H});
+
+    // Draw eyes outline
+    const drawEyePoly=(indices)=>{
+        ctx.beginPath();
+        indices.forEach((idx,i)=>{
+            const p={x:lm[idx].x*W,y:lm[idx].y*H};
+            i===0?ctx.moveTo(p.x,p.y):ctx.lineTo(p.x,p.y);
+        });
+        ctx.closePath();
+        ctx.strokeStyle=ear>0.2?col:'#FF4444';
+        ctx.lineWidth=1.5;
+        ctx.stroke();
+    };
+    drawEyePoly([33,160,158,133,153,144]);
+    drawEyePoly([362,385,387,263,373,380]);
+
+    // Iris dots
+    if(lm.length>473){
+        [[468,'#FFD700'],[473,'#FFD700']].forEach(([idx,c])=>{
+            ctx.beginPath();
+            ctx.arc(lm[idx].x*W,lm[idx].y*H,4,0,Math.PI*2);
+            ctx.fillStyle=c;ctx.fill();
+        });
+    }
+
+    // Nose bridge
+    [[168,1],[1,2]].forEach(([a,b])=>{
+        ctx.beginPath();
+        ctx.moveTo(lm[a].x*W,lm[a].y*H);
+        ctx.lineTo(lm[b].x*W,lm[b].y*H);
+        ctx.strokeStyle=col;ctx.lineWidth=1.5;ctx.stroke();
     });
 
+    // Face oval (key points)
+    const ovalPts=[10,338,297,332,284,251,389,356,454,323,361,288,397,365,379,378,400,377,152,148,176,149,150,136,172,58,132,93,234,127,162,21,54,103,67,109];
+    ctx.beginPath();
+    ovalPts.forEach((idx,i)=>{
+        const p={x:lm[idx].x*W,y:lm[idx].y*H};
+        i===0?ctx.moveTo(p.x,p.y):ctx.lineTo(p.x,p.y);
+    });
+    ctx.closePath();
+    ctx.strokeStyle=col+'44';ctx.lineWidth=1;ctx.stroke();
+
+    // Focus score overlay
+    const sc=Math.round(S.focusScore);
+    ctx.fillStyle=col;ctx.font='bold 13px sans-serif';
+    ctx.fillText(`Focus: ${sc}%`,8,18);
+}
+
+function updateFocusUI(){
+    const sc=Math.round(S.focusScore);
+    const pct=sc+'%';
+    const col=sc>=70?'#00FF88':sc>=42?'#FFB800':'#FF4444';
+    document.getElementById('focusFillHud').style.cssText=`width:${sc}%;background:${col};box-shadow:0 0 8px ${col}44`;
+    document.getElementById('focusPct').textContent=sc;
+    document.getElementById('focusPct').style.color=col;
+
+    // Signals
+    const sig=S.signals;
+    const setBar=(id,vid,c)=>{
+        document.getElementById('sig-'+id).style.cssText=`width:${vid}%;background:${c};box-shadow:0 0 6px ${c}44`;
+        document.getElementById('sval-'+id).textContent=vid;
+        document.getElementById('sval-'+id).style.color=c;
+    };
+    const bc=v=>v>=70?'#00FF88':v>=40?'#FFB800':'#FF4444';
+    setBar('head',sig.head,bc(sig.head));
+    setBar('eyes',sig.eyes,bc(sig.eyes));
+    setBar('gaze',sig.gaze,bc(sig.gaze));
+
+    // Bot face
+    const eyeCol=sc>=70?'#00FF88':sc>=42?'#FFB800':'#FF4444';
+    document.getElementById('bEyeL').style.background=eyeCol;
+    document.getElementById('bEyeR').style.background=eyeCol;
+    document.getElementById('bMouth').style.cssText=sc>=70?'background:#00FF88;border-radius:0 0 8px 8px;height:3px;width:20px':sc>=42?'background:#FFB800;height:2px;width:16px':'background:#FF4444;transform:scaleY(-1);height:2px;width:14px';
+}
+
+/* ══════════════════════════════════════
+   SESSION
+══════════════════════════════════════ */
+function beginSession(){
+    Object.assign(S,{sessionSecs:0,earnedSecs:0,focusScore:50,focusSum:0,focusSamples:0,wordIdx:0,wordsRead:0,lastSpeech:0,lastBot:0,lastBotKind:'',lastMilestone:0,active:true});
     // Update streak
-    updateStreak();
+    const st=gs();
+    const td=today();
+    if(st.lastDate!==td){
+        const yest=new Date();yest.setDate(yest.getDate()-1);
+        st.streak=(st.lastDate===yest.toISOString().split('T')[0])?st.streak+1:1;
+        st.lastDate=td;st.todayMins=0;st.todayDate=td;ss(st);
+    }
     loadPassage();
     show('sessionScreen');
-
-    if (S.recognition) { try { S.recognition.start(); } catch(e){} }
-
-    S.faceTimer = S.cameraOk
-        ? setInterval(detectFace, 450)
-        : setInterval(() => {
-            const speaking = Date.now() - S.lastSpeechTime < 6000;
-            S.focusScore = speaking ? Math.min(100, S.focusScore + 1) : Math.max(20, S.focusScore - 1);
-            S.focusSum += S.focusScore; S.focusSamples++;
+    if(S.recognition){try{S.recognition.start();}catch(e){}}
+    if(!S.cameraOk||!S.faceMesh){
+        S.faceTimer=setInterval(()=>{
+            const sp=Date.now()-S.lastSpeech<6000;
+            S.focusScore=sp?Math.min(100,S.focusScore+1):Math.max(20,S.focusScore-1);
+            S.signals={head:S.focusScore,eyes:S.focusScore,gaze:S.focusScore};
+            S.focusSum+=S.focusScore;S.focusSamples++;
             updateFocusUI();
-        }, 500);
-
-    S.mainTimer = setInterval(tick, 1000);
-}
-
-function loadPassage() {
-    let pool, passage;
-    if (S.module === 'quran') {
-        pool    = LIBRARY.quran;
-        passage = pool[Math.floor(Math.random() * pool.length)];
-        document.getElementById('bookIcon').textContent   = '🕌';
-        document.getElementById('moduleBadge').textContent = 'Quran';
-    } else if (S.module === 'hadith') {
-        pool    = LIBRARY.hadith;
-        passage = pool[Math.floor(Math.random() * pool.length)];
-        document.getElementById('bookIcon').textContent   = '⭐';
-        document.getElementById('moduleBadge').textContent = '+' + passage.bonus + ' bonus mins!';
-    } else {
-        pool    = LIBRARY.reading[S.age];
-        passage = pool[Math.floor(Math.random() * pool.length)];
-        document.getElementById('bookIcon').textContent   = '📖';
-        document.getElementById('moduleBadge').textContent = 'Reading';
+        },500);
     }
-
-    S.passage = passage;
-    S.words   = passage.text.split(/\s+/);
-    S.wordIdx = 0;
-    document.getElementById('bookTitle').textContent = passage.title;
-    document.getElementById('readingText').innerHTML = S.words
-        .map((w,i) => `<span class="word${i===0?' current':''}" id="w${i}">${w}</span>`)
-        .join(' ');
-    updateProgress();
+    S.mainTimer=setInterval(tick,1000);
 }
 
-function loadNextPassage() {
-    S.wordIdx = 0; S.wordsRead = 0;
-    loadPassage();
+function loadPassage(){
+    let p;
+    if(S.module==='quran'){p=LIBRARY.quran[Math.floor(Math.random()*LIBRARY.quran.length)];document.getElementById('bkIcon').textContent='🕌';document.getElementById('bkTag').textContent='Quran';}
+    else if(S.module==='hadith'){p=LIBRARY.hadith[Math.floor(Math.random()*LIBRARY.hadith.length)];document.getElementById('bkIcon').textContent='⭐';document.getElementById('bkTag').textContent='+'+p.bonus+' bonus mins!';}
+    else{const pool=LIBRARY.reading[S.age];p=pool[Math.floor(Math.random()*pool.length)];document.getElementById('bkIcon').textContent='📖';document.getElementById('bkTag').textContent='Reading';}
+    S.passage=p;S.words=p.text.split(/\s+/);S.wordIdx=0;
+    document.getElementById('bkTitle').textContent=p.title;
+    document.getElementById('readingText').innerHTML=S.words.map((w,i)=>`<span class="word${i===0?' current':''}" id="w${i}">${w}</span>`).join(' ');
+    updateProg();
 }
 
-/* ══════════════════════════════════════════════
-   FACE DETECTION
-══════════════════════════════════════════════ */
-async function detectFace() {
-    const vid = document.getElementById('video');
-    const cnv = document.getElementById('faceCanvas');
-    if (!vid || vid.readyState < 2) return;
-    cnv.width = vid.videoWidth || 640;
-    cnv.height = vid.videoHeight || 480;
-    try {
-        const dets = await faceapi
-            .detectAllFaces(vid, new faceapi.TinyFaceDetectorOptions({ inputSize:224 }))
-            .withFaceExpressions();
-        const ctx = cnv.getContext('2d');
-        ctx.clearRect(0, 0, cnv.width, cnv.height);
-
-        if (!dets.length) {
-            S.focusScore = Math.max(0, S.focusScore - 5);
-            document.getElementById('camLabel').textContent = '⚠️ Can\'t see you!';
-            botSay('distracted');
-        } else {
-            const det  = dets[0];
-            const expr = det.expressions;
-            const box  = det.detection.box;
-            const col  = S.focusScore > 65 ? '#10B981' : S.focusScore > 42 ? '#F59E0B' : '#EF4444';
-            ctx.strokeStyle = col; ctx.lineWidth = 3;
-            ctx.strokeRect(cnv.width - box.x - box.width, box.y, box.width, box.height);
-            const attentive = (expr.neutral||0) + (expr.happy||0) + (expr.surprised||0)*.5;
-            S.focusScore = attentive > 0.5
-                ? Math.min(100, S.focusScore + 2.5)
-                : Math.max(0, S.focusScore - 1.5);
-            document.getElementById('camLabel').textContent = '📷 Watching…';
-        }
-        S.focusSum += S.focusScore; S.focusSamples++;
-        updateFocusUI();
-    } catch(e) {}
+/* ══════════════════════════════════════
+   SPEECH
+══════════════════════════════════════ */
+function onSpeech(e){
+    const r=e.results[e.results.length-1];
+    const t=r[0].transcript.toLowerCase().trim();
+    document.getElementById('voiceTxt').textContent='🎙 "'+t+'"';
+    document.getElementById('micEl').classList.add('on');
+    S.lastSpeech=Date.now();
+    if(r.isFinal)matchReading(t);
 }
 
-function updateFocusUI() {
-    const sc = Math.round(S.focusScore);
-    document.getElementById('focusFill').style.width = sc + '%';
-    document.getElementById('focusNum').textContent = sc + '/100';
-    const fill = document.getElementById('focusFill');
-    const state = document.getElementById('focusState');
-    if (sc >= 70) { fill.style.background='#10B981'; state.textContent='✅ Focused'; state.style.color='#10B981'; }
-    else if (sc >= 42) { fill.style.background='#F59E0B'; state.textContent='⚠️ Distracted'; state.style.color='#F59E0B'; }
-    else { fill.style.background='#EF4444'; state.textContent='❌ Not Focused'; state.style.color='#EF4444'; }
-}
-
-/* ══════════════════════════════════════════════
-   SPEECH RECOGNITION
-══════════════════════════════════════════════ */
-function onSpeechResult(event) {
-    const result = event.results[event.results.length - 1];
-    const transcript = result[0].transcript.toLowerCase().trim();
-    document.getElementById('voiceText').textContent = '🎙 "' + transcript + '"';
-    document.getElementById('micIcon').classList.add('on');
-    S.lastSpeechTime = Date.now();
-    if (result.isFinal) matchReading(transcript);
-}
-
-function matchReading(spoken) {
-    if (S.wordIdx >= S.words.length) return;
-    const spokenWords = spoken.split(/\s+/).map(w => clean(w)).filter(w => w.length > 0);
-    let sIdx = 0, tIdx = S.wordIdx, anyMatched = false;
-
-    while (sIdx < spokenWords.length && tIdx < S.words.length) {
-        const sw = spokenWords[sIdx];
-        const expected = clean(S.words[tIdx]);
-        if (expected.length < 2) { markRead(tIdx); tIdx++; continue; }
-
-        if (isMatch(sw, expected)) {
-            markRead(tIdx); tIdx++; sIdx++; S.wordsRead++; anyMatched = true;
-        } else {
-            const nextExp = tIdx+1 < S.words.length ? clean(S.words[tIdx+1]) : '';
-            if (nextExp.length >= 2 && isMatch(sw, nextExp)) {
-                markRead(tIdx); markRead(tIdx+1); tIdx+=2; sIdx++; S.wordsRead++; anyMatched = true;
-            } else { sIdx++; }
+function matchReading(spoken){
+    if(S.wordIdx>=S.words.length)return;
+    const sw=spoken.split(/\s+/).map(w=>cl(w)).filter(w=>w.length>0);
+    let si=0,ti=S.wordIdx,matched=false;
+    while(si<sw.length&&ti<S.words.length){
+        const exp=cl(S.words[ti]);
+        if(exp.length<2){markRead(ti);ti++;continue;}
+        if(isMatch(sw[si],exp)){markRead(ti);ti++;si++;S.wordsRead++;matched=true;}
+        else{
+            const ne=ti+1<S.words.length?cl(S.words[ti+1]):'';
+            if(ne.length>=2&&isMatch(sw[si],ne)){markRead(ti);markRead(ti+1);ti+=2;si++;S.wordsRead++;matched=true;}
+            else si++;
         }
     }
-
-    if (anyMatched) {
-        S.wordIdx = tIdx;
-        highlightCurrent();
-        updateProgress();
-        botSay('reading');
-    } else { botSay('silent'); }
-
-    if (S.wordIdx >= Math.floor(S.words.length * 0.9)) {
-        for (let i = S.wordIdx; i < S.words.length; i++) markRead(i);
-        S.wordIdx = S.words.length;
-        updateProgress();
-
-        // Hadith bonus
-        const bonusMins = (S.module === 'hadith' && S.passage.bonus) ? S.passage.bonus : 0;
-        if (bonusMins > 0) {
-            S.earnedSecs += bonusMins * 60;
-            speak(`Congratulations! You earned ${bonusMins} bonus minutes!`);
-            toast('🌟 Bonus Earned!', `+${bonusMins} minutes added to your bank!`, '#F59E0B');
-        } else {
-            toast('📖 Passage Complete!', 'Amazing reading! Loading the next one…', '#10B981');
-        }
-        setTimeout(loadNextPassage, 2500);
+    if(matched){S.wordIdx=ti;hlCurrent();updateProg();botSay('reading');}
+    else botSay('silent');
+    if(S.wordIdx>=Math.floor(S.words.length*0.9)){
+        for(let i=S.wordIdx;i<S.words.length;i++)markRead(i);
+        S.wordIdx=S.words.length;updateProg();
+        const bon=(S.module==='hadith'&&S.passage.bonus)?S.passage.bonus:0;
+        if(bon>0){S.earnedSecs+=bon*60;speak(`Congratulations! You earned ${bon} bonus minutes!`);toast('🌟 Bonus!',`+${bon} minutes added!`,'#FFD700');}
+        else toast('📖 Passage Complete!','Loading next passage…','#00FF88');
+        setTimeout(loadPassage,2200);
     }
 }
-
-function clean(w) { return w.replace(/[^a-zA-Z]/g,'').toLowerCase(); }
-function isMatch(spoken, expected) {
-    if (!spoken || !expected) return false;
-    if (spoken === expected) return true;
-    if (spoken.length <= 3 || expected.length <= 3) return spoken === expected;
-    const minLen = Math.min(4, spoken.length, expected.length);
-    if (spoken.slice(0,minLen) === expected.slice(0,minLen)) return true;
-    if (Math.abs(spoken.length - expected.length) <= 1) {
-        let diff = 0;
-        for (let i = 0; i < Math.min(spoken.length,expected.length); i++) if (spoken[i] !== expected[i]) diff++;
-        if (diff <= 1) return true;
-    }
+function cl(w){return w.replace(/[^a-zA-Z]/g,'').toLowerCase();}
+function isMatch(a,b){
+    if(!a||!b)return false;
+    if(a===b)return true;
+    if(a.length<=3||b.length<=3)return a===b;
+    const n=Math.min(4,a.length,b.length);
+    if(a.slice(0,n)===b.slice(0,n))return true;
+    if(Math.abs(a.length-b.length)<=1){let d=0;for(let i=0;i<Math.min(a.length,b.length);i++)if(a[i]!==b[i])d++;if(d<=1)return true;}
     return false;
 }
-function markRead(i) { const el = document.getElementById('w'+i); if(el){ el.classList.remove('current'); el.classList.add('read'); } }
-function highlightCurrent() { const el = document.getElementById('w'+S.wordIdx); if(el){ el.classList.add('current'); el.scrollIntoView({behavior:'smooth',block:'nearest'}); } }
-function updateProgress() {
-    const pct = S.words.length ? Math.round((S.wordIdx/S.words.length)*100) : 0;
-    document.getElementById('progFill').style.width = pct + '%';
-    document.getElementById('progPct').textContent = pct + '%';
-}
+function markRead(i){const e=document.getElementById('w'+i);if(e){e.classList.remove('current');e.classList.add('read');}}
+function hlCurrent(){const e=document.getElementById('w'+S.wordIdx);if(e){e.classList.add('current');e.scrollIntoView({behavior:'smooth',block:'nearest'});}}
+function updateProg(){const p=S.words.length?Math.round((S.wordIdx/S.words.length)*100):0;document.getElementById('progFill').style.width=p+'%';document.getElementById('progPct').textContent=p+'%';}
 
-/* ══════════════════════════════════════════════
+/* ══════════════════════════════════════
    TICK
-══════════════════════════════════════════════ */
-function tick() {
+══════════════════════════════════════ */
+function tick(){
     S.sessionSecs++;
-    const m = Math.floor(S.sessionSecs/60).toString().padStart(2,'0');
-    const s = (S.sessionSecs%60).toString().padStart(2,'0');
-    document.getElementById('sessTimer').textContent = m + ':' + s;
+    const m=Math.floor(S.sessionSecs/60).toString().padStart(2,'0');
+    const s=(S.sessionSecs%60).toString().padStart(2,'0');
+    document.getElementById('sessTimer').textContent=m+':'+s;
 
-    const speaking = (Date.now() - S.lastSpeechTime) < 8000 && S.lastSpeechTime > 0;
-    const focused  = S.cameraOk ? S.focusScore >= 42 : true;
-    const earning  = speaking && focused;
+    const speaking=(Date.now()-S.lastSpeech)<8000&&S.lastSpeech>0;
+    const focused=S.cameraOk?S.focusScore>=42:true;
+    const earning=speaking&&focused;
 
-    if (earning) S.earnedSecs++;
-
-    const badge = document.getElementById('earnBadge');
-    if (earning) {
-        badge.className = 'earn-badge on'; badge.textContent = '✅ Earning';
-        if (S.focusScore > 70) botSay('focused');
-    } else {
-        badge.className = 'earn-badge off'; badge.textContent = '⏸ Paused';
-        if (S.cameraOk && !focused) botSay('distracted');
-        else if (!speaking) botSay('silent');
+    if(earning){
+        S.earnedSecs++;
+        // Spawn coin every 10 seconds
+        if(S.earnedSecs%10===0)spawnCoin();
     }
 
-    if (!speaking) {
-        document.getElementById('micIcon').classList.remove('on');
-        if (Date.now() - S.lastSpeechTime > 10000)
-            document.getElementById('voiceText').textContent = 'Listening… read the text aloud!';
+    const chip=document.getElementById('earnChip');
+    if(earning){chip.className='earn-chip on';chip.textContent='✅ Earning';}
+    else{
+        chip.className='earn-chip off';chip.textContent='⏸ Paused';
+        if(!speaking)botSay('silent');
     }
 
-    const mins = S.earnedSecs / 60;
-    document.getElementById('earnedDisplay').textContent = mins.toFixed(1);
-    document.getElementById('bankValue').textContent = mins.toFixed(1);
+    if(!speaking){
+        document.getElementById('micEl').classList.remove('on');
+        if(Date.now()-S.lastSpeech>10000)document.getElementById('voiceTxt').textContent='Listening… read the text aloud!';
+    }
 
-    const earnedMins = Math.floor(mins);
-    if (earnedMins > S.lastMilestone && earnedMins > 0) {
-        S.lastMilestone = earnedMins;
-        const msg = BOT_MSG.milestone[Math.min(earnedMins-1, BOT_MSG.milestone.length-1)];
-        setBotText(msg);
-        speak('Great job! You just earned ' + earnedMins + ' minute' + (earnedMins>1?'s':'') + '!');
-        toast('🎉 ' + earnedMins + ' Minute' + (earnedMins>1?'s':'')+' Earned!', 'Keep reading!', '#5B4FE8');
+    const mins=S.earnedSecs/60;
+    document.getElementById('earnedDisp').textContent=mins.toFixed(1);
+    document.getElementById('bankVal').textContent=mins.toFixed(1);
+
+    const em=Math.floor(mins);
+    if(em>S.lastMilestone&&em>0){
+        S.lastMilestone=em;
+        setBotTxt(BOT.milestone[Math.min(em-1,BOT.milestone.length-1)]);
+        speak(`Great job! You just earned ${em} minute${em>1?'s':''}!`);
+        toast(`🎉 ${em} Minute${em>1?'s':''} Earned!`,'Keep reading!','#6C63FF');
     }
 }
 
-/* ══════════════════════════════════════════════
+/* ══════════════════════════════════════
    BOT
-══════════════════════════════════════════════ */
-function botSay(kind) {
-    const now = Date.now();
-    if (now - S.lastBotTime < 4000) return;
-    if (kind === S.lastBotKind && now - S.lastBotTime < 9000) return;
-    const pool = BOT_MSG[kind] || BOT_MSG.focused;
-    const msg  = pool[Math.floor(Math.random() * pool.length)];
-    setBotText(msg);
-    if (kind === 'distracted') speak("Hey! Come back and look at the screen!");
-    S.lastBotTime = now; S.lastBotKind = kind;
+══════════════════════════════════════ */
+function botSay(k){
+    const now=Date.now();
+    if(now-S.lastBot<4000)return;
+    if(k===S.lastBotKind&&now-S.lastBot<9000)return;
+    const pool=BOT[k]||BOT.focused;
+    setBotTxt(pool[Math.floor(Math.random()*pool.length)]);
+    if(k==='distracted')speak("Hey! Look at the screen and keep reading!");
+    S.lastBot=now;S.lastBotKind=k;
 }
-function setBotText(msg) { document.getElementById('botText').textContent = msg; }
-
-/* Bot speaks using SpeechSynthesis */
-function speak(text) {
-    if (!window.speechSynthesis) return;
+function setBotTxt(t){document.getElementById('botTxt').textContent=t;}
+function speak(text){
+    if(!window.speechSynthesis)return;
     window.speechSynthesis.cancel();
-    const u = new SpeechSynthesisUtterance(text);
-    u.rate = 0.95; u.pitch = 1.1; u.volume = 0.85;
-    // Pick a friendly voice if available
-    const voices = speechSynthesis.getVoices();
-    const friendly = voices.find(v => v.name.includes('Karen') || v.name.includes('Samantha') || v.name.includes('Google UK') || v.lang === 'en-GB');
-    if (friendly) u.voice = friendly;
-    window.speechSynthesis.speak(u);
+    const u=new SpeechSynthesisUtterance(text);
+    u.rate=0.95;u.pitch=1.1;u.volume=0.8;
+    const voices=speechSynthesis.getVoices();
+    const v=voices.find(v=>v.name.includes('Samantha')||v.name.includes('Karen')||v.lang==='en-GB');
+    if(v)u.voice=v;
+    speechSynthesis.speak(u);
 }
 
-/* ══════════════════════════════════════════════
+/* ══════════════════════════════════════
+   COIN ANIMATION
+══════════════════════════════════════ */
+function spawnCoin(){
+    const area=document.getElementById('bankArea');
+    const coin=document.createElement('div');
+    coin.className='coin';
+    coin.textContent='+1s';
+    coin.style.left=Math.random()*80+'%';
+    coin.style.bottom='10px';
+    area.style.position='relative';
+    area.appendChild(coin);
+    setTimeout(()=>coin.remove(),1400);
+}
+
+/* ══════════════════════════════════════
    END SESSION
-══════════════════════════════════════════════ */
-function confirmEnd() { if (confirm('End the reading session now?')) endSession(); }
+══════════════════════════════════════ */
+function confirmEnd(){if(confirm('End the session now?'))endSession();}
+function endSession(){
+    S.active=false;
+    clearInterval(S.faceTimer);clearInterval(S.mainTimer);
+    if(S.mpCamera)try{S.mpCamera.stop();}catch(e){}
+    if(S.recognition)try{S.recognition.stop();}catch(e){}
+    window.speechSynthesis&&window.speechSynthesis.cancel();
 
-function endSession() {
-    S.sessionActive = false;
-    clearInterval(S.faceTimer); clearInterval(S.mainTimer);
-    if (S.recognition) { try { S.recognition.stop(); } catch(e){} }
-    window.speechSynthesis && window.speechSynthesis.cancel();
+    const em=Math.round(S.earnedSecs/60);
+    const avgF=S.focusSamples>0?Math.round(S.focusSum/S.focusSamples):(em>0?75:0);
+    const bonus=avgF>=75;
+    const total=em+(bonus?5:0);
+    const readPct=S.words.length?Math.round((S.wordIdx/S.words.length)*100):0;
 
-    const earnedMins = Math.round(S.earnedSecs / 60);
-    const avgFocus   = S.focusSamples > 0 ? Math.round(S.focusSum/S.focusSamples) : (earnedMins>0?75:0);
-    const bonus      = avgFocus >= 75;
-    const total      = earnedMins + (bonus ? 5 : 0);
-    const readPct    = S.words.length ? Math.round((S.wordIdx/S.words.length)*100) : 0;
+    const prevB=(gs().badges||[]).slice();
+    const st=gs();
+    st.totalMins=(st.totalMins||0)+total;
+    st.todayMins=(st.todayDate===today()?(st.todayMins||0):0)+total;
+    st.todayDate=today();
+    st.sessions=[{date:today(),mins:total,focus:avgF,words:S.wordsRead,module:S.module},...(st.sessions||[])].slice(0,20);
+    awardBadges(st,total,avgF,S.wordsRead,S.module);
+    ss(st);
+    const newB=st.badges.filter(b=>!prevB.includes(b));
 
-    // Save to store + get badges
-    const prevBadges = (getStore().badges || []).slice();
-    const st = saveSession(total, avgFocus, S.wordsRead, S.module);
-    const newBadges = getNewBadges(prevBadges, st.badges);
+    document.getElementById('sumName').textContent='Well done, '+S.name+'!';
+    document.getElementById('sumEarned').textContent=total;
+    document.getElementById('sStat1').textContent=avgF+'%';
+    document.getElementById('sStat2').textContent=readPct+'%';
+    document.getElementById('sStat3').textContent=Math.ceil(S.earnedSecs/60)+'m';
+    document.getElementById('sStat4').textContent=S.wordsRead;
+    document.getElementById('bonusStrip').style.display=bonus?'block':'none';
+    document.getElementById('sumEmoji').textContent=total>=10?'🏆':total>=5?'🌟':total>=1?'🎉':'😊';
 
-    // Populate summary
-    document.getElementById('summaryName').textContent    = 'Well done, ' + S.name + '!';
-    document.getElementById('summaryEarned').textContent  = total;
-    document.getElementById('statFocus').textContent      = avgFocus + '%';
-    document.getElementById('statAcc').textContent        = readPct + '%';
-    document.getElementById('statSess').textContent       = Math.ceil(S.earnedSecs/60) + 'm';
-    document.getElementById('statWords').textContent      = S.wordsRead;
-    document.getElementById('bonusStrip').style.display   = bonus ? 'block' : 'none';
-    document.getElementById('summaryEmoji').textContent   = total>=10?'🏆':total>=5?'🌟':total>=1?'🎉':'😊';
-
-    // Show new badges
-    const badgesRow = document.getElementById('newBadgesRow');
-    badgesRow.innerHTML = '';
-    if (newBadges.length > 0) {
-        document.getElementById('badgesSection').style.display = 'block';
-        newBadges.forEach(bid => {
-            const b = ALL_BADGES.find(x=>x.id===bid);
-            if (b) {
-                const chip = document.createElement('div');
-                chip.className = 'badge-chip new';
-                chip.textContent = b.icon + ' ' + b.label;
-                badgesRow.appendChild(chip);
-            }
-        });
-    }
-    // Also show already-earned badges smaller
-    (st.badges||[]).filter(b=>!newBadges.includes(b)).forEach(bid => {
-        const b = ALL_BADGES.find(x=>x.id===bid);
-        if (b) {
-            const chip = document.createElement('div');
-            chip.className = 'badge-chip earned';
-            chip.textContent = b.icon + ' ' + b.label;
-            badgesRow.appendChild(chip);
-        }
-    });
-    if ((st.badges||[]).length > 0 && newBadges.length === 0) document.getElementById('badgesSection').style.display = 'block';
+    const bRow=document.getElementById('badgesRow');bRow.innerHTML='';
+    if(st.badges.length>0)document.getElementById('badgesSec').style.display='block';
+    newB.forEach(bid=>{const b=ALL_BADGES.find(x=>x.id===bid);if(b){const c=document.createElement('div');c.className='badge-chip new';c.textContent=b.icon+' '+b.label;bRow.appendChild(c);}});
+    st.badges.filter(b=>!newB.includes(b)).forEach(bid=>{const b=ALL_BADGES.find(x=>x.id===bid);if(b){const c=document.createElement('div');c.className='badge-chip earned';c.textContent=b.icon+' '+b.label;bRow.appendChild(c);}});
 
     show('summaryScreen');
-    if (total >= 5) { confetti(); speak('Amazing job ' + S.name + '! You earned ' + total + ' minutes of screen time!'); }
-    else speak('Good job ' + S.name + '! Keep reading to earn more screen time!');
+    if(total>=5){confetti();speak('Amazing job '+S.name+'! You earned '+total+' minutes of screen time!');}
+    else speak('Good job '+S.name+'! Keep reading to earn more!');
 }
 
-function readMore() { beginSession(); }
-function celebrate() {
-    const total = parseInt(document.getElementById('summaryEarned').textContent)||0;
-    alert('🎮 Great job, ' + S.name + '! You earned ' + total + ' minute'+(total!==1?'s':'') + ' of screen time. Go enjoy it!');
+function awardBadges(st,mins,focus,words,mod){
+    const prev=st.badges||[];
+    const add=id=>{if(!prev.includes(id))prev.push(id);};
+    add('first_read');
+    if(focus>=80)add('focus_star');
+    if((st.totalMins||0)>=30)add('earner');
+    if(mod==='quran')add('quran_star');
+    if(mod==='hadith')add('daily_bonus');
+    if((st.streak||0)>=3)add('streak3');
+    if(mins>=10)add('perfectday');
+    const tw=(st.sessions||[]).reduce((a,s)=>a+(s.words||0),0)+words;
+    if(tw>=100)add('bookworm');
+    st.badges=prev;
 }
 
-/* ══════════════════════════════════════════════
-   PARENT DASHBOARD
-══════════════════════════════════════════════ */
-function openParent() { show('parentScreen'); document.getElementById('pinScreen').style.display='flex'; document.getElementById('dashContent').style.display='none'; }
-function checkPin() {
-    const entered = document.getElementById('pinInput').value;
-    const st = getStore();
-    if (entered === (st.pin||'0000')) {
-        document.getElementById('pinScreen').style.display='none';
-        document.getElementById('dashContent').style.display='flex';
-        loadDashboard();
-    } else {
-        document.getElementById('pinError').style.display='block';
-        document.getElementById('pinInput').value = '';
-    }
-}
-function lockParent() { document.getElementById('pinScreen').style.display='flex'; document.getElementById('dashContent').style.display='none'; document.getElementById('pinInput').value=''; }
-function changePin() {
-    const np = document.getElementById('newPinInput').value;
-    if (np.length === 4 && /^\d+$/.test(np)) {
-        const st = getStore(); st.pin = np; saveStore(st);
-        alert('PIN changed successfully!');
-        document.getElementById('newPinInput').value = '';
-    } else { alert('PIN must be exactly 4 digits.'); }
-}
-function loadDashboard() {
-    const st = getStore();
-    document.getElementById('pToday').textContent  = (st.todayDate===todayStr()?(st.todayMins||0):0) + 'm';
-    document.getElementById('pStreak').textContent = '🔥 ' + (st.streak||0);
-    document.getElementById('pTotal').textContent  = (st.totalMins||0) + 'm';
+function readMore(){beginSession();}
+function celebrate(){const t=parseInt(document.getElementById('sumEarned').textContent)||0;alert('🎮 Great job, '+S.name+'! You earned '+t+' minute'+(t!==1?'s':'')+' of screen time. Go enjoy it!');}
 
-    // All badges
-    const row = document.getElementById('allBadgesRow');
-    row.innerHTML = '';
-    ALL_BADGES.forEach(b => {
-        const unlocked = (st.badges||[]).includes(b.id);
-        const chip = document.createElement('div');
-        chip.className = 'p-badge ' + (unlocked?'unlocked':'locked');
-        chip.textContent = b.icon + ' ' + b.label;
-        chip.title = b.desc + (unlocked ? ' ✅' : ' 🔒');
-        row.appendChild(chip);
-    });
-
-    // Session history
-    const list = document.getElementById('sessionList');
-    list.innerHTML = '';
-    if (!st.sessions||!st.sessions.length) {
-        list.innerHTML = '<div style="color:#64748B;font-size:.9rem">No sessions yet.</div>';
-    } else {
-        st.sessions.slice(0,8).forEach(s => {
-            const row2 = document.createElement('div');
-            row2.className = 'sess-row';
-            const col = s.focus>=70?'#10B981':s.focus>=42?'#F59E0B':'#EF4444';
-            row2.innerHTML = `<span class="date">📅 ${s.date}</span><span style="color:#94A3B8">${s.module||'reading'}</span><span style="display:flex;align-items:center;gap:.5rem"><span class="focus-dot" style="background:${col}"></span>${s.focus||0}% focus</span><span class="mins">+${s.mins||0}m</span>`;
-            list.appendChild(row2);
-        });
-    }
+/* ══════════════════════════════════════
+   PARENT
+══════════════════════════════════════ */
+function openParent(){show('parentScreen');document.getElementById('pinScreen').style.display='flex';document.getElementById('dashContent').style.display='none';}
+function checkPin(){const p=document.getElementById('pinInput').value;const st=gs();if(p===(st.pin||'0000')){document.getElementById('pinScreen').style.display='none';document.getElementById('dashContent').style.display='flex';loadDash();}else{document.getElementById('pinErr').style.display='block';document.getElementById('pinInput').value='';}}
+function lockParent(){document.getElementById('pinScreen').style.display='flex';document.getElementById('dashContent').style.display='none';document.getElementById('pinInput').value='';}
+function changePin(){const np=document.getElementById('newPin').value;if(np.length===4&&/^\d+$/.test(np)){const st=gs();st.pin=np;ss(st);alert('PIN changed!');document.getElementById('newPin').value='';}else alert('PIN must be 4 digits.');}
+function loadDash(){
+    const st=gs();
+    document.getElementById('pToday').textContent=(st.todayDate===today()?(st.todayMins||0):0)+'m';
+    document.getElementById('pStreak').textContent='🔥'+(st.streak||0);
+    document.getElementById('pTotal').textContent=(st.totalMins||0)+'m';
+    const br=document.getElementById('allBdg');br.innerHTML='';
+    ALL_BADGES.forEach(b=>{const on=(st.badges||[]).includes(b.id);const c=document.createElement('div');c.className='p-badge '+(on?'on':'off');c.textContent=b.icon+' '+b.label;c.title=on?'Unlocked ✅':'Locked 🔒';br.appendChild(c);});
+    const sl=document.getElementById('sessList');sl.innerHTML='';
+    if(!st.sessions||!st.sessions.length){sl.innerHTML='<div style="color:var(--muted);font-size:.85rem">No sessions yet.</div>';return;}
+    st.sessions.slice(0,8).forEach(s=>{const r=document.createElement('div');r.className='sess-row';const fc=s.focus>=70?'#00FF88':s.focus>=42?'#FFB800':'#FF4444';r.innerHTML=`<span class="sess-date">📅 ${s.date}</span><span style="color:var(--muted)">${s.module||'reading'}</span><span style="color:${fc};font-weight:700">${s.focus||0}% focus</span><span class="sess-mins">+${s.mins||0}m</span>`;sl.appendChild(r);});
 }
 
-/* ══════════════════════════════════════════════
+/* ══════════════════════════════════════
    TOAST & CONFETTI
-══════════════════════════════════════════════ */
-function toast(title, body, colour='#10B981') {
-    const el = document.getElementById('toast');
-    el.style.borderLeftColor = colour;
-    document.getElementById('toastTitle').textContent = title;
-    document.getElementById('toastBody').textContent  = body;
-    el.classList.add('show');
-    setTimeout(() => el.classList.remove('show'), 4500);
-}
+══════════════════════════════════════ */
+function toast(t,b,c='#00FF88'){const el=document.getElementById('toast');el.style.borderLeftColor=c;document.getElementById('toastT').textContent=t;document.getElementById('toastB').textContent=b;el.classList.add('show');setTimeout(()=>el.classList.remove('show'),4500);}
+function confetti(){const cols=['#6C63FF','#00FF88','#FFD700','#FF4444','#FFB800','#A78BFA'];for(let i=0;i<90;i++){const p=document.createElement('div');p.className='confetti-p';p.style.left=Math.random()*100+'vw';p.style.background=cols[Math.floor(Math.random()*cols.length)];p.style.width=(6+Math.random()*8)+'px';p.style.height=(6+Math.random()*8)+'px';p.style.animationDuration=(1.5+Math.random()*2.5)+'s';p.style.animationDelay=Math.random()*.8+'s';document.body.appendChild(p);setTimeout(()=>p.remove(),4000);}}
+function sleep(ms){return new Promise(r=>setTimeout(r,ms));}
 
-function confetti() {
-    const colours = ['#5B4FE8','#A78BFA','#10B981','#F59E0B','#EF4444','#FCD34D'];
-    for (let i = 0; i < 80; i++) {
-        const p = document.createElement('div');
-        p.className = 'confetti-piece';
-        p.style.left   = Math.random() * 100 + 'vw';
-        p.style.background = colours[Math.floor(Math.random()*colours.length)];
-        p.style.width  = (6+Math.random()*8) + 'px';
-        p.style.height = (6+Math.random()*8) + 'px';
-        p.style.animationDuration = (1.5+Math.random()*2.5) + 's';
-        p.style.animationDelay    = Math.random() * 0.8 + 's';
-        document.body.appendChild(p);
-        setTimeout(() => p.remove(), 4000);
-    }
-}
-
-/* ══════════════════════════════════════════════
-   UTILS
-══════════════════════════════════════════════ */
-function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
-
-/* ══════════════════════════════════════════════
-   LIVE RELOAD (auto-refreshes when file changes)
-══════════════════════════════════════════════ */
-(function() {
-    let lastMtime = null;
-    setInterval(async () => {
-        try {
-            const res = await fetch('/reload-check', { cache:'no-store' });
-            const data = await res.json();
-            if (lastMtime === null) { lastMtime = data.mtime; return; }
-            if (data.mtime !== lastMtime) location.reload();
-        } catch(e) {}
-    }, 2000);
-})();
+/* ══════════════════════════════════════
+   LIVE RELOAD
+══════════════════════════════════════ */
+(function(){let t=null;setInterval(async()=>{try{const r=await fetch('/reload-check',{cache:'no-store'});const d=await r.json();if(t===null){t=d.mtime;return;}if(d.mtime!==t)location.reload();}catch(e){}},2000);})();
 </script>
 </body>
 </html>
