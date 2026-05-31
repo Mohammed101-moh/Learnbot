@@ -1500,7 +1500,103 @@ function awardBadges(st,mins,focus,words,mod){
     st.badges=prev;
 }
 
-function readMore(){beginSession();}
+function readMore(){refreshHomeStats();show('welcomeScreen');}
+
+/* ══════════════════════════════════════
+   FLAG GAME
+══════════════════════════════════════ */
+const FLAGS=[
+    {flag:'🇬🇧',name:'United Kingdom',opts:['United Kingdom','Ireland','Australia','New Zealand']},
+    {flag:'🇺🇸',name:'United States',opts:['United States','Canada','Australia','Mexico']},
+    {flag:'🇫🇷',name:'France',opts:['France','Belgium','Italy','Spain']},
+    {flag:'🇩🇪',name:'Germany',opts:['Germany','Austria','Switzerland','Netherlands']},
+    {flag:'🇯🇵',name:'Japan',opts:['Japan','China','South Korea','Taiwan']},
+    {flag:'🇧🇷',name:'Brazil',opts:['Brazil','Argentina','Colombia','Chile']},
+    {flag:'🇸🇦',name:'Saudi Arabia',opts:['Saudi Arabia','UAE','Kuwait','Oman']},
+    {flag:'🇿🇦',name:'South Africa',opts:['South Africa','Nigeria','Kenya','Ghana']},
+    {flag:'🇮🇳',name:'India',opts:['India','Pakistan','Bangladesh','Sri Lanka']},
+    {flag:'🇷🇺',name:'Russia',opts:['Russia','Ukraine','Poland','Belarus']},
+    {flag:'🇨🇳',name:'China',opts:['China','Japan','Mongolia','Vietnam']},
+    {flag:'🇨🇦',name:'Canada',opts:['Canada','United States','Australia','UK']},
+    {flag:'🇦🇺',name:'Australia',opts:['Australia','New Zealand','UK','Canada']},
+    {flag:'🇮🇹',name:'Italy',opts:['Italy','France','Spain','Portugal']},
+    {flag:'🇪🇸',name:'Spain',opts:['Spain','Portugal','Italy','France']},
+    {flag:'🇹🇷',name:'Turkey',opts:['Turkey','Pakistan','Morocco','Tunisia']},
+    {flag:'🇰🇷',name:'South Korea',opts:['South Korea','Japan','China','Vietnam']},
+    {flag:'🇲🇾',name:'Malaysia',opts:['Malaysia','Indonesia','Brunei','Singapore']},
+    {flag:'🇦🇪',name:'UAE',opts:['UAE','Saudi Arabia','Kuwait','Qatar']},
+    {flag:'🇵🇰',name:'Pakistan',opts:['Pakistan','India','Bangladesh','Afghanistan']},
+];
+
+let flagState={q:0,score:0,earned:0,total:10};
+
+function startFlagGame(){
+    flagState={q:0,score:0,earned:0,total:10};
+    const shuffled=[...FLAGS].sort(()=>Math.random()-.5).slice(0,10);
+    flagState.questions=shuffled;
+    showFlagQuestion();
+    show('flagScreen');
+}
+
+function showFlagQuestion(){
+    const q=flagState.questions[flagState.q];
+    document.getElementById('flagEmoji').textContent=q.flag;
+    document.getElementById('flagQ').textContent=`Question ${flagState.q+1} of ${flagState.total}`;
+    document.getElementById('flagScore').textContent=`⭐ ${flagState.score} correct`;
+    document.getElementById('flagEarned').textContent=`🎮 +${flagState.earned} min`;
+    document.getElementById('flagProgress').style.width=(((flagState.q)/flagState.total)*100)+'%';
+    const opts=[...q.opts].sort(()=>Math.random()-.5);
+    const btns=document.getElementById('flagOpts');
+    btns.innerHTML='';
+    opts.forEach(o=>{
+        const b=document.createElement('button');
+        b.className='flag-opt';
+        b.textContent=o;
+        b.onclick=()=>answerFlag(o,q.name,b);
+        btns.appendChild(b);
+    });
+    document.getElementById('flagNextBtn').style.display='none';
+    document.getElementById('flagFeedback').textContent='';
+}
+
+function answerFlag(chosen,correct,btn){
+    document.querySelectorAll('.flag-opt').forEach(b=>b.disabled=true);
+    if(chosen===correct){
+        btn.style.background='#10B981';btn.style.color='white';
+        flagState.score++;
+        if(flagState.score%5===0){flagState.earned+=2;}
+        document.getElementById('flagFeedback').textContent='✅ Correct! Well done!';
+        document.getElementById('flagFeedback').style.color='#10B981';
+    } else {
+        btn.style.background='#EF4444';btn.style.color='white';
+        document.querySelectorAll('.flag-opt').forEach(b=>{if(b.textContent===correct){b.style.background='#10B981';b.style.color='white';}});
+        document.getElementById('flagFeedback').textContent='❌ It was '+correct;
+        document.getElementById('flagFeedback').style.color='#EF4444';
+    }
+    document.getElementById('flagScore').textContent=`⭐ ${flagState.score} correct`;
+    document.getElementById('flagEarned').textContent=`🎮 +${flagState.earned} min`;
+    document.getElementById('flagNextBtn').style.display='block';
+}
+
+function nextFlag(){
+    flagState.q++;
+    if(flagState.q>=flagState.total){endFlagGame();return;}
+    showFlagQuestion();
+}
+
+function endFlagGame(){
+    const st=gs();
+    st.totalMins=(st.totalMins||0)+flagState.earned;
+    st.todayMins=(st.todayDate===todayStr()?(st.todayMins||0):0)+flagState.earned;
+    st.todayDate=todayStr();
+    ss(st);
+    document.getElementById('flagResult').style.display='block';
+    document.getElementById('flagResultScore').textContent=flagState.score+'/'+flagState.total;
+    document.getElementById('flagResultEarned').textContent='+'+flagState.earned;
+    document.getElementById('flagQuiz').style.display='none';
+    if(flagState.score>=8)confetti();
+    speak('Great job! You got '+flagState.score+' out of '+flagState.total+'!');
+}
 function celebrate(){const t=parseInt(document.getElementById('sumEarned').textContent)||0;alert('🎮 Great job, '+S.name+'! You earned '+t+' minute'+(t!==1?'s':'')+' of screen time. Go enjoy it!');}
 
 /* ══════════════════════════════════════
