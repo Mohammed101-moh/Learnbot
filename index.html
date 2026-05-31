@@ -438,50 +438,101 @@ select option{background:var(--card);}
 
 <!-- ══════ SIGN IN ══════ -->
 <div id="signInScreen" class="screen active">
-    <div class="mascot-wrap">
-        <div class="bot-antenna"></div>
-        <div class="bot-body">
-            <div class="bot-eyes"><div class="bot-eye"></div><div class="bot-eye"></div></div>
-            <div class="bot-mouth"></div>
+
+    <!-- Floating background elements -->
+    <div class="floaters" id="floaters"></div>
+
+    <!-- Big LearnBot Character -->
+    <div class="mega-bot-wrap">
+        <div class="mega-antenna"></div>
+        <div class="mega-bot-body">
+            <div class="mega-bot-eyes">
+                <div class="mega-eye"><div class="mega-pupil"></div><div class="mega-eye-shine"></div></div>
+                <div class="mega-eye"><div class="mega-pupil"></div><div class="mega-eye-shine"></div></div>
+            </div>
+            <div class="mega-bot-smile"></div>
+            <div class="mega-bot-cheeks"><div class="cheek"></div><div class="cheek"></div></div>
         </div>
+        <div class="wave-arm"></div>
     </div>
+
+    <div style="text-align:center;margin-bottom:.75rem;position:relative;z-index:1">
+        <h1 style="font-size:2rem;font-weight:900;color:white;text-shadow:0 2px 10px rgba(0,0,0,.2)">Welcome, Future Reader! 🌟</h1>
+        <p style="color:rgba(255,255,255,.85);font-size:.9rem;margin-top:.25rem">Turn reading into adventure — earn screen time every day!</p>
+    </div>
+
     <div class="signin-card">
-        <div class="signin-title">LearnBot</div>
-        <p class="signin-sub">Read books. Earn screen time. 🎮</p>
 
-        <!-- Google Sign In -->
-        <button class="google-btn" id="googleSignBtn" onclick="triggerGoogleSignIn()">
-            <img src="https://www.google.com/favicon.ico" alt="G" />
-            <span id="googleBtnTxt">Sign in with Google</span>
-        </button>
-
-        <div style="display:flex;align-items:center;gap:.75rem;margin:1.25rem 0">
-            <div style="flex:1;height:1px;background:var(--card2)"></div>
-            <span style="font-size:.75rem;color:var(--muted)">then fill in</span>
-            <div style="flex:1;height:1px;background:var(--card2)"></div>
+        <!-- Step indicator -->
+        <div class="steps-indicator">
+            <div class="step-dot active" id="sdot1"></div>
+            <div class="step-dot" id="sdot2"></div>
+            <span class="step-label" id="stepLabel">Step 1 of 2</span>
         </div>
 
-        <!-- Name & Age -->
-        <div class="form-group">
-            <label>Child's name</label>
-            <input type="text" id="signInName" placeholder="e.g. Amir, Sara…" />
-        </div>
-        <div class="form-group" style="margin-bottom:1.25rem">
-            <label>Age group</label>
-            <select id="signInAge">
-                <option value="">Select age…</option>
-                <option value="easy">3 – 5 years</option>
-                <option value="medium">6 – 8 years</option>
-                <option value="hard">9 – 12 years</option>
-            </select>
+        <!-- STEP 1: Name + Google -->
+        <div class="step-panel active" id="step1Panel">
+            <p style="font-size:1.1rem;font-weight:800;color:#1E293B;margin-bottom:.875rem">What's your name? 👋</p>
+            <input class="big-input" type="text" id="signInName" placeholder="Type your name…" />
+
+            <div style="display:flex;align-items:center;gap:.75rem;margin:1rem 0">
+                <div style="flex:1;height:1.5px;background:#E2E8F0"></div>
+                <span style="font-size:.72rem;color:#94A3B8;font-weight:600">or sign in with</span>
+                <div style="flex:1;height:1.5px;background:#E2E8F0"></div>
+            </div>
+
+            <button class="google-btn" id="googleSignBtn" onclick="triggerGoogleSignIn()">
+                <img src="https://www.google.com/favicon.ico" alt="G" />
+                <span id="googleBtnTxt">Continue with Google</span>
+            </button>
+
+            <button class="btn-next" onclick="goToStep2()">Next →</button>
         </div>
 
-        <button class="btn-go" onclick="proceedFromSignIn()">Let's Go! 🚀</button>
+        <!-- STEP 2: Age selection -->
+        <div class="step-panel" id="step2Panel">
+            <p style="font-size:1.1rem;font-weight:800;color:#1E293B;margin-bottom:.25rem">How old are you? 🎂</p>
+            <p style="font-size:.8rem;color:#64748B;margin-bottom:.5rem">Pick your age group</p>
+            <div class="age-cards">
+                <div class="age-card" style="--age-col:#F59E0B;--age-bg:#FFFBEB" onclick="selectAge('easy',this)">
+                    <span class="age-card-icon">🧸</span>
+                    <div class="age-card-info">
+                        <div class="age-card-label">4 – 6 years</div>
+                        <div class="age-card-sub">Short fun stories</div>
+                    </div>
+                </div>
+                <div class="age-card" style="--age-col:#6C63FF;--age-bg:#F5F3FF" onclick="selectAge('medium',this)">
+                    <span class="age-card-icon">🚀</span>
+                    <div class="age-card-info">
+                        <div class="age-card-label">7 – 9 years</div>
+                        <div class="age-card-sub">Adventure stories</div>
+                    </div>
+                </div>
+                <div class="age-card" style="--age-col:#10B981;--age-bg:#ECFDF5" onclick="selectAge('hard',this)">
+                    <span class="age-card-icon">🐉</span>
+                    <div class="age-card-info">
+                        <div class="age-card-label">10 – 12 years</div>
+                        <div class="age-card-sub">Challenge chapters</div>
+                    </div>
+                </div>
+            </div>
+            <input type="hidden" id="signInAge" value="" />
+            <button class="btn-adventure" onclick="proceedFromSignIn()">🚀 Start My Reading Adventure</button>
+        </div>
 
-        <div class="signin-features" style="margin-top:1.25rem">
-            <div class="feat-row"><span>🎯</span><span>AI tracks your focus in real time</span></div>
-            <div class="feat-row"><span>🎙️</span><span>Bot listens and checks your reading</span></div>
-            <div class="feat-row"><span>🎮</span><span>Earn screen time every minute you read</span></div>
+        <!-- Reward row -->
+        <div class="reward-row">
+            <div class="reward-chip"><span>📚</span>Read Books</div>
+            <div class="reward-chip"><span>⭐</span>Earn Stars</div>
+            <div class="reward-chip"><span>🎮</span>Unlock Time</div>
+            <div class="reward-chip"><span>🏆</span>Level Up</div>
+        </div>
+
+        <!-- Trust row -->
+        <div class="trust-row">
+            <div class="trust-item">🔒 Safe for Kids</div>
+            <div class="trust-item">👨‍👩‍👧 Parent Approved</div>
+            <div class="trust-item">🤖 AI Reading Coach</div>
         </div>
     </div>
 </div>
