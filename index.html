@@ -816,6 +816,46 @@ input,select{display:none;}
     </div>
 </div>
 
+<!-- ══════ FLAG GAME ══════ -->
+<div id="flagScreen" class="screen" style="flex-direction:column;align-items:center;background:linear-gradient(160deg,#38BDF8,#818CF8 55%,#A78BFA);overflow-y:auto;padding:1.5rem;">
+    <div style="width:100%;max-width:480px">
+        <!-- Header -->
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.25rem">
+            <button onclick="refreshHomeStats();show('welcomeScreen')" style="background:rgba(255,255,255,.2);border:none;color:white;border-radius:50px;padding:.5rem 1rem;font-weight:700;cursor:pointer">← Home</button>
+            <span style="color:white;font-weight:800;font-size:1rem">🌍 World Quiz</span>
+            <div id="flagEarned" style="background:rgba(255,255,255,.2);border-radius:50px;padding:.35rem .85rem;font-size:.8rem;font-weight:700;color:white">🎮 +0 min</div>
+        </div>
+
+        <!-- Progress bar -->
+        <div style="background:rgba(255,255,255,.2);border-radius:10px;height:10px;margin-bottom:1.25rem;overflow:hidden">
+            <div id="flagProgress" style="height:100%;background:white;border-radius:10px;transition:width .4s;width:0%"></div>
+        </div>
+
+        <!-- Quiz card -->
+        <div id="flagQuiz" style="background:white;border-radius:28px;padding:2rem;text-align:center;box-shadow:0 16px 50px rgba(0,0,0,.2)">
+            <div style="display:flex;justify-content:space-between;margin-bottom:1.5rem">
+                <span id="flagQ" style="font-size:.82rem;font-weight:700;color:#64748B">Question 1 of 10</span>
+                <span id="flagScore" style="font-size:.82rem;font-weight:700;color:#6C63FF">⭐ 0 correct</span>
+            </div>
+            <div id="flagEmoji" style="font-size:6rem;margin-bottom:1rem;line-height:1">🏳️</div>
+            <p style="font-size:1rem;font-weight:700;color:#1E293B;margin-bottom:1.25rem">Which country is this flag from?</p>
+            <div id="flagOpts" style="display:grid;grid-template-columns:1fr 1fr;gap:.75rem;margin-bottom:1rem"></div>
+            <div id="flagFeedback" style="font-size:.9rem;font-weight:700;min-height:24px;margin-bottom:.5rem"></div>
+            <button id="flagNextBtn" onclick="nextFlag()" style="display:none;background:linear-gradient(135deg,#6C63FF,#818CF8);color:white;border:none;border-radius:50px;padding:.875rem 2rem;font-size:1rem;font-weight:800;cursor:pointer;width:100%">Next →</button>
+        </div>
+
+        <!-- Result card -->
+        <div id="flagResult" style="display:none;background:white;border-radius:28px;padding:2rem;text-align:center;box-shadow:0 16px 50px rgba(0,0,0,.2)">
+            <div style="font-size:4rem;margin-bottom:.5rem">🏆</div>
+            <div style="font-size:1.5rem;font-weight:900;color:#1E293B;margin-bottom:.25rem">Game Over!</div>
+            <div style="font-size:3rem;font-weight:900;color:#6C63FF;margin:.5rem 0"><span id="flagResultScore">0/10</span></div>
+            <div style="font-size:.9rem;color:#64748B;margin-bottom:1rem">Screen time earned: <strong style="color:#FFD700;font-size:1.3rem"><span id="flagResultEarned">+0</span> min 🎮</strong></div>
+            <button onclick="startFlagGame()" style="background:linear-gradient(135deg,#10B981,#0EA5E9);color:white;border:none;border-radius:50px;padding:.875rem 1.5rem;font-size:.95rem;font-weight:800;cursor:pointer;width:100%;margin-bottom:.75rem">🔄 Play Again</button>
+            <button onclick="refreshHomeStats();show('welcomeScreen')" style="background:#F1F5F9;color:#64748B;border:none;border-radius:50px;padding:.875rem 1.5rem;font-size:.95rem;font-weight:700;cursor:pointer;width:100%">← Back to Home</button>
+        </div>
+    </div>
+</div>
+
 <!-- Toast -->
 <div class="toast" id="toast"><div class="toast-t" id="toastT">—</div><div class="toast-b" id="toastB">—</div></div>
 
