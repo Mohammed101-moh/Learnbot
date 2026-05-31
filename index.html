@@ -629,14 +629,32 @@ function triggerGoogleSignIn() {
 function handleSignIn(response) {
     const payload = parseJwt(response.credential);
     S.user = { name: payload.given_name, fullName: payload.name, email: payload.email, picture: payload.picture };
-    // Pre-fill name
-    document.getElementById('childName').value = payload.given_name || '';
+    // Pre-fill name on sign-in screen
+    if (payload.given_name) document.getElementById('signInName').value = payload.given_name;
+    // Update button to show signed in
+    document.getElementById('googleBtnTxt').textContent = '✅ Signed in as ' + payload.given_name;
+    document.getElementById('googleSignBtn').style.background = '#e8f5e9';
+    document.getElementById('googleSignBtn').style.color = '#2e7d32';
+}
+
+function proceedFromSignIn() {
+    const name = document.getElementById('signInName').value.trim();
+    const age  = document.getElementById('signInAge').value;
+    if (!name) { alert('Please enter the child\'s name!'); return; }
+    if (!age)  { alert('Please select an age group!'); return; }
+
+    S.name = name; S.age = age;
+
     // Show avatar in HUD
-    if (payload.picture) {
+    if (S.user && S.user.picture) {
         const av = document.getElementById('userAvatar');
-        av.src = payload.picture; av.style.display = 'block';
+        av.src = S.user.picture; av.style.display = 'block';
     }
-    document.getElementById('userNameHud').textContent = payload.given_name || '';
+    document.getElementById('userNameHud').textContent = name;
+    // Pre-fill welcome screen too
+    document.getElementById('childName').value = name;
+    document.getElementById('ageGroup').value = age;
+
     show('welcomeScreen');
 }
 
