@@ -899,9 +899,9 @@ function handleSignIn(response) {
 }
 
 function proceedFromSignIn() {
-    const name = document.getElementById('signInName').value.trim();
-    const age  = selectedAge || document.getElementById('signInAge').value;
-    if (!name) { alert('Please enter a name!'); return; }
+    const name = document.getElementById('signInName').value.trim() || (S.user && S.user.name) || '';
+    const age  = selectedAge || document.getElementById('signInAge').value || S.age || '';
+    if (!name) { document.getElementById('step1Panel').classList.add('active'); document.getElementById('step2Panel').classList.remove('active'); document.getElementById('sdot1').classList.add('active'); document.getElementById('sdot2').classList.remove('active'); document.getElementById('stepLabel').textContent='Step 1 of 2'; alert('Please enter your name first!'); return; }
     if (!age)  { alert('Please pick an age group!'); return; }
 
     S.name = name; S.age = age;
