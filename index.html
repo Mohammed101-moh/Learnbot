@@ -557,56 +557,91 @@ input,select{display:none;}
     </div>
 </div>
 
-<!-- ══════ WELCOME ══════ -->
+<!-- ══════ HOME SCREEN ══════ -->
 <div id="welcomeScreen" class="screen">
     <button class="parent-btn" onclick="openParent()">🔒 Parent</button>
-    <div class="mascot-wrap">
-        <div class="bot-antenna"></div>
-        <div class="bot-body">
-            <div class="bot-eyes"><div class="bot-eye"></div><div class="bot-eye"></div></div>
-            <div class="bot-mouth"></div>
+
+    <!-- Header -->
+    <div class="home-header">
+        <div class="home-greeting">
+            Hi <span id="homeGreetName">there</span>! 👋
+            <span>What are we learning today?</span>
+        </div>
+        <div class="home-stats">
+            <div class="home-stat" id="homeStreak" style="display:none">🔥 <span id="homeStreakVal">0</span></div>
+            <div class="home-stat">🎮 <span id="homeTodayMins">0</span>m earned</div>
         </div>
     </div>
-    <h1 class="glow-title">LearnBot</h1>
-    <p class="tagline">Read. Learn. Earn your screen time! 🎮</p>
-    <div class="streak-chip" id="streakChip">🔥 <span id="streakTxt">3 day streak!</span></div>
-    <div class="module-grid">
-        <div class="mod-card active" id="mod-reading" onclick="pickMod('reading')">
-            <div class="mod-icon">📚</div><div class="mod-label">Reading</div>
-        </div>
-        <div class="mod-card" id="mod-quran" onclick="pickMod('quran')">
-            <div class="mod-icon">🕌</div><div class="mod-label">Quran</div>
-        </div>
-        <div class="mod-card" id="mod-hadith" onclick="pickMod('hadith')">
-            <div class="mod-icon">⭐</div><div class="mod-label">Daily Bonus</div>
-        </div>
-    </div>
-    <div class="setup-card">
-        <div class="form-row">
-            <div class="form-group">
-                <label>Your name</label>
-                <input type="text" id="childName" placeholder="e.g. Amir…" />
+
+    <!-- Hidden fields still needed by session logic -->
+    <input type="hidden" id="childName" />
+    <select id="ageGroup" style="display:none"><option value="easy">easy</option><option value="medium" selected>medium</option><option value="hard">hard</option></select>
+    <select id="readingGoal" style="display:none"><option value="10" selected>10</option></select>
+
+    <div class="home-body">
+
+        <!-- Activity grid -->
+        <div class="activity-grid">
+
+            <!-- Reading -->
+            <div class="act-card reading" onclick="launchActivity('reading')">
+                <div>
+                    <span class="act-card-icon">📚</span>
+                    <div class="act-card-title">Reading</div>
+                    <div class="act-card-sub">Stories, science & adventures</div>
+                    <div class="act-earn">🎮 1 min per min</div>
+                </div>
+                <div class="act-card-bg">📚</div>
             </div>
-            <div class="form-group">
-                <label>Age group</label>
-                <select id="ageGroup">
-                    <option value="">Select…</option>
-                    <option value="easy">3 – 5 yrs</option>
-                    <option value="medium">6 – 8 yrs</option>
-                    <option value="hard">9 – 12 yrs</option>
-                </select>
+
+            <!-- Short Quiz -->
+            <div class="act-card quiz" onclick="launchActivity('quiz')">
+                <div class="coming-soon">Coming Soon</div>
+                <div>
+                    <span class="act-card-icon">🧠</span>
+                    <div class="act-card-title">Short Quiz</div>
+                    <div class="act-card-sub">Answer questions, earn bonus time</div>
+                    <div class="act-earn">⭐ +5 min bonus</div>
+                </div>
+                <div class="act-card-bg">🧠</div>
             </div>
+
+            <!-- World Quiz / Flag Game -->
+            <div class="act-card flags" onclick="launchActivity('flags')">
+                <div>
+                    <span class="act-card-icon">🌍</span>
+                    <div class="act-card-title">World Quiz</div>
+                    <div class="act-card-sub">Guess the flag — how many can you get?</div>
+                    <div class="act-earn">🏆 +2 min per 5 correct</div>
+                </div>
+                <div class="act-card-bg">🌍</div>
+            </div>
+
+            <!-- Holy Quran -->
+            <div class="act-card quran" onclick="launchActivity('quran')">
+                <div>
+                    <span class="act-card-icon">🕌</span>
+                    <div class="act-card-title">Holy Quran</div>
+                    <div class="act-card-sub">Recite surahs and earn rewards</div>
+                    <div class="act-earn">🎮 1 min per min</div>
+                </div>
+                <div class="act-card-bg">🕌</div>
+            </div>
+
         </div>
-        <div class="form-group">
-            <label>Today's goal</label>
-            <select id="readingGoal">
-                <option value="5">5 minutes</option>
-                <option value="10" selected>10 minutes</option>
-                <option value="15">15 minutes</option>
-                <option value="20">20 minutes</option>
-            </select>
+
+        <!-- Fun Fact — horizontal -->
+        <div class="funfact-card" onclick="launchActivity('hadith')">
+            <div class="funfact-icon">⭐</div>
+            <div class="funfact-content">
+                <div class="funfact-label">Today's Bonus</div>
+                <div class="funfact-title">Fun Fact of the Day</div>
+                <div class="funfact-sub">Read today's hadith or fun fact and earn bonus minutes!</div>
+            </div>
+            <div class="funfact-earn">+5 min 🎁</div>
+            <div class="funfact-bg">✨</div>
         </div>
-        <button class="btn-go" onclick="startSetup()">Let's Go! 🚀</button>
+
     </div>
 </div>
 
