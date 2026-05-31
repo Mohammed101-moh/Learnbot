@@ -823,7 +823,44 @@ function parseJwt(token) {
     } catch(e) { return {}; }
 }
 
-window.addEventListener('load', initGoogleSignIn);
+window.addEventListener('load', () => { initGoogleSignIn(); spawnFloaters(); });
+
+// Floating background elements
+function spawnFloaters() {
+    const items = ['📚','⭐','✨','🌟','📖','🎮','🏆','💫','🎯','🎁'];
+    const wrap = document.getElementById('floaters');
+    if (!wrap) return;
+    for (let i = 0; i < 18; i++) {
+        const el = document.createElement('div');
+        el.className = 'floater';
+        el.textContent = items[Math.floor(Math.random() * items.length)];
+        el.style.left = Math.random() * 100 + 'vw';
+        el.style.animationDuration = (8 + Math.random() * 12) + 's';
+        el.style.animationDelay = (Math.random() * 10) + 's';
+        el.style.fontSize = (.9 + Math.random() * 1.2) + 'rem';
+        wrap.appendChild(el);
+    }
+}
+
+// Step navigation
+function goToStep2() {
+    const name = document.getElementById('signInName').value.trim();
+    if (!name) { document.getElementById('signInName').focus(); document.getElementById('signInName').style.borderColor='#EF4444'; return; }
+    document.getElementById('signInName').style.borderColor='';
+    document.getElementById('step1Panel').classList.remove('active');
+    document.getElementById('step2Panel').classList.add('active');
+    document.getElementById('sdot1').classList.remove('active');
+    document.getElementById('sdot2').classList.add('active');
+    document.getElementById('stepLabel').textContent = 'Step 2 of 2';
+}
+
+let selectedAge = '';
+function selectAge(age, el) {
+    selectedAge = age;
+    document.getElementById('signInAge').value = age;
+    document.querySelectorAll('.age-card').forEach(c => c.classList.remove('selected'));
+    el.classList.add('selected');
+}
 
 /* ══════════════════════════════════════
    CONTENT
