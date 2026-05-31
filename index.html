@@ -994,7 +994,26 @@ function today(){return new Date().toISOString().split('T')[0];}
    SCREENS / MODULE
 ══════════════════════════════════════ */
 function show(id){document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));document.getElementById(id).classList.add('active');}
-function pickMod(m){S.module=m;document.querySelectorAll('.mod-card').forEach(c=>c.classList.remove('active'));document.getElementById('mod-'+m).classList.add('active');}
+function pickMod(m){S.module=m;}
+
+function launchActivity(type) {
+    if (type === 'quiz') { toast('🧠 Short Quiz','Coming very soon! Try Reading or Quran for now.','#F59E0B'); return; }
+    if (type === 'flags') { startFlagGame(); return; }
+    S.module = type;
+    startSetup();
+}
+
+function refreshHomeStats() {
+    const st = gs();
+    const name = S.name || (S.user && S.user.name) || 'Explorer';
+    document.getElementById('homeGreetName').textContent = name;
+    const today = st.todayDate === todayStr() ? (st.todayMins||0) : 0;
+    document.getElementById('homeTodayMins').textContent = today;
+    if ((st.streak||0) >= 2) {
+        document.getElementById('homeStreak').style.display = 'flex';
+        document.getElementById('homeStreakVal').textContent = '🔥 ' + st.streak;
+    }
+}
 
 /* ══════════════════════════════════════
    WELCOME INIT
