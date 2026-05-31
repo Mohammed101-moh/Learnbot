@@ -423,7 +423,11 @@ select option{background:var(--card);}
 <div id="sessionScreen" class="screen">
     <!-- HUD -->
     <div class="hud">
-        <div class="hud-logo">🤖 LearnBot</div>
+        <div class="hud-logo" style="display:flex;align-items:center;gap:.5rem">
+            <span>🤖 LearnBot</span>
+            <img class="user-avatar" id="userAvatar" src="" style="display:none" />
+            <span class="user-name-hud" id="userNameHud"></span>
+        </div>
         <div class="hud-center">
             <div class="focus-hud">
                 <span class="focus-hud-label">🎯 FOCUS</span>
