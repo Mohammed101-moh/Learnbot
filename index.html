@@ -329,6 +329,31 @@ select option{background:var(--card);}
 </head>
 <body>
 
+<!-- ══════ SIGN IN ══════ -->
+<div id="signInScreen" class="screen active">
+    <div class="mascot-wrap">
+        <div class="bot-antenna"></div>
+        <div class="bot-body">
+            <div class="bot-eyes"><div class="bot-eye"></div><div class="bot-eye"></div></div>
+            <div class="bot-mouth"></div>
+        </div>
+    </div>
+    <div class="signin-card">
+        <div class="signin-title">LearnBot</div>
+        <p class="signin-sub">Read books, earn screen time.<br>Sign in to track your progress and badges!</p>
+        <button class="google-btn" onclick="triggerGoogleSignIn()">
+            <img src="https://www.google.com/favicon.ico" alt="G" />
+            Sign in with Google
+        </button>
+        <div class="signin-features">
+            <div class="feat-row"><span>🎯</span><span>AI watches your focus while you read</span></div>
+            <div class="feat-row"><span>🎙️</span><span>Bot listens and verifies your reading</span></div>
+            <div class="feat-row"><span>🎮</span><span>Earn real screen time minute by minute</span></div>
+            <div class="feat-row"><span>🏅</span><span>Collect badges and build streaks</span></div>
+        </div>
+    </div>
+</div>
+
 <!-- ══════ WELCOME ══════ -->
 <div id="welcomeScreen" class="screen active">
     <button class="parent-btn" onclick="openParent()">🔒 Parent</button>
