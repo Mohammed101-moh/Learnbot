@@ -1028,12 +1028,10 @@ function refreshHomeStats() {
    SETUP
 ══════════════════════════════════════ */
 async function startSetup(){
-    const name=document.getElementById('childName').value.trim();
-    const age=document.getElementById('ageGroup').value;
-    const goal=parseInt(document.getElementById('readingGoal').value);
-    if(!name){alert('Please enter your name!');return;}
-    if(!age){alert('Please choose your age group!');return;}
-    S.name=name;S.age=age;S.goal=goal;
+    // Name and age already set from sign-in screen
+    if(!S.name) S.name = document.getElementById('childName').value.trim() || 'Explorer';
+    if(!S.age)  S.age  = document.getElementById('ageGroup').value || 'medium';
+    S.goal = 10;
     show('loadingScreen');
 
     // MediaPipe Face Mesh
