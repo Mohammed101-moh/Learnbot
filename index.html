@@ -583,6 +583,48 @@ select option{background:var(--card);}
 
 <script>
 /* ══════════════════════════════════════
+   GOOGLE SIGN IN
+══════════════════════════════════════ */
+const GOOGLE_CLIENT_ID = '529318528256-lddep3j5fq8gn78637ded6ic9nd8u0q2.apps.googleusercontent.com';
+
+function initGoogleSignIn() {
+    if (typeof google === 'undefined') { setTimeout(initGoogleSignIn, 500); return; }
+    google.accounts.id.initialize({
+        client_id: GOOGLE_CLIENT_ID,
+        callback: handleSignIn,
+        auto_select: false
+    });
+}
+
+function triggerGoogleSignIn() {
+    if (typeof google === 'undefined') { alert('Google Sign-In loading, try again in a moment.'); return; }
+    google.accounts.id.prompt();
+}
+
+function handleSignIn(response) {
+    const payload = parseJwt(response.credential);
+    S.user = { name: payload.given_name, fullName: payload.name, email: payload.email, picture: payload.picture };
+    // Pre-fill name
+    document.getElementById('childName').value = payload.given_name || '';
+    // Show avatar in HUD
+    if (payload.picture) {
+        const av = document.getElementById('userAvatar');
+        av.src = payload.picture; av.style.display = 'block';
+    }
+    document.getElementById('userNameHud').textContent = payload.given_name || '';
+    show('welcomeScreen');
+}
+
+function parseJwt(token) {
+    try {
+        const base64 = token.split('.')[1].replace(/-/g,'+').replace(/_/g,'/');
+        return JSON.parse(atob(base64));
+    } catch(e) { return {}; }
+}
+
+window.addEventListener('load', initGoogleSignIn);
+
+/* ══════════════════════════════════════
    CONTENT
 ══════════════════════════════════════ */
 const LIBRARY = {
