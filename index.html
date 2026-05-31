@@ -340,16 +340,41 @@ select option{background:var(--card);}
     </div>
     <div class="signin-card">
         <div class="signin-title">LearnBot</div>
-        <p class="signin-sub">Read books, earn screen time.<br>Sign in to track your progress and badges!</p>
-        <button class="google-btn" onclick="triggerGoogleSignIn()">
+        <p class="signin-sub">Read books. Earn screen time. 🎮</p>
+
+        <!-- Google Sign In -->
+        <button class="google-btn" id="googleSignBtn" onclick="triggerGoogleSignIn()">
             <img src="https://www.google.com/favicon.ico" alt="G" />
-            Sign in with Google
+            <span id="googleBtnTxt">Sign in with Google</span>
         </button>
-        <div class="signin-features">
-            <div class="feat-row"><span>🎯</span><span>AI watches your focus while you read</span></div>
-            <div class="feat-row"><span>🎙️</span><span>Bot listens and verifies your reading</span></div>
-            <div class="feat-row"><span>🎮</span><span>Earn real screen time minute by minute</span></div>
-            <div class="feat-row"><span>🏅</span><span>Collect badges and build streaks</span></div>
+
+        <div style="display:flex;align-items:center;gap:.75rem;margin:1.25rem 0">
+            <div style="flex:1;height:1px;background:var(--card2)"></div>
+            <span style="font-size:.75rem;color:var(--muted)">then fill in</span>
+            <div style="flex:1;height:1px;background:var(--card2)"></div>
+        </div>
+
+        <!-- Name & Age -->
+        <div class="form-group">
+            <label>Child's name</label>
+            <input type="text" id="signInName" placeholder="e.g. Amir, Sara…" />
+        </div>
+        <div class="form-group" style="margin-bottom:1.25rem">
+            <label>Age group</label>
+            <select id="signInAge">
+                <option value="">Select age…</option>
+                <option value="easy">3 – 5 years</option>
+                <option value="medium">6 – 8 years</option>
+                <option value="hard">9 – 12 years</option>
+            </select>
+        </div>
+
+        <button class="btn-go" onclick="proceedFromSignIn()">Let's Go! 🚀</button>
+
+        <div class="signin-features" style="margin-top:1.25rem">
+            <div class="feat-row"><span>🎯</span><span>AI tracks your focus in real time</span></div>
+            <div class="feat-row"><span>🎙️</span><span>Bot listens and checks your reading</span></div>
+            <div class="feat-row"><span>🎮</span><span>Earn screen time every minute you read</span></div>
         </div>
     </div>
 </div>
