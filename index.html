@@ -911,10 +911,10 @@ function handleSignIn(response) {
 }
 
 function proceedFromSignIn() {
-    const name = document.getElementById('signInName').value.trim() || (S.user && S.user.name) || '';
-    const age  = selectedAge || document.getElementById('signInAge').value || S.age || '';
-    if (!name) { S.name='Tester'; }
-    if (!age)  { age='medium'; selectedAge='medium'; }
+    let name = document.getElementById('signInName').value.trim() || (S.user && S.user.name) || 'Tester';
+    let age  = selectedAge || document.getElementById('signInAge').value || S.age || 'medium';
+    if (!name) name = 'Tester';
+    if (!age)  age  = 'medium';
 
     S.name = name; S.age = age;
 
