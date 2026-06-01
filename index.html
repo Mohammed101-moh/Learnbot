@@ -5,8 +5,13 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
 <title>LearnBot — Earn Your Screen Time</title>
 <script src="https://accounts.google.com/gsi/client" async defer></script>
-<script src="https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh@0.4.1633559619/face_mesh.js" crossorigin="anonymous"></script>
+<!-- MediaPipe Holistic (face + hands + body) -->
+<script src="https://cdn.jsdelivr.net/npm/@mediapipe/holistic@0.5.1635989137/holistic.js" crossorigin="anonymous"></script>
 <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils@0.3.1632432234/camera_utils.js" crossorigin="anonymous"></script>
+<!-- face-api.js (7 emotion scores) -->
+<script src="https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/dist/face-api.min.js"></script>
+<!-- WebGazer (eye tracking) -->
+<script src="https://cdn.jsdelivr.net/npm/webgazer@2.1.0/dist/webgazer.min.js"></script>
 <style>
 :root {
     --bg:      #080C18;
@@ -666,9 +671,11 @@ input,select{display:none;}
     <div class="spinner"></div>
     <p id="loadMsg">Loading AI models…</p>
     <div class="load-steps">
-        <div class="load-step" id="ls1"><span>⏳</span> Loading MediaPipe Face Mesh</div>
+        <div class="load-step" id="ls1"><span>⏳</span> Loading MediaPipe Holistic (face + hands)</div>
         <div class="load-step" id="ls2"><span>⏳</span> Starting camera</div>
         <div class="load-step" id="ls3"><span>⏳</span> Setting up voice recognition</div>
+        <div class="load-step" id="ls4"><span>⏳</span> Loading emotion AI</div>
+        <div class="load-step" id="ls5"><span>⏳</span> Setting up eye tracking</div>
     </div>
 </div>
 
@@ -690,6 +697,7 @@ input,select{display:none;}
             <div class="hud-chip">⏱ <b id="sessTimer">00:00</b></div>
             <div class="hud-chip">🎮 <b id="earnedDisp">0.0</b> min</div>
             <div class="earn-chip off" id="earnChip">⏸ Paused</div>
+            <div class="hud-chip" id="emotionChip" style="display:none">😐 <b id="emotionTxt">Neutral</b></div>
         </div>
         <button class="btn-end-hud" onclick="speak('Hello! I am LearnBot, your reading coach. Start reading and I will cheer you on!',true)" style="background:var(--primary);color:white;margin-right:.5rem">🔊 Test Voice</button>
         <button class="btn-end-hud" onclick="confirmEnd()">End ✅</button>
@@ -1058,7 +1066,13 @@ const S={
     passage:null,faceTimer:null,mainTimer:null,
     cameraOk:false,speechOk:false,recognition:null,
     active:false,faceMesh:null,mpCamera:null,
-    signals:{head:50,eyes:50,gaze:50,pitch:0}
+    signals:{head:50,eyes:50,gaze:50,pitch:0},
+    // ── AI Recognition state ──
+    emotions:{happy:0,neutral:1,sad:0,angry:0,surprised:0,fearful:0,disgusted:0},
+    dominantEmotion:'neutral',emotionEngagement:0.7,
+    gazeOnText:true,gazeX:0,gazeY:0,
+    handNearFace:false,leftHandVis:false,rightHandVis:false,
+    faceApiReady:false,webgazerReady:false
 };
 
 /* ══════════════════════════════════════
@@ -1155,6 +1169,43 @@ async function startSetup(){
         setLS('ls3','done');
     }else{setLS('ls3','fail');}
 
+    // ── face-api.js: emotion detection ──
+    setLS('ls4','loading');
+    try{
+        const MODEL_URL='https://raw.githack.com/justadudewhohacks/face-api.js/master/weights';
+        await faceapi.nets.tinyFaceDetector.loadFromUri(MODEL_URL);
+        await faceapi.nets.faceExpressionNet.loadFromUri(MODEL_URL);
+        S.faceApiReady=true;
+        setLS('ls4','done');
+        // Start emotion detection loop
+        setInterval(detectEmotions,2000);
+    }catch(e){setLS('ls4','fail');console.warn('face-api:',e);}
+
+    // ── WebGazer: eye tracking ──
+    setLS('ls5','loading');
+    try{
+        if(typeof webgazer!=='undefined'){
+            webgazer.params.showVideoPreview=false;
+            webgazer.params.showFaceOverlay=false;
+            webgazer.params.showFaceFeedbackBox=false;
+            webgazer.setGazeListener((data)=>{
+                if(!data||!S.active)return;
+                S.gazeX=data.x;S.gazeY=data.y;
+                // Check if gaze falls on the reading text area
+                const el=document.getElementById('readingText');
+                if(el){
+                    const r=el.getBoundingClientRect();
+                    S.gazeOnText=(data.x>=r.left-80&&data.x<=r.right+80&&data.y>=r.top-60&&data.y<=r.bottom+60);
+                }
+            });
+            webgazer.showVideoPreview(false);
+            webgazer.showPredictionPoints(false);
+            await webgazer.begin();
+            S.webgazerReady=true;
+            setLS('ls5','done');
+        } else { setLS('ls5','fail'); }
+    }catch(e){setLS('ls5','fail');console.warn('webgazer:',e);}
+
     await sleep(500);
     beginSession();
 }
@@ -1170,15 +1221,17 @@ function setLS(id,state){
 ══════════════════════════════════════ */
 async function loadMediaPipe(){
     return new Promise((resolve,reject)=>{
-        if(typeof FaceMesh==='undefined'){reject(new Error('FaceMesh not loaded'));return;}
-        S.faceMesh=new FaceMesh({
-            locateFile:f=>`https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh@0.4.1633559619/${f}`
+        if(typeof Holistic==='undefined'){reject(new Error('Holistic not loaded'));return;}
+        S.faceMesh=new Holistic({
+            locateFile:f=>`https://cdn.jsdelivr.net/npm/@mediapipe/holistic@0.5.1635989137/${f}`
         });
         S.faceMesh.setOptions({
-            maxNumFaces:1,
-            refineLandmarks:true,
-            minDetectionConfidence:0.55,
-            minTrackingConfidence:0.55
+            modelComplexity:1,
+            smoothLandmarks:true,
+            enableSegmentation:false,
+            refineFaceLandmarks:true,
+            minDetectionConfidence:0.5,
+            minTrackingConfidence:0.5
         });
         S.faceMesh.onResults(onFaceResults);
         S.faceMesh.initialize().then(resolve).catch(reject);
@@ -1198,6 +1251,36 @@ function startMediaPipe(vid){
     S.mpCamera.start();
 }
 
+// ── face-api.js emotion detection (runs every 2s) ──
+async function detectEmotions(){
+    if(!S.faceApiReady||!S.active)return;
+    try{
+        const vid=document.getElementById('video');
+        const det=await faceapi.detectSingleFace(vid,new faceapi.TinyFaceDetectorOptions({inputSize:224,scoreThreshold:0.4})).withFaceExpressions();
+        if(det&&det.expressions){
+            S.emotions=det.expressions;
+            // Find dominant emotion
+            let best='neutral',bestV=0;
+            Object.entries(det.expressions).forEach(([k,v])=>{if(v>bestV){bestV=v;best=k;}});
+            S.dominantEmotion=best;
+            // Engagement score from emotions
+            const e=det.expressions;
+            S.emotionEngagement=clamp((e.happy*1.3)+(e.neutral*0.9)+(e.surprised*0.8)-(e.sad*0.7)-(e.angry*0.8)-(e.fearful*0.4)-(e.disgusted*0.6),0.3,1.3);
+            // Show emotion in bot text occasionally
+            const emoEmoji={happy:'😊',neutral:'😐',surprised:'😮',sad:'😔',angry:'😠',fearful:'😨',disgusted:'😒'};
+            const em=emoEmoji[best]||'😐';
+            document.getElementById('camStatus').textContent=em+' '+best.charAt(0).toUpperCase()+best.slice(1);
+            // Update HUD emotion chip
+            const chip=document.getElementById('emotionChip');
+            if(chip){chip.style.display='flex';document.getElementById('emotionTxt').textContent=best;chip.querySelector('b').previousSibling||chip.prepend(em+' ');}
+            const chipEl=document.getElementById('emotionChip');
+            if(chipEl){chipEl.style.display='flex';chipEl.innerHTML=em+' <b>'+best.charAt(0).toUpperCase()+best.slice(1)+'</b>';
+                chipEl.style.background=best==='happy'?'rgba(0,255,136,.15)':best==='neutral'?'rgba(108,99,255,.15)':
+                    (best==='sad'||best==='angry')?'rgba(255,68,68,.15)':'';}
+        }
+    }catch(e){}
+}
+
 /* ══════════════════════════════════════
    FACE RESULTS — ENGAGEMENT ANALYSIS
 ══════════════════════════════════════ */
@@ -1209,7 +1292,12 @@ function onFaceResults(results){
     const ctx=cnv.getContext('2d');
     ctx.clearRect(0,0,cnv.width,cnv.height);
 
-    if(!results.multiFaceLandmarks||!results.multiFaceLandmarks.length){
+    // ── Hand detection (Holistic) ──
+    S.leftHandVis=!!(results.leftHandLandmarks&&results.leftHandLandmarks.length);
+    S.rightHandVis=!!(results.rightHandLandmarks&&results.rightHandLandmarks.length);
+    S.handNearFace=checkHandNearFace(results);
+
+    if(!results.faceLandmarks||!results.faceLandmarks.length){
         S.focusScore=Math.max(0,S.focusScore-4);
         S.signals={head:0,eyes:0,gaze:0,pitch:0};
         S.distractionType='no_face';
@@ -1219,7 +1307,7 @@ function onFaceResults(results){
         return;
     }
 
-    const lm=results.multiFaceLandmarks[0];
+    const lm=results.faceLandmarks;
     const W=cnv.width,H=cnv.height;
 
     // ── 1. HEAD YAW (facing screen?) ──
@@ -1295,7 +1383,11 @@ function onFaceResults(results){
 
     // ── WEIGHTED ENGAGEMENT SCORE ──
     const pitchPenalty=lookingDown?0.15:1.0;
-    const raw=((headScore*0.35)+(eyeScore*0.3)+(gazeScore*0.35))*pitchPenalty;
+    const handPenalty=S.handNearFace?0.2:1.0; // hand near face = likely phone
+    const emotionBoost=clamp(S.emotionEngagement,0.5,1.2);
+    // Weighted: face signals + emotion + gaze-on-text
+    const gazeOnBonus=S.gazeOnText?1.0:0.75;
+    const raw=((headScore*0.25)+(eyeScore*0.20)+(gazeScore*0.20)+(emotionBoost*0.35))*pitchPenalty*handPenalty*gazeOnBonus;
     const target=raw*100;
     S.focusScore=S.focusScore*0.75+target*0.25;
     S.signals={
@@ -1317,9 +1409,9 @@ function onFaceResults(results){
     const blinkZonedOut=S.blinkRate<4&&S.sessionSecs>20&&S.blinkTimes.length>0;
     const blinkDrowsy=S.blinkRate>28&&S.sessionSecs>15;
 
-    if(lookingDown){
+    if(lookingDown||S.handNearFace){
         S.distractionType='phone';
-        document.getElementById('camStatus').textContent='📱 Phone detected!';
+        document.getElementById('camStatus').textContent=S.handNearFace?'📱 Hand on face!':'📱 Phone detected!';
     } else if(talkingDetected){
         S.distractionType='talking';
         document.getElementById('camStatus').textContent='🗣️ Stop talking!';
@@ -1345,16 +1437,38 @@ function onFaceResults(results){
 
     // ── DRAW FACE MESH ──
     const col=S.distractionType==='phone'?'#FF4444':S.focusScore>65?'#00FF88':S.focusScore>40?'#FFB800':'#FF4444';
-    drawMesh(ctx,lm,W,H,col,avgEAR,gazeScore);
+    drawMesh(ctx,lm,W,H,col,avgEAR,gazeScore,results);
 
+    // Draw hand landmarks (Holistic)
+    if(S.leftHandVis||S.rightHandVis){
+        [results&&results.leftHandLandmarks,results&&results.rightHandLandmarks].forEach((hand,hi)=>{
+            if(!hand)return;
+            ctx.fillStyle=S.handNearFace?'#FF4444':'#FFD700';
+            hand.forEach(p=>{ctx.beginPath();ctx.arc(p.x*W,p.y*H,3,0,Math.PI*2);ctx.fill();});
+        });
+    }
     // Phone warning overlay
-    if(lookingDown){
+    if(lookingDown||S.handNearFace){
         ctx.fillStyle='rgba(239,68,68,0.15)';
         ctx.fillRect(0,0,W,H);
         ctx.fillStyle='#FF4444';
         ctx.font='bold 16px sans-serif';
-        ctx.fillText('📱 PUT THE PHONE DOWN!',W/2-100,H/2);
+        ctx.fillText(S.handNearFace?'✋ HAND ON FACE!':'📱 PUT THE PHONE DOWN!',W/2-110,H/2);
     }
+}
+
+// ── Hand-near-face detection (Holistic) ──
+function checkHandNearFace(results){
+    const face=results.faceLandmarks;
+    if(!face||!face.length)return false;
+    const noseX=face[1].x,noseY=face[1].y;
+    const handClose=(hand)=>{
+        if(!hand||!hand.length)return false;
+        // Wrist and fingertips
+        const pts=[hand[0],hand[8],hand[12],hand[4]];
+        return pts.some(p=>Math.abs(p.x-noseX)<0.22&&Math.abs(p.y-noseY)<0.25);
+    };
+    return handClose(results.leftHandLandmarks)||handClose(results.rightHandLandmarks);
 }
 
 // ── Level 2: Mouth Aspect Ratio ──
@@ -1403,7 +1517,7 @@ function calcEAR(lm,[p1,p2,p3,p4,p5,p6]){
 function d2(a,b){return Math.sqrt((a.x-b.x)**2+(a.y-b.y)**2);}
 function clamp(v,mn,mx){return Math.min(mx,Math.max(mn,v));}
 
-function drawMesh(ctx,lm,W,H,col,ear,gaze){
+function drawMesh(ctx,lm,W,H,col,ear,gaze,results){
     // Convert normalised coords to pixels (note: video is mirrored via CSS)
     const px=(l,i)=>({x:lm[i].x*W,y:lm[i].y*H});
 
@@ -1825,6 +1939,7 @@ function endSession(){
     if(S.mpCamera)try{S.mpCamera.stop();}catch(e){}
     if(S.recognition)try{S.recognition.stop();}catch(e){}
     window.speechSynthesis&&window.speechSynthesis.cancel();
+    if(S.webgazerReady&&typeof webgazer!=='undefined'){try{webgazer.pause();}catch(e){}}
 
     const em=Math.round(S.earnedSecs/60);
     const avgF=S.focusSamples>0?Math.round(S.focusSum/S.focusSamples):(em>0?75:0);
