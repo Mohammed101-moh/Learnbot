@@ -1273,24 +1273,20 @@ function onFaceResults(results){
 
     // ── DISTRACTION CLASSIFICATION ──
     const now_ms=Date.now();
-    const recentSpeech=S.lastSpeech>0&&now_ms-S.lastSpeech<5000;
-    const recentReading=S.lastWordAdvance>0&&now_ms-S.lastWordAdvance<8000;
-    // Talking = mic active but child hasn't matched a word in 12s (side conversation)
-    const talkingToOthers=recentSpeech&&!recentReading&&S.sessionSecs>10&&now_ms-S.lastWordAdvance>12000;
-    // Zoned out = looking at screen but silent for 25s (not talking, not reading)
-    const silentTooLong=S.sessionSecs>15&&now_ms-(S.lastSpeech||0)>25000;
-    const zonedOut=silentTooLong&&S.focusScore>38&&!recentSpeech;
+    const speaking_now=S.lastSpeech>0&&now_ms-S.lastSpeech<6000;
+    const reading_now=S.lastWordAdvance>0&&now_ms-S.lastWordAdvance<10000;
+    const longSilence=S.lastSpeech>0&&now_ms-S.lastSpeech>20000;
 
     if(lookingDown){
         S.distractionType='phone';
         document.getElementById('camStatus').textContent='📱 Phone detected!';
-    } else if(talkingToOthers){
+    } else if(speaking_now&&!reading_now&&S.wordsRead>0&&now_ms-S.lastWordAdvance>15000){
         S.distractionType='talking';
         document.getElementById('camStatus').textContent='🗣️ Stop talking!';
-    } else if(zonedOut){
+    } else if(longSilence&&S.focusScore>40){
         S.distractionType='zoned_out';
         document.getElementById('camStatus').textContent='😶 Focus!';
-    } else if(S.focusScore<32){
+    } else if(S.focusScore<35){
         S.distractionType='looking_away';
         document.getElementById('camStatus').textContent='👀 Look at screen!';
     } else {
@@ -1298,13 +1294,6 @@ function onFaceResults(results){
         document.getElementById('camStatus').textContent='📷 Tracking…';
     }
 
-    // Sustained distraction tracking
-    const notFocused=['phone','talking','zoned_out'];
-    if(notFocused.includes(S.distractionType)){
-        S.distractionCount=(S.distractionCount||0)+1;
-    } else {
-        S.distractionCount=0;
-    }
     if(S.distractionType==='phone') botSay('phone');
     else if(S.distractionType==='talking') botSay('talking');
     else if(S.distractionType==='zoned_out') botSay('zoned_out');
@@ -1549,7 +1538,7 @@ function matchReading(spoken){
         S.wordIdx=S.words.length;updateProg();
         const bon=(S.module==='hadith'&&S.passage.bonus)?S.passage.bonus:0;
         if(bon>0){S.earnedSecs+=bon*60;speak(`Congratulations! You earned ${bon} bonus minutes!`,true);toast('🌟 Bonus!',`+${bon} minutes added!`,'#FFD700');}
-        else toast('📖 Passage Complete!','Loading next passage…','#00FF88');
+        else{speak('Well done! Passage complete — loading the next one!',true);toast('📖 Passage Complete!','Loading next passage…','#00FF88');}
         setTimeout(loadPassage,2200);
     }
 }
@@ -1626,7 +1615,7 @@ function tick(){
     if(em>S.lastMilestone&&em>0){
         S.lastMilestone=em;
         setBotTxt(BOT.milestone[Math.min(em-1,BOT.milestone.length-1)]);
-        speak(`Great job! You just earned ${em} minute${em>1?'s':''}!`,false);
+        speak(`Amazing! You just earned ${em} minute${em>1?'s':''} of screen time!`,true);
         toast(`🎉 ${em} Minute${em>1?'s':''} Earned!`,'Keep reading!','#6C63FF');
     }
 }
@@ -1637,23 +1626,28 @@ function tick(){
 function botSay(k){
     const now=Date.now();
     const urgent=['phone','talking','no_face'];
-    const minGap=urgent.includes(k)?2000:4000;
-    const repeatGap=urgent.includes(k)?5000:9000;
+    // Focused encouragement fires every 45s max; distractions every 5s
+    const minGap=urgent.includes(k)?2000:k==='focused'?6000:4000;
+    const repeatGap=urgent.includes(k)?5000:k==='focused'?45000:9000;
     if(now-S.lastBot<minGap)return;
     if(k===S.lastBotKind&&now-S.lastBot<repeatGap)return;
     const pool=BOT[k]||BOT.focused;
     setBotTxt(pool[Math.floor(Math.random()*pool.length)]);
     // Speak out loud for high-priority distractions
-    const speakAloud=['phone','talking','zoned_out','no_face'];
+    const speakAloud=['phone','talking','zoned_out','no_face','focused','milestone'];
     if(speakAloud.includes(k)){
         const phoneLines=["Hey! I can see your phone — put it down and let's read!","Phone away please! Reading time is phone-free!","I noticed your phone! Eyes on the book!","Put the phone down, you're so close to earning your time!"];
+        const focusedLines=["Amazing! Keep reading, you're doing great!","Fantastic focus — keep going!","You're earning screen time right now, keep it up!","I love your focus — you're a reading star!"];
         const spoken={
             phone:phoneLines[Math.floor(Math.random()*phoneLines.length)],
-            talking:"Are you talking to someone? Let's focus on reading!",
-            zoned_out:"Hey! I see you — come on, let's start reading!",
-            no_face:"I can't see you! Move a bit closer to the camera!"
+            talking:"Stop talking — it's reading time!",
+            zoned_out:"Hey! Focus please — let's start reading!",
+            no_face:"I can't see you! Move a bit closer to the camera!",
+            focused:focusedLines[Math.floor(Math.random()*focusedLines.length)],
+            milestone:"Great job! Keep reading to earn more screen time!"
         };
-        if(spoken[k])speak(spoken[k],true);  // interrupt everything for distractions
+        const isUrgent=['phone','talking','zoned_out','no_face'].includes(k);
+        if(spoken[k])speak(spoken[k],isUrgent);
     }
     S.lastBot=now;S.lastBotKind=k;
 }
@@ -1923,4 +1917,4 @@ function sleep(ms){return new Promise(r=>setTimeout(r,ms));}
 </script>
 </body>
 </html>
-                                                                                         
+                                                                                                                                                                                   
