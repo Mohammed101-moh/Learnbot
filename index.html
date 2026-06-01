@@ -1132,8 +1132,17 @@ async function startSetup(){
         S.recognition.interimResults=true;
         S.recognition.lang='en-US';
         S.recognition.onresult=onSpeech;
-        S.recognition.onerror=e=>{if(e.error!=='no-speech')console.warn('SR:',e.error);};
-        S.recognition.onend=()=>{if(S.active){try{S.recognition.start();}catch(e){}}};
+        S.recognition.onerror=e=>{
+            const msg=e.error;
+            if(msg==='not-allowed'){document.getElementById('voiceTxt').textContent='⚠️ Mic permission denied — click the 🔒 in address bar to allow';}
+            else if(msg==='audio-capture'){document.getElementById('voiceTxt').textContent='⚠️ No microphone found';}
+            else if(msg!=='no-speech'){document.getElementById('voiceTxt').textContent='⚠️ Voice error: '+msg;}
+        };
+        S.recognition.onend=()=>{
+            if(S.active){
+                setTimeout(()=>{try{S.recognition.start();}catch(e){}},300);
+            }
+        };
         S.speechOk=true;
         setLS('ls3','done');
     }else{setLS('ls3','fail');}
@@ -1396,11 +1405,12 @@ function updateFocusUI(){
     setBar('eyes',sig.eyes,bc(sig.eyes));
     setBar('gaze',sig.gaze,bc(sig.gaze));
     // Phone pitch signal (higher = more looking down)
-    const phonePct=Math.min(100,Math.max(0,Math.round((sig.pitch||0)*5)));
+    // Phone bar: only warn when phone is ACTUALLY detected (both conditions met)
+    const phoneDetected=S.distractionType==='phone';
     const phoneEl=document.getElementById('sig-phone');
     const phoneValEl=document.getElementById('sval-phone');
-    if(phoneEl){phoneEl.style.width=phonePct+'%';phoneEl.style.background=phonePct>50?'#EF4444':'#94A3B8';}
-    if(phoneValEl){phoneValEl.textContent=phonePct>50?'⚠️':'OK';}
+    if(phoneEl){phoneEl.style.width=phoneDetected?'80%':'10%';phoneEl.style.background=phoneDetected?'#EF4444':'#94A3B8';}
+    if(phoneValEl){phoneValEl.textContent=phoneDetected?'⚠️':'OK';}
 
     // Bot face
     const eyeCol=sc>=70?'#00FF88':sc>=42?'#FFB800':'#FF4444';
@@ -1435,8 +1445,6 @@ function beginSession(){
         },500);
     }
     S.mainTimer=setInterval(tick,1000);
-    // Speak welcome so child hears the bot voice straight away
-    setTimeout(()=>speak('Hi! Read the text out loud — I will track your focus. Let\'s go!',true),800);
 }
 
 function loadPassage(){
@@ -1687,21 +1695,17 @@ let _lastSpokenAt=0;
 function speak(text,urgent=false){
     if(!window.speechSynthesis)return;
     const now=Date.now();
-    // Ignore low-priority speech if already speaking or spoke very recently
     if(!urgent&&window.speechSynthesis.speaking)return;
-    if(!urgent&&now-_lastSpokenAt<1500)return;
+    if(!urgent&&now-_lastSpokenAt<2000)return;
     window.speechSynthesis.cancel();
     _lastSpokenAt=now;
-    // Tiny delay so cancel() clears the queue before new utterance
-    setTimeout(()=>{
-        const u=new SpeechSynthesisUtterance(text);
-        u.rate=0.88;
-        u.pitch=1.25;
-        u.volume=1.0;
-        const v=getBestVoice();
-        if(v)u.voice=v;
-        speechSynthesis.speak(u);
-    },60);
+    const u=new SpeechSynthesisUtterance(text);
+    u.rate=0.88;
+    u.pitch=1.25;
+    u.volume=1.0;
+    const v=getBestVoice();
+    if(v)u.voice=v;
+    speechSynthesis.speak(u);
 }
 
 // Pre-load voices immediately + on change
@@ -1918,3 +1922,4 @@ function sleep(ms){return new Promise(r=>setTimeout(r,ms));}
 </script>
 </body>
 </html>
+                                                                                         
