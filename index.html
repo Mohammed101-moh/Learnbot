@@ -979,13 +979,10 @@ var selectedAge = '';
 
 // Step navigation
 function goToStep2() {
-    // Skip straight to home for testing — no name or age required
-    const name = document.getElementById('signInName').value.trim() || 'Tester';
-    S.name = name; S.age = selectedAge || 'medium';
-    document.getElementById('userNameHud').textContent = S.name;
-    document.getElementById('childName').value = S.name;
-    document.getElementById('ageGroup').value = S.age;
-    refreshHomeStats();
+    S.name = (document.getElementById('signInName')||{value:''}).value.trim() || 'Tester';
+    S.age = selectedAge || 'medium';
+    try { document.getElementById('userNameHud').textContent = S.name; } catch(e){}
+    try { document.getElementById('homeGreetName').textContent = S.name; } catch(e){}
     show('welcomeScreen');
 }
 
