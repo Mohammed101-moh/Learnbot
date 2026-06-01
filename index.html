@@ -1265,12 +1265,12 @@ function onFaceResults(results){
     const reading=S.lastWordAdvance>0&&Date.now()-S.lastWordAdvance<10000;
     const longSilence=S.lastSpeech>0&&Date.now()-S.lastSpeech>20000;
 
-    if(lookingDown||S.signals.gaze<25){
+    if(lookingDown){
         S.distractionType='phone';
         document.getElementById('camStatus').textContent='📱 Phone detected!';
-    } else if(speaking&&!reading&&S.wordsRead>0&&Date.now()-S.lastWordAdvance>15000){
+    } else if(speaking&&!reading&&S.sessionSecs>8&&Date.now()-S.lastWordAdvance>7000){
         S.distractionType='talking';
-        document.getElementById('camStatus').textContent='🗣️ Not reading...';
+        document.getElementById('camStatus').textContent='🗣️ Stop talking!';
     } else if(longSilence&&S.focusScore>40){
         S.distractionType='zoned_out';
         document.getElementById('camStatus').textContent='😶 Zoned out...';
@@ -1287,7 +1287,7 @@ function onFaceResults(results){
     else if(S.distractionType==='talking') botSay('talking');
     else if(S.distractionType==='zoned_out') botSay('zoned_out');
     else if(S.distractionType==='looking_away') botSay('looking_away');
-    else if(S.focusScore>70) botSay('focused');
+
 
     // ── DRAW FACE MESH ──
     const col=S.distractionType==='phone'?'#FF4444':S.focusScore>65?'#00FF88':S.focusScore>40?'#FFB800':'#FF4444';
@@ -1598,10 +1598,10 @@ function botSay(k){
     const speakAloud=['phone','talking','zoned_out','no_face'];
     if(speakAloud.includes(k)){
         const spoken={
-            phone:"Hey! Put the phone down — it's reading time!",
-            talking:"Are you talking to someone? Let's focus on reading!",
-            zoned_out:"Hey! I see you there — let's start reading!",
-            no_face:"I can't see you! Come back to the camera!"
+            phone:"Put the phone down — reading time only! No phones please!",
+            talking:"Stop talking and focus on reading! I can hear you chatting!",
+            zoned_out:"Hey! Focus please — let's start reading!",
+            no_face:"I can't see you! Move a bit closer to the camera!"
         };
         if(spoken[k])speak(spoken[k]);
     }
