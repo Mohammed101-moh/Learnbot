@@ -1023,15 +1023,12 @@ const ALL_BADGES=[
 ];
 
 const BOT={
-    focused:["Amazing focus! Keep reading! 🌟","You're on fire! 🔥","Screen time is piling up! 🎮","Super reader! 📚","I love your focus — keep going! 💪"],
-    reading:["I can hear you! Great! 🎙️","Beautiful reading! 🌈","Word by word — perfect! 👍","Keep sounding out those words! ✨"],
-    phone:["📱 Hey! Put the phone down — reading time is phone-free!","I see that phone! Eyes on the book please! 👀","The phone can wait — your screen time can't! Put it down!","📵 Phone away! You're so close to earning more time!"],
-    talking:["🗣️ Are you talking to someone? Let's focus on reading!","I can hear you talking — but not reading! Back to the book!","Chat time is later — it's reading time now! 📖","Who are you talking to? Focus on me! 🤖"],
-    zoned_out:["👀 Hey, I see you there! Let's start reading!","You seem a bit distracted — come on, let's go! 💪","Earth to reader — your book is waiting! 📚","Wake up! Your screen time is waiting for you! 🎮"],
-    looking_away:["Look at the screen! Your time is paused ⏸️","Where are you looking? Eyes on the book!","I can't track you — look at the camera! 📷"],
+    phone:["Put the phone down — reading time only!","I see that phone! Eyes on the book please! 👀","Phone away! You're so close to earning more time!","No phones during reading time! 📵"],
+    talking:["Stop talking and focus on reading! 🛑","I can hear chatting — but we should be reading!","Chat later — reading time now! Focus! 📖","Stop talking and start reading! Eyes on the book!"],
+    zoned_out:["Focus! Your screen time is paused ⏸️","Hey! Wake up — let's read! 📚","I'm waiting for you to start reading! 💪","Come on, focus! Your game is waiting! 🎮"],
+    looking_away:["Look at the screen! Your time is paused ⏸️","Eyes on the book please!","Look at the camera so I can track you! 📷"],
     no_face:["I can't see you! Move closer to the camera! 📷","Come back into view — I need to see your face!","Where did you go? I'm watching! 👀"],
-    silent:["Read out loud so I can hear you! 🗣️","Use your voice — I'm listening! 📢","Start reading — say the words out loud! 🎙️"],
-    milestone:["🎉 Milestone unlocked! You're incredible!","⭐ Fantastic — keep that momentum!","🏆 Champion reader right here!"]
+    silent:["Read out loud so I can hear you! 🗣️","Use your voice — I'm listening! 📢","Start reading — say the words out loud! 🎙️"]
 };
 
 /* ══════════════════════════════════════
@@ -1219,7 +1216,7 @@ function onFaceResults(results){
     const faceH=Math.abs(chin.y-forehead.y);
     const faceMidY=(forehead.y+chin.y)/2;
     const pitch=faceH>0?(nose.y-faceMidY)/faceH:0;
-    const lookingDown=pitch>0.13; // Head tilted down = phone
+    const lookingDown=pitch>0.22; // Raised — only true downward tilt triggers phone
 
     // ── 3. EYE OPENNESS (EAR) ──
     const lEAR=calcEAR(lm,[33,160,158,133,153,144]);
@@ -1500,7 +1497,7 @@ function matchReading(spoken){
         S.wordIdx=ti;
         S.lastWordAdvance=Date.now();
         S.voiceMismatchCount=0;
-        hlCurrent();updateProg();botSay('reading');
+        hlCurrent();updateProg();
     } else {
         S.voiceMismatchCount=(S.voiceMismatchCount||0)+1;
         // Flash current word red if mismatch happens repeatedly
@@ -1580,7 +1577,7 @@ function tick(){
     if(em>S.lastMilestone&&em>0){
         S.lastMilestone=em;
         setBotTxt(BOT.milestone[Math.min(em-1,BOT.milestone.length-1)]);
-        speak(`Great job! You just earned ${em} minute${em>1?'s':''}!`);
+        // milestone speak removed
         toast(`🎉 ${em} Minute${em>1?'s':''} Earned!`,'Keep reading!','#6C63FF');
     }
 }
