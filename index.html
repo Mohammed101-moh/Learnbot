@@ -1267,12 +1267,16 @@ function onFaceResults(results){
         S.distractionType='phone';
         document.getElementById('camStatus').textContent='📱 Phone detected!';
     } else if(speaking&&(()=>{
-        // Option 1: head turned sideways (talking to someone next to them)
-        const headTurnedSideways=S.signals.head<42;
-        // Option 2: match rate very low (speech not matching reading text at all)
+        // Option 1: head must be significantly turned sideways.
+        // Normal reading: head faces screen → head score 70-100. Real side convo → head turns <30.
+        const headTurnedSideways=S.signals.head<30;
+        // Option 2: words not advancing (reading voice vs side conversation)
+        // While reading, lastWordAdvance updates constantly. Side convo = goes stale > 15s.
+        const wordsNotAdvancing=S.lastWordAdvance>0&&(Date.now()-S.lastWordAdvance)>15000;
         const matchRate=getMatchRate();
-        const notReading=matchRate<0.12&&S.speechEvents.length>=4;
-        return headTurnedSideways&&notReading&&S.sessionSecs>10;
+        // ALL three must fire: extreme head turn + no word advance + near-zero match rate
+        const notReading=matchRate<0.08&&S.speechEvents.length>=6&&wordsNotAdvancing;
+        return headTurnedSideways&&notReading&&S.sessionSecs>20;
     })()){
         S.distractionType='talking';
         document.getElementById('camStatus').textContent='🗣️ Stop talking!';
@@ -1600,8 +1604,7 @@ function tick(){
     const em=Math.floor(mins);
     if(em>S.lastMilestone&&em>0){
         S.lastMilestone=em;
-        setBotTxt(BOT.milestone[Math.min(em-1,BOT.milestone.length-1)]);
-        // milestone speak removed
+        setBotTxt('⭐ '+em+' minute'+(em>1?'s':'')+' earned! Keep going!');
         toast(`🎉 ${em} Minute${em>1?'s':''} Earned!`,'Keep reading!','#6C63FF');
     }
 }
