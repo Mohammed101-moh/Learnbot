@@ -962,14 +962,14 @@ var selectedAge = '';
 
 // Step navigation
 function goToStep2() {
-    // Name is optional for testing — default to 'Tester'
-    if(!document.getElementById('signInName').value.trim()) document.getElementById('signInName').value='Tester';
-    document.getElementById('signInName').style.borderColor='';
-    document.getElementById('step1Panel').classList.remove('active');
-    document.getElementById('step2Panel').classList.add('active');
-    document.getElementById('sdot1').classList.remove('active');
-    document.getElementById('sdot2').classList.add('active');
-    document.getElementById('stepLabel').textContent = 'Step 2 of 2';
+    // Skip straight to home for testing — no name or age required
+    const name = document.getElementById('signInName').value.trim() || 'Tester';
+    S.name = name; S.age = selectedAge || 'medium';
+    document.getElementById('userNameHud').textContent = S.name;
+    document.getElementById('childName').value = S.name;
+    document.getElementById('ageGroup').value = S.age;
+    refreshHomeStats();
+    show('welcomeScreen');
 }
 
 function selectAge(age, el) {
