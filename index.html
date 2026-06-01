@@ -1229,8 +1229,7 @@ function onFaceResults(results){
     const faceH=Math.abs(chin.y-forehead.y);
     const faceMidY=(forehead.y+chin.y)/2;
     const pitch=faceH>0?(nose.y-faceMidY)/faceH:0;
-    const headDown=pitch>0.16; // True downward tilt
-    const lookingDown=headDown&&gazeScore<0.32; // BOTH needed — head down + gaze off = phone
+    const headDown=pitch>0.16;
 
     // ── 3. EYE OPENNESS (EAR) ──
     const lEAR=calcEAR(lm,[33,160,158,133,153,144]);
@@ -1246,7 +1245,6 @@ function onFaceResults(results){
         const eyeW=Math.abs(lER.x-lEL.x);
         const eyeCX=(lEL.x+lER.x)/2;
         const off=eyeW>0?Math.abs(lIris.x-eyeCX)/(eyeW*0.5):0;
-        // Also check vertical gaze (looking down at phone in hand)
         const lIrisY=lm[468].y;
         const eyeCY=(lm[33].y+lm[133].y)/2;
         const eyeH=Math.abs(lm[160].y-lm[144].y);
@@ -1256,8 +1254,11 @@ function onFaceResults(results){
         if(gazeDown) gazeScore=Math.min(gazeScore,0.3);
     }
 
+    // ── lookingDown needs BOTH pitch AND gaze off (defined after gazeScore) ──
+    const lookingDown=headDown&&gazeScore<0.32;
+
     // ── WEIGHTED ENGAGEMENT SCORE ──
-    const pitchPenalty=lookingDown?0.15:1.0; // hard penalty only when phone confirmed
+    const pitchPenalty=lookingDown?0.15:1.0;
     const raw=((headScore*0.35)+(eyeScore*0.3)+(gazeScore*0.35))*pitchPenalty;
     const target=raw*100;
     S.focusScore=S.focusScore*0.75+target*0.25;
