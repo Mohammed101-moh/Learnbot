@@ -4,6 +4,15 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
 <title>LearnBot — Earn Your Screen Time</title>
+<!-- Catch any JS errors and show them on-screen -->
+<script>
+window.onerror=function(msg,src,line){
+  var d=document.getElementById('_errbanner');
+  if(!d){d=document.createElement('div');d.id='_errbanner';d.style.cssText='position:fixed;top:0;left:0;right:0;background:#ff4444;color:white;padding:10px;font-size:13px;z-index:99999;font-family:monospace;word-break:break-all;';document.body.appendChild(d);}
+  d.textContent='JS ERROR: '+msg+' (line '+line+')';
+  return false;
+};
+</script>
 <script src="https://accounts.google.com/gsi/client" async defer></script>
 <!-- MediaPipe Holistic (face + hands + body) — defer so they don't block page render -->
 <script defer src="https://cdn.jsdelivr.net/npm/@mediapipe/holistic@0.5.1635989137/holistic.js" crossorigin="anonymous"></script>
