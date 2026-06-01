@@ -913,8 +913,8 @@ function handleSignIn(response) {
 function proceedFromSignIn() {
     const name = document.getElementById('signInName').value.trim() || (S.user && S.user.name) || '';
     const age  = selectedAge || document.getElementById('signInAge').value || S.age || '';
-    if (!name) { document.getElementById('step1Panel').classList.add('active'); document.getElementById('step2Panel').classList.remove('active'); document.getElementById('sdot1').classList.add('active'); document.getElementById('sdot2').classList.remove('active'); document.getElementById('stepLabel').textContent='Step 1 of 2'; alert('Please enter your name first!'); return; }
-    if (!age)  { alert('Please pick an age group!'); return; }
+    if (!name) { S.name='Tester'; }
+    if (!age)  { age='medium'; selectedAge='medium'; }
 
     S.name = name; S.age = age;
 
@@ -961,8 +961,8 @@ var selectedAge = '';
 
 // Step navigation
 function goToStep2() {
-    const name = document.getElementById('signInName').value.trim();
-    if (!name) { document.getElementById('signInName').focus(); document.getElementById('signInName').style.borderColor='#EF4444'; return; }
+    // Name is optional for testing — default to 'Tester'
+    if(!document.getElementById('signInName').value.trim()) document.getElementById('signInName').value='Tester';
     document.getElementById('signInName').style.borderColor='';
     document.getElementById('step1Panel').classList.remove('active');
     document.getElementById('step2Panel').classList.add('active');
@@ -1027,8 +1027,8 @@ const BOT={
     focused:["Amazing focus! Keep reading! 🌟","You're on fire! 🔥","Screen time is piling up! 🎮","Super reader! 📚","I love your focus — keep going! 💪"],
     reading:["I can hear you! Great! 🎙️","Beautiful reading! 🌈","Word by word — perfect! 👍","Keep sounding out those words! ✨"],
     phone:["📱 Hey! Put the phone down — reading time is phone-free!","I see that phone! Eyes on the book please! 👀","The phone can wait — your screen time can't! Put it down!","📵 Phone away! You're so close to earning more time!"],
-    talking:["🗣️ Are you talking to someone? Let's focus on reading!","I can hear you talking — but not reading! Back to the book!","Chat time is later — it's reading time now! 📖","Who are you talking to? Focus on me! 🤖"],
-    zoned_out:["👀 Hey, I see you there! Let's start reading!","You seem a bit distracted — come on, let's go! 💪","Earth to reader — your book is waiting! 📚","Wake up! Your screen time is waiting for you! 🎮"],
+    talking:["Stop talking — it's reading time! 🛑","I can hear you chatting! Eyes on the book please! 📖","Your friends can wait — your screen time can't!","Stop talking and start reading! 🎙️"],
+    zoned_out:["Focus! Your screen time is paused! ⏸️","Hey! Wake up — let's read! 📚","I'm waiting for you to start reading! 💪","Come on, focus! Your game is waiting! 🎮"],
     looking_away:["Look at the screen! Your time is paused ⏸️","Where are you looking? Eyes on the book!","I can't track you — look at the camera! 📷"],
     no_face:["I can't see you! Move closer to the camera! 📷","Come back into view — I need to see your face!","Where did you go? I'm watching! 👀"],
     silent:["Read out loud so I can hear you! 🗣️","Use your voice — I'm listening! 📢","Start reading — say the words out loud! 🎙️"],
@@ -1219,7 +1219,8 @@ function onFaceResults(results){
     const faceH=Math.abs(chin.y-forehead.y);
     const faceMidY=(forehead.y+chin.y)/2;
     const pitch=faceH>0?(nose.y-faceMidY)/faceH:0;
-    const lookingDown=pitch>0.13; // Head tilted down = phone
+    const headDown=pitch>0.16; // True downward tilt
+    const lookingDown=headDown&&gazeScore<0.32; // BOTH needed — head down + gaze off = phone
 
     // ── 3. EYE OPENNESS (EAR) ──
     const lEAR=calcEAR(lm,[33,160,158,133,153,144]);
@@ -1246,8 +1247,7 @@ function onFaceResults(results){
     }
 
     // ── WEIGHTED ENGAGEMENT SCORE ──
-    // Penalise hard if looking down (phone)
-    const pitchPenalty=lookingDown?0.4:1.0;
+    const pitchPenalty=lookingDown?0.15:1.0; // hard penalty only when phone confirmed
     const raw=((headScore*0.35)+(eyeScore*0.3)+(gazeScore*0.35))*pitchPenalty;
     const target=raw*100;
     S.focusScore=S.focusScore*0.75+target*0.25;
@@ -1261,20 +1261,25 @@ function onFaceResults(results){
     updateFocusUI();
 
     // ── DISTRACTION CLASSIFICATION ──
-    const speaking=Date.now()-S.lastSpeech<6000&&S.lastSpeech>0;
-    const reading=S.lastWordAdvance>0&&Date.now()-S.lastWordAdvance<10000;
-    const longSilence=S.lastSpeech>0&&Date.now()-S.lastSpeech>20000;
+    const now_ms=Date.now();
+    const recentSpeech=S.lastSpeech>0&&now_ms-S.lastSpeech<5000;
+    const recentReading=S.lastWordAdvance>0&&now_ms-S.lastWordAdvance<8000;
+    // Talking = mic active but child hasn't matched a word in 12s (side conversation)
+    const talkingToOthers=recentSpeech&&!recentReading&&S.sessionSecs>10&&now_ms-S.lastWordAdvance>12000;
+    // Zoned out = looking at screen but silent for 25s (not talking, not reading)
+    const silentTooLong=S.sessionSecs>15&&now_ms-(S.lastSpeech||0)>25000;
+    const zonedOut=silentTooLong&&S.focusScore>38&&!recentSpeech;
 
-    if(lookingDown||S.signals.gaze<25){
+    if(lookingDown){
         S.distractionType='phone';
         document.getElementById('camStatus').textContent='📱 Phone detected!';
-    } else if(speaking&&!reading&&S.wordsRead>0&&Date.now()-S.lastWordAdvance>15000){
+    } else if(talkingToOthers){
         S.distractionType='talking';
-        document.getElementById('camStatus').textContent='🗣️ Not reading...';
-    } else if(longSilence&&S.focusScore>40){
+        document.getElementById('camStatus').textContent='🗣️ Stop talking!';
+    } else if(zonedOut){
         S.distractionType='zoned_out';
-        document.getElementById('camStatus').textContent='😶 Zoned out...';
-    } else if(S.focusScore<35){
+        document.getElementById('camStatus').textContent='😶 Focus!';
+    } else if(S.focusScore<32){
         S.distractionType='looking_away';
         document.getElementById('camStatus').textContent='👀 Look at screen!';
     } else {
@@ -1282,7 +1287,13 @@ function onFaceResults(results){
         document.getElementById('camStatus').textContent='📷 Tracking…';
     }
 
-    // Bot feedback based on distraction type
+    // Sustained distraction tracking
+    const notFocused=['phone','talking','zoned_out'];
+    if(notFocused.includes(S.distractionType)){
+        S.distractionCount=(S.distractionCount||0)+1;
+    } else {
+        S.distractionCount=0;
+    }
     if(S.distractionType==='phone') botSay('phone');
     else if(S.distractionType==='talking') botSay('talking');
     else if(S.distractionType==='zoned_out') botSay('zoned_out');
@@ -1401,7 +1412,7 @@ function updateFocusUI(){
    SESSION
 ══════════════════════════════════════ */
 function beginSession(){
-    Object.assign(S,{sessionSecs:0,earnedSecs:0,focusScore:50,focusSum:0,focusSamples:0,wordIdx:0,wordsRead:0,lastSpeech:0,lastBot:0,lastBotKind:'',lastMilestone:0,active:true});
+    Object.assign(S,{sessionSecs:0,earnedSecs:0,focusScore:50,focusSum:0,focusSamples:0,wordIdx:0,wordsRead:0,lastSpeech:0,lastBot:0,lastBotKind:'',lastMilestone:0,distractionCount:0,active:true});
     // Update streak
     const st=gs();
     const td=today();
@@ -1423,6 +1434,8 @@ function beginSession(){
         },500);
     }
     S.mainTimer=setInterval(tick,1000);
+    // Speak welcome so child hears the bot voice straight away
+    setTimeout(()=>speak('Hi! Read the text out loud — I will track your focus. Let\'s go!',true),800);
 }
 
 function loadPassage(){
@@ -1458,31 +1471,46 @@ function onSpeech(e){
 
 function matchInterim(transcript){
     if(S.wordIdx>=S.words.length)return;
-    const spokenWords=transcript.split(/\s+/).map(w=>cl(w)).filter(w=>w.length>0);
-    if(!spokenWords.length)return;
-    const lastSpoken=spokenWords[spokenWords.length-1];
-    const expected=cl(S.words[S.wordIdx]);
-
-    // Check if last spoken word matches current expected word
-    if(isMatch(lastSpoken,expected)){
-        const el=document.getElementById('w'+S.wordIdx);
-        if(el){
-            el.classList.remove('current','wrong');
-            el.classList.add('speaking');
+    const sw=transcript.split(/\s+/).map(w=>cl(w)).filter(w=>w.length>0);
+    if(!sw.length)return;
+    // Run full sequential matching on interim results — turns words green in real time
+    let si=0,ti=S.wordIdx,advanced=false;
+    while(si<sw.length&&ti<S.words.length){
+        const exp=cl(S.words[ti]);
+        if(exp.length<2){markRead(ti);ti++;continue;}
+        if(isMatch(sw[si],exp)){
+            markRead(ti);ti++;si++;advanced=true;
+        } else {
+            // Try skip one word ahead (child may mumble a short word)
+            const ne=ti+1<S.words.length?cl(S.words[ti+1]):'';
+            if(ne.length>=2&&isMatch(sw[si],ne)){
+                markRead(ti);markRead(ti+1);ti+=2;si++;advanced=true;
+            } else { si++; }
         }
     }
-    // Also check 1-2 words ahead (in case they're slightly ahead)
-    for(let i=1;i<=2;i++){
-        const nextIdx=S.wordIdx+i;
-        if(nextIdx>=S.words.length)break;
-        if(isMatch(lastSpoken,cl(S.words[nextIdx]))){
-            const el=document.getElementById('w'+nextIdx);
-            if(el){el.classList.remove('current');el.classList.add('speaking');}
-        }
+    if(advanced){
+        S.wordIdx=ti;
+        S.lastWordAdvance=Date.now();
+        S.lastSpeech=Date.now();
+        hlCurrent();updateProg();
+    }
+    // Pulse the next word; flash red if the last spoken word clearly doesn't match
+    const nextEl=document.getElementById('w'+S.wordIdx);
+    if(nextEl&&!nextEl.classList.contains('read')){
+        document.querySelectorAll('.word.speaking').forEach(e=>e.classList.remove('speaking'));
+        nextEl.classList.add('speaking');
+    }
+    // Red flash: last spoken word exists, isn't too short, and doesn't match expected
+    if(!advanced&&sw.length>0){
+        const lastW=sw[sw.length-1];
+        const expW=cl(S.words[S.wordIdx]||'');
+        if(lastW.length>2&&expW.length>2&&!isMatch(lastW,expW)) flashWrong();
     }
 }
 
 function matchReading(spoken){
+    // Clear any interim pulsing highlights first
+    document.querySelectorAll('.word.speaking').forEach(el=>el.classList.remove('speaking'));
     if(S.wordIdx>=S.words.length)return;
     const sw=spoken.split(/\s+/).map(w=>cl(w)).filter(w=>w.length>0);
     let si=0,ti=S.wordIdx,matched=false;
@@ -1503,15 +1531,14 @@ function matchReading(spoken){
         hlCurrent();updateProg();botSay('reading');
     } else {
         S.voiceMismatchCount=(S.voiceMismatchCount||0)+1;
-        // Flash current word red if mismatch happens repeatedly
-        if(S.voiceMismatchCount>=2) flashWrong();
+        if(S.voiceMismatchCount>=1) flashWrong(); // Flash red immediately
         botSay('silent');
     }
     if(S.wordIdx>=Math.floor(S.words.length*0.9)){
         for(let i=S.wordIdx;i<S.words.length;i++)markRead(i);
         S.wordIdx=S.words.length;updateProg();
         const bon=(S.module==='hadith'&&S.passage.bonus)?S.passage.bonus:0;
-        if(bon>0){S.earnedSecs+=bon*60;speak(`Congratulations! You earned ${bon} bonus minutes!`);toast('🌟 Bonus!',`+${bon} minutes added!`,'#FFD700');}
+        if(bon>0){S.earnedSecs+=bon*60;speak(`Congratulations! You earned ${bon} bonus minutes!`,true);toast('🌟 Bonus!',`+${bon} minutes added!`,'#FFD700');}
         else toast('📖 Passage Complete!','Loading next passage…','#00FF88');
         setTimeout(loadPassage,2200);
     }
@@ -1520,10 +1547,19 @@ function cl(w){return w.replace(/[^a-zA-Z]/g,'').toLowerCase();}
 function isMatch(a,b){
     if(!a||!b)return false;
     if(a===b)return true;
+    // Short words must match exactly
     if(a.length<=3||b.length<=3)return a===b;
-    const n=Math.min(4,a.length,b.length);
+    // Prefix match (first 4 chars) for words 5+ letters
+    const n=Math.min(5,a.length,b.length);
     if(a.slice(0,n)===b.slice(0,n))return true;
-    if(Math.abs(a.length-b.length)<=1){let d=0;for(let i=0;i<Math.min(a.length,b.length);i++)if(a[i]!==b[i])d++;if(d<=1)return true;}
+    // 1-character difference (typo/accent tolerance)
+    if(Math.abs(a.length-b.length)<=1){
+        let d=0;
+        for(let i=0;i<Math.min(a.length,b.length);i++)if(a[i]!==b[i])d++;
+        if(d<=1)return true;
+    }
+    // Ends-with match for longer words (catches word endings)
+    if(a.length>=6&&b.length>=6&&a.slice(-4)===b.slice(-4))return true;
     return false;
 }
 function markRead(i){const e=document.getElementById('w'+i);if(e){e.classList.remove('current','speaking','wrong');e.classList.add('read');}}
@@ -1580,7 +1616,7 @@ function tick(){
     if(em>S.lastMilestone&&em>0){
         S.lastMilestone=em;
         setBotTxt(BOT.milestone[Math.min(em-1,BOT.milestone.length-1)]);
-        speak(`Great job! You just earned ${em} minute${em>1?'s':''}!`);
+        speak(`Great job! You just earned ${em} minute${em>1?'s':''}!`,false);
         toast(`🎉 ${em} Minute${em>1?'s':''} Earned!`,'Keep reading!','#6C63FF');
     }
 }
@@ -1590,67 +1626,87 @@ function tick(){
 ══════════════════════════════════════ */
 function botSay(k){
     const now=Date.now();
-    if(now-S.lastBot<4000)return;
-    if(k===S.lastBotKind&&now-S.lastBot<9000)return;
+    const urgent=['phone','talking','no_face'];
+    const minGap=urgent.includes(k)?2000:4000;
+    const repeatGap=urgent.includes(k)?5000:9000;
+    if(now-S.lastBot<minGap)return;
+    if(k===S.lastBotKind&&now-S.lastBot<repeatGap)return;
     const pool=BOT[k]||BOT.focused;
     setBotTxt(pool[Math.floor(Math.random()*pool.length)]);
     // Speak out loud for high-priority distractions
     const speakAloud=['phone','talking','zoned_out','no_face'];
     if(speakAloud.includes(k)){
+        const phoneLines=["Hey! I can see your phone — put it down and let's read!","Phone away please! Reading time is phone-free!","I noticed your phone! Eyes on the book!","Put the phone down, you're so close to earning your time!"];
         const spoken={
-            phone:"Hey! Put the phone down — it's reading time!",
+            phone:phoneLines[Math.floor(Math.random()*phoneLines.length)],
             talking:"Are you talking to someone? Let's focus on reading!",
-            zoned_out:"Hey! I see you there — let's start reading!",
-            no_face:"I can't see you! Come back to the camera!"
+            zoned_out:"Hey! I see you — come on, let's start reading!",
+            no_face:"I can't see you! Move a bit closer to the camera!"
         };
-        if(spoken[k])speak(spoken[k]);
+        if(spoken[k])speak(spoken[k],true);  // interrupt everything for distractions
     }
     S.lastBot=now;S.lastBotKind=k;
 }
 function setBotTxt(t){document.getElementById('botTxt').textContent=t;}
-// Cache the best voice after first lookup
+// ── VOICE ENGINE ──
 let _cachedVoice=null;
+
 function getBestVoice(){
-    if(_cachedVoice)return _cachedVoice;
     const voices=speechSynthesis.getVoices();
     if(!voices.length)return null;
-    // Priority: natural-sounding online female voices
+    if(_cachedVoice)return _cachedVoice;
+    // Microsoft natural online voices (Windows 10/11) sound most human
     const priority=[
-        'Microsoft Aria Online (Natural)',
-        'Microsoft Jenny Online (Natural)',
-        'Microsoft Zira Online (Natural)',
+        'Microsoft Aria Online','Microsoft Aria',
+        'Microsoft Jenny Online','Microsoft Jenny',
+        'Microsoft Libby Online','Microsoft Libby',
+        'Microsoft Mia Online','Microsoft Mia',
+        'Microsoft Zira Online','Microsoft Hazel Online',
+        'Microsoft Zira','Microsoft Hazel',
         'Google UK English Female',
-        'Google US English',
         'Samantha','Karen','Victoria','Moira','Tessa',
-        'Microsoft Zira Desktop'
+        'Microsoft Eva','Microsoft Susan','Microsoft Linda'
     ];
     for(const name of priority){
-        const v=voices.find(v=>v.name===name||v.name.includes(name));
+        const v=voices.find(v=>v.name.includes(name));
         if(v){_cachedVoice=v;return v;}
     }
-    // Fall back: any English female voice
-    const fallback=voices.find(v=>v.lang.startsWith('en')&&(v.name.toLowerCase().includes('female')||v.name.toLowerCase().includes('woman')))
-        ||voices.find(v=>v.lang.startsWith('en'));
-    _cachedVoice=fallback;
-    return fallback;
+    // Any English female voice
+    const female=voices.find(v=>v.lang.startsWith('en')&&
+        (v.name.toLowerCase().includes('female')||v.name.toLowerCase().includes('woman')||v.name.toLowerCase().includes('girl')));
+    if(female){_cachedVoice=female;return female;}
+    _cachedVoice=voices.find(v=>v.lang.startsWith('en-GB'))
+        ||voices.find(v=>v.lang.startsWith('en'))
+        ||voices[0];
+    return _cachedVoice;
 }
 
-function speak(text){
+// Simple reliable speak — no queue complexity
+let _lastSpokenAt=0;
+function speak(text,urgent=false){
     if(!window.speechSynthesis)return;
+    const now=Date.now();
+    // Ignore low-priority speech if already speaking or spoke very recently
+    if(!urgent&&window.speechSynthesis.speaking)return;
+    if(!urgent&&now-_lastSpokenAt<1500)return;
     window.speechSynthesis.cancel();
-    const u=new SpeechSynthesisUtterance(text);
-    u.rate=0.92;    // Slightly slower = more friendly
-    u.pitch=1.15;   // Slightly higher = warmer female tone
-    u.volume=0.9;
-    const v=getBestVoice();
-    if(v)u.voice=v;
-    speechSynthesis.speak(u);
+    _lastSpokenAt=now;
+    // Tiny delay so cancel() clears the queue before new utterance
+    setTimeout(()=>{
+        const u=new SpeechSynthesisUtterance(text);
+        u.rate=0.88;
+        u.pitch=1.25;
+        u.volume=1.0;
+        const v=getBestVoice();
+        if(v)u.voice=v;
+        speechSynthesis.speak(u);
+    },60);
 }
 
-// Pre-load voices as soon as possible
+// Pre-load voices immediately + on change
 if(window.speechSynthesis){
     speechSynthesis.getVoices();
-    speechSynthesis.addEventListener('voiceschanged',()=>{ _cachedVoice=null; getBestVoice(); });
+    speechSynthesis.addEventListener('voiceschanged',()=>{_cachedVoice=null;getBestVoice();});
 }
 
 /* ══════════════════════════════════════
@@ -1710,8 +1766,8 @@ function endSession(){
     st.badges.filter(b=>!newB.includes(b)).forEach(bid=>{const b=ALL_BADGES.find(x=>x.id===bid);if(b){const c=document.createElement('div');c.className='badge-chip earned';c.textContent=b.icon+' '+b.label;bRow.appendChild(c);}});
 
     show('summaryScreen');
-    if(total>=5){confetti();speak('Amazing job '+S.name+'! You earned '+total+' minutes of screen time!');}
-    else speak('Good job '+S.name+'! Keep reading to earn more!');
+    if(total>=5){confetti();speak('Amazing job '+S.name+'! You earned '+total+' minutes of screen time!',true);}
+    else speak('Good job '+S.name+'! Keep reading to earn more!',false);
 }
 
 function awardBadges(st,mins,focus,words,mod){
@@ -1824,7 +1880,7 @@ function endFlagGame(){
     document.getElementById('flagResultEarned').textContent='+'+flagState.earned;
     document.getElementById('flagQuiz').style.display='none';
     if(flagState.score>=8)confetti();
-    speak('Great job! You got '+flagState.score+' out of '+flagState.total+'!');
+    speak('Great job! You got '+flagState.score+' out of '+flagState.total+'!',true);
 }
 function celebrate(){const t=parseInt(document.getElementById('sumEarned').textContent)||0;alert('🎮 Great job, '+S.name+'! You earned '+t+' minute'+(t!==1?'s':'')+' of screen time. Go enjoy it!');}
 
