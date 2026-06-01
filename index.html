@@ -726,7 +726,7 @@ input,select{display:none;}
                     <span class="signal-val" id="sval-gaze">50</span>
                 </div>
                 <div class="signal-row">
-                    <span class="signal-name" style="font-size:.65rem">📱 Phone</span>
+                    <span class="signal-name" style="font-size:.65rem">👄 Mouth</span>
                     <div class="signal-bar"><div class="signal-fill" id="sig-phone" style="width:0%;background:#EF4444"></div></div>
                     <span class="signal-val" id="sval-phone" style="color:#EF4444">0</span>
                 </div>
@@ -1048,6 +1048,13 @@ const S={
     lastSpeech:0,lastBot:0,lastBotKind:'',lastMilestone:0,
     lastWordAdvance:0,voiceMismatchCount:0,
     distractionType:'focused',
+    // ── Level 2 face recognition ──
+    baseline:{pitch:0,ear:0.25,gaze:0.65,samples:0},
+    calibrated:false,
+    thresh:{pitchDown:0.16,earBlink:0.15,gazeOff:0.32},
+    blinkTimes:[],wasEyeClosed:false,blinkRate:0,
+    mouthHistory:[],mouthActive:false,mouthOpenness:0,
+    lastNoseX:0,lastNoseY:0,headMoveDelta:0,
     passage:null,faceTimer:null,mainTimer:null,
     cameraOk:false,speechOk:false,recognition:null,
     active:false,faceMesh:null,mpCamera:null,
@@ -1238,6 +1245,16 @@ function onFaceResults(results){
     const avgEAR=(lEAR+rEAR)/2;
     const eyeScore=clamp((avgEAR-0.12)/0.18,0,1);
 
+    // ── Level 2: blink + mouth + head stability ──
+    updateBlink(avgEAR);
+    const mar=calcMAR(lm);
+    updateMouth(mar);
+    // Head stability (nose tip movement between frames)
+    const nosePixX=nose.x*(cnv.width||640),nosePixY=nose.y*(cnv.height||480);
+    const hDelta=Math.sqrt((nosePixX-S.lastNoseX)**2+(nosePixY-S.lastNoseY)**2);
+    S.headMoveDelta=S.headMoveDelta*0.85+hDelta*0.15;
+    S.lastNoseX=nosePixX;S.lastNoseY=nosePixY;
+
     // ── 4. IRIS GAZE ──
     let gazeScore=0.65;
     if(lm.length>468&&lm[468]){
@@ -1255,8 +1272,26 @@ function onFaceResults(results){
         if(gazeDown) gazeScore=Math.min(gazeScore,0.3);
     }
 
-    // ── lookingDown needs BOTH pitch AND gaze off (defined after gazeScore) ──
-    const lookingDown=headDown&&gazeScore<0.32;
+    // ── Level 2: Calibration (first 4s — learn child's natural face position) ──
+    if(S.active&&!S.calibrated&&S.sessionSecs<4){
+        const n=S.baseline.samples+1;
+        S.baseline.pitch=(S.baseline.pitch*(n-1)+pitch)/n;
+        S.baseline.ear=(S.baseline.ear*(n-1)+avgEAR)/n;
+        S.baseline.gaze=(S.baseline.gaze*(n-1)+gazeScore)/n;
+        S.baseline.samples=n;
+        document.getElementById('camStatus').textContent='📐 Calibrating… look at screen';
+    } else if(S.active&&!S.calibrated&&S.sessionSecs>=4&&S.baseline.samples>10){
+        S.calibrated=true;
+        // Personalised thresholds based on THIS child's baseline
+        S.thresh.pitchDown=S.baseline.pitch+0.08;   // must tilt 8% more than normal
+        S.thresh.earBlink=S.baseline.ear*0.60;       // blink = 40% drop from baseline
+        S.thresh.gazeOff=Math.max(0.20,S.baseline.gaze-0.38); // gaze must drop significantly
+        console.log('Calibrated:',JSON.stringify(S.thresh));
+    }
+
+    // Use personalised OR default thresholds
+    const phoneHeadDown=headDown&&pitch>S.thresh.pitchDown;
+    const lookingDown=phoneHeadDown&&gazeScore<S.thresh.gazeOff;
 
     // ── WEIGHTED ENGAGEMENT SCORE ──
     const pitchPenalty=lookingDown?0.15:1.0;
@@ -1272,19 +1307,26 @@ function onFaceResults(results){
     S.focusSum+=S.focusScore;S.focusSamples++;
     updateFocusUI();
 
-    // ── DISTRACTION CLASSIFICATION ──
+    // ── DISTRACTION CLASSIFICATION (Level 2 — uses mouth + blink) ──
     const now_ms=Date.now();
-    const speaking_now=S.lastSpeech>0&&now_ms-S.lastSpeech<6000;
     const reading_now=S.lastWordAdvance>0&&now_ms-S.lastWordAdvance<10000;
-    const longSilence=S.lastSpeech>0&&now_ms-S.lastSpeech>20000;
+    const longSilence=S.lastSpeech>0&&now_ms-S.lastSpeech>22000;
+    // Mouth moving but NOT advancing words = talking to someone else
+    const talkingDetected=S.mouthActive&&!reading_now&&S.wordsRead>0&&now_ms-(S.lastWordAdvance||0)>14000;
+    // Blink-based alertness: very low blinks = zoned out staring; very high = drowsy
+    const blinkZonedOut=S.blinkRate<4&&S.sessionSecs>20&&S.blinkTimes.length>0;
+    const blinkDrowsy=S.blinkRate>28&&S.sessionSecs>15;
 
     if(lookingDown){
         S.distractionType='phone';
         document.getElementById('camStatus').textContent='📱 Phone detected!';
-    } else if(speaking_now&&!reading_now&&S.wordsRead>0&&now_ms-S.lastWordAdvance>15000){
+    } else if(talkingDetected){
         S.distractionType='talking';
         document.getElementById('camStatus').textContent='🗣️ Stop talking!';
-    } else if(longSilence&&S.focusScore>40){
+    } else if(blinkDrowsy){
+        S.distractionType='zoned_out';
+        document.getElementById('camStatus').textContent='😴 Wake up!';
+    } else if((longSilence&&S.focusScore>40)||blinkZonedOut){
         S.distractionType='zoned_out';
         document.getElementById('camStatus').textContent='😶 Focus!';
     } else if(S.focusScore<35){
@@ -1292,7 +1334,7 @@ function onFaceResults(results){
         document.getElementById('camStatus').textContent='👀 Look at screen!';
     } else {
         S.distractionType='focused';
-        document.getElementById('camStatus').textContent='📷 Tracking…';
+        if(S.calibrated) document.getElementById('camStatus').textContent='📷 Tracking…';
     }
 
     if(S.distractionType==='phone') botSay('phone');
@@ -1313,6 +1355,43 @@ function onFaceResults(results){
         ctx.font='bold 16px sans-serif';
         ctx.fillText('📱 PUT THE PHONE DOWN!',W/2-100,H/2);
     }
+}
+
+// ── Level 2: Mouth Aspect Ratio ──
+function calcMAR(lm){
+    // Vertical: inner upper(13) to inner lower(14) lip
+    const v=d2(lm[13],lm[14]);
+    // Horizontal: left corner(61) to right corner(291)
+    const h=d2(lm[61],lm[291]);
+    return h<1e-4?0:v/h;
+}
+
+// ── Level 2: Blink tracker ──
+function updateBlink(ear){
+    const blinkThresh=S.thresh.earBlink;
+    if(ear<blinkThresh&&!S.wasEyeClosed){
+        S.wasEyeClosed=true; // eye closing
+    } else if(ear>=blinkThresh&&S.wasEyeClosed){
+        S.wasEyeClosed=false; // blink completed
+        const now=Date.now();
+        S.blinkTimes.push(now);
+        // Keep only last 60s
+        S.blinkTimes=S.blinkTimes.filter(t=>now-t<60000);
+        // Rate from last 30s window (extrapolate to per minute)
+        const w30=S.blinkTimes.filter(t=>now-t<30000).length;
+        S.blinkRate=w30*2;
+    }
+}
+
+// ── Level 2: Mouth movement tracker ──
+function updateMouth(mar){
+    S.mouthHistory.push(mar);
+    if(S.mouthHistory.length>25)S.mouthHistory.shift();
+    if(S.mouthHistory.length<6)return;
+    const hi=Math.max(...S.mouthHistory);
+    const lo=Math.min(...S.mouthHistory);
+    S.mouthActive=(hi-lo)>0.055; // mouth moving = reading/talking
+    S.mouthOpenness=mar;
 }
 
 function calcEAR(lm,[p1,p2,p3,p4,p5,p6]){
@@ -1396,12 +1475,18 @@ function updateFocusUI(){
     setBar('eyes',sig.eyes,bc(sig.eyes));
     setBar('gaze',sig.gaze,bc(sig.gaze));
     // Phone pitch signal (higher = more looking down)
-    // Phone bar: only warn when phone is ACTUALLY detected (both conditions met)
-    const phoneDetected=S.distractionType==='phone';
-    const phoneEl=document.getElementById('sig-phone');
-    const phoneValEl=document.getElementById('sval-phone');
-    if(phoneEl){phoneEl.style.width=phoneDetected?'80%':'10%';phoneEl.style.background=phoneDetected?'#EF4444':'#94A3B8';}
-    if(phoneValEl){phoneValEl.textContent=phoneDetected?'⚠️':'OK';}
+    // Mouth signal: shows reading/speaking activity
+    const mouthPct=Math.min(100,Math.round(S.mouthOpenness*300));
+    const mouthActive=S.mouthActive;
+    const mouthEl=document.getElementById('sig-phone');
+    const mouthValEl=document.getElementById('sval-phone');
+    if(mouthEl){mouthEl.style.width=mouthPct+'%';mouthEl.style.background=mouthActive?'#00FF88':'#94A3B8';}
+    if(mouthValEl){mouthValEl.textContent=mouthActive?'📖':'—';}
+    // Blink rate in bot area (subtle)
+    if(S.blinkRate>0){
+        const blinkStatus=S.blinkRate<4?'Zoned':S.blinkRate>28?'Drowsy':'Alert';
+        // Just log for now, don't clutter UI
+    }
 
     // Bot face
     const eyeCol=sc>=70?'#00FF88':sc>=42?'#FFB800':'#FF4444';
@@ -1414,7 +1499,7 @@ function updateFocusUI(){
    SESSION
 ══════════════════════════════════════ */
 function beginSession(){
-    Object.assign(S,{sessionSecs:0,earnedSecs:0,focusScore:50,focusSum:0,focusSamples:0,wordIdx:0,wordsRead:0,lastSpeech:0,lastBot:0,lastBotKind:'',lastMilestone:0,distractionCount:0,active:true});
+    Object.assign(S,{sessionSecs:0,earnedSecs:0,focusScore:50,focusSum:0,focusSamples:0,wordIdx:0,wordsRead:0,lastSpeech:0,lastBot:0,lastBotKind:'',lastMilestone:0,distractionCount:0,active:true,baseline:{pitch:0,ear:0.25,gaze:0.65,samples:0},calibrated:false,thresh:{pitchDown:0.16,earBlink:0.15,gazeOff:0.32},blinkTimes:[],wasEyeClosed:false,blinkRate:0,mouthHistory:[],mouthActive:false,mouthOpenness:0,lastNoseX:0,lastNoseY:0,headMoveDelta:0});
     // Update streak
     const st=gs();
     const td=today();
@@ -1919,8 +2004,4 @@ function sleep(ms){return new Promise(r=>setTimeout(r,ms));}
 /* ══════════════════════════════════════
    LIVE RELOAD
 ══════════════════════════════════════ */
-(function(){let t=null;setInterval(async()=>{try{const r=await fetch('/reload-check',{cache:'no-store'});const d=await r.json();if(t===null){t=d.mtime;return;}if(d.mtime!==t)location.reload();}catch(e){}},2000);})();
-</script>
-</body>
-</html>
-                                                                                                                                                                                   
+(function(){let t=null;setInterval(async()
