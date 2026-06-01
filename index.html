@@ -5,11 +5,11 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
 <title>LearnBot — Earn Your Screen Time</title>
 <script src="https://accounts.google.com/gsi/client" async defer></script>
-<!-- MediaPipe Holistic (face + hands + body) -->
-<script src="https://cdn.jsdelivr.net/npm/@mediapipe/holistic@0.5.1635989137/holistic.js" crossorigin="anonymous"></script>
-<script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils@0.3.1632432234/camera_utils.js" crossorigin="anonymous"></script>
-<!-- face-api.js (7 emotion scores) -->
-<script src="https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/dist/face-api.min.js"></script>
+<!-- MediaPipe Holistic (face + hands + body) — defer so they don't block page render -->
+<script defer src="https://cdn.jsdelivr.net/npm/@mediapipe/holistic@0.5.1635989137/holistic.js" crossorigin="anonymous"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils@0.3.1632432234/camera_utils.js" crossorigin="anonymous"></script>
+<!-- face-api.js (7 emotion scores) — defer so it doesn't block Next button -->
+<script defer src="https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/dist/face-api.min.js"></script>
 <!-- WebGazer loaded dynamically in startSetup to avoid auto-start -->
 <style>
 :root {
