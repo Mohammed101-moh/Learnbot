@@ -10,8 +10,7 @@
 <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils@0.3.1632432234/camera_utils.js" crossorigin="anonymous"></script>
 <!-- face-api.js (7 emotion scores) -->
 <script src="https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/dist/face-api.min.js"></script>
-<!-- WebGazer (eye tracking) -->
-<script src="https://cdn.jsdelivr.net/npm/webgazer@2.1.0/dist/webgazer.min.js"></script>
+<!-- WebGazer loaded dynamically in startSetup to avoid auto-start -->
 <style>
 :root {
     --bg:      #080C18;
@@ -1181,29 +1180,32 @@ async function startSetup(){
         setInterval(detectEmotions,2000);
     }catch(e){setLS('ls4','fail');console.warn('face-api:',e);}
 
-    // ── WebGazer: eye tracking ──
+    // ── WebGazer: load dynamically then init ──
     setLS('ls5','loading');
     try{
-        if(typeof webgazer!=='undefined'){
-            webgazer.params.showVideoPreview=false;
-            webgazer.params.showFaceOverlay=false;
-            webgazer.params.showFaceFeedbackBox=false;
-            webgazer.setGazeListener((data)=>{
-                if(!data||!S.active)return;
-                S.gazeX=data.x;S.gazeY=data.y;
-                // Check if gaze falls on the reading text area
-                const el=document.getElementById('readingText');
-                if(el){
-                    const r=el.getBoundingClientRect();
-                    S.gazeOnText=(data.x>=r.left-80&&data.x<=r.right+80&&data.y>=r.top-60&&data.y<=r.bottom+60);
-                }
-            });
-            webgazer.showVideoPreview(false);
-            webgazer.showPredictionPoints(false);
-            await webgazer.begin();
-            S.webgazerReady=true;
-            setLS('ls5','done');
-        } else { setLS('ls5','fail'); }
+        await new Promise((res,rej)=>{
+            const sc=document.createElement('script');
+            sc.src='https://cdn.jsdelivr.net/npm/webgazer@2.1.0/dist/webgazer.min.js';
+            sc.onload=res; sc.onerror=rej;
+            document.head.appendChild(sc);
+        });
+        webgazer.params.showVideoPreview=false;
+        webgazer.params.showFaceOverlay=false;
+        webgazer.params.showFaceFeedbackBox=false;
+        webgazer.setGazeListener((data)=>{
+            if(!data||!S.active)return;
+            S.gazeX=data.x;S.gazeY=data.y;
+            const el=document.getElementById('readingText');
+            if(el){
+                const r=el.getBoundingClientRect();
+                S.gazeOnText=(data.x>=r.left-80&&data.x<=r.right+80&&data.y>=r.top-60&&data.y<=r.bottom+60);
+            }
+        });
+        webgazer.showVideoPreview(false);
+        webgazer.showPredictionPoints(false);
+        await webgazer.begin();
+        S.webgazerReady=true;
+        setLS('ls5','done');
     }catch(e){setLS('ls5','fail');console.warn('webgazer:',e);}
 
     await sleep(500);
