@@ -1112,7 +1112,8 @@ function refreshHomeStats() {
 ══════════════════════════════════════ */
 (function initWelcome(){
     const st=gs();
-    if(st.streak>=2){document.getElementById('streakChip').style.display='flex';document.getElementById('streakTxt').textContent=st.streak+' day streak!';}
+    const chip=document.getElementById('streakChip');
+    if(st.streak>=2&&chip){chip.style.display='flex';const txt=document.getElementById('streakTxt');if(txt)txt.textContent=st.streak+' day streak!';}
 })();
 
 /* ══════════════════════════════════════
