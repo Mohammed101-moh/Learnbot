@@ -1041,6 +1041,7 @@ const S={
     words:[],wordIdx:0,wordsRead:0,
     lastSpeech:0,lastBot:0,lastBotKind:'',lastMilestone:0,
     lastWordAdvance:0,voiceMismatchCount:0,
+    speechEvents:[], // [{time,matched}] for match-rate tracking
     distractionType:'focused',
     passage:null,faceTimer:null,mainTimer:null,
     cameraOk:false,speechOk:false,recognition:null,
@@ -1265,7 +1266,14 @@ function onFaceResults(results){
     if(lookingDown){
         S.distractionType='phone';
         document.getElementById('camStatus').textContent='📱 Phone detected!';
-    } else if(speaking&&!reading&&S.sessionSecs>8&&Date.now()-S.lastWordAdvance>7000){
+    } else if(speaking&&(()=>{
+        // Option 1: head turned sideways (talking to someone next to them)
+        const headTurnedSideways=S.signals.head<42;
+        // Option 2: match rate very low (speech not matching reading text at all)
+        const matchRate=getMatchRate();
+        const notReading=matchRate<0.12&&S.speechEvents.length>=4;
+        return headTurnedSideways&&notReading&&S.sessionSecs>10;
+    })()){
         S.distractionType='talking';
         document.getElementById('camStatus').textContent='🗣️ Stop talking!';
     } else if(longSilence&&S.focusScore>40){
@@ -1398,7 +1406,7 @@ function updateFocusUI(){
    SESSION
 ══════════════════════════════════════ */
 function beginSession(){
-    Object.assign(S,{sessionSecs:0,earnedSecs:0,focusScore:50,focusSum:0,focusSamples:0,wordIdx:0,wordsRead:0,lastSpeech:0,lastBot:0,lastBotKind:'',lastMilestone:0,active:true});
+    Object.assign(S,{sessionSecs:0,earnedSecs:0,focusScore:50,focusSum:0,focusSamples:0,wordIdx:0,wordsRead:0,lastSpeech:0,lastBot:0,lastBotKind:'',lastMilestone:0,speechEvents:[],active:true});
     // Update streak
     const st=gs();
     const td=today();
@@ -1436,6 +1444,17 @@ function loadPassage(){
 /* ══════════════════════════════════════
    SPEECH
 ══════════════════════════════════════ */
+// Returns what fraction of recent speech events resulted in word matches
+// If reading: some words always match → rate > 0
+// If talking to someone: nothing matches → rate ≈ 0
+function getMatchRate(){
+    if(S.speechEvents.length<4)return 1.0; // not enough data — assume reading
+    const now=Date.now();
+    const recent=S.speechEvents.filter(e=>now-e.time<20000);
+    if(recent.length<3)return 1.0;
+    return recent.filter(e=>e.matched).length/recent.length;
+}
+
 function onSpeech(e){
     const r=e.results[e.results.length-1];
     const t=r[0].transcript.toLowerCase().trim();
@@ -1446,6 +1465,9 @@ function onSpeech(e){
     if(r.isFinal){
         // Remove any interim highlights
         document.querySelectorAll('.word.speaking').forEach(el=>el.classList.remove('speaking'));
+        // Track this speech event for match-rate calculation
+        S.speechEvents.push({time:Date.now(),matched:false});
+        S.speechEvents=S.speechEvents.filter(e=>Date.now()-e.time<30000);
         matchReading(t);
     } else {
         // Real-time interim: pulse current word if spoken word matches
@@ -1497,6 +1519,8 @@ function matchReading(spoken){
         S.wordIdx=ti;
         S.lastWordAdvance=Date.now();
         S.voiceMismatchCount=0;
+        // Mark last speech event as matched
+        if(S.speechEvents.length>0)S.speechEvents[S.speechEvents.length-1].matched=true;
         hlCurrent();updateProg();
     } else {
         S.voiceMismatchCount=(S.voiceMismatchCount||0)+1;
