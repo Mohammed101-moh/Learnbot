@@ -672,6 +672,8 @@ input,select{display:none;}
         <div class="load-step" id="ls1"><span>⏳</span> Loading MediaPipe Face Mesh</div>
         <div class="load-step" id="ls2"><span>⏳</span> Starting camera</div>
         <div class="load-step" id="ls3"><span>⏳</span> Setting up voice recognition</div>
+        <div class="load-step" id="ls4"><span>⏳</span> Loading emotion detection (face-api.js)</div>
+        <div class="load-step" id="ls5"><span>⏳</span> Starting eye tracking (WebGazer)</div>
     </div>
 </div>
 
@@ -731,6 +733,16 @@ input,select{display:none;}
                     <span class="signal-name" style="font-size:.65rem">📱 Phone</span>
                     <div class="signal-bar"><div class="signal-fill" id="sig-phone" style="width:0%;background:#EF4444"></div></div>
                     <span class="signal-val" id="sval-phone" style="color:#EF4444">0</span>
+                </div>
+                <div class="signal-row">
+                    <span class="signal-name" style="font-size:.62rem">😊 Mood</span>
+                    <div class="signal-bar"><div class="signal-fill" id="sig-emotion" style="width:50%;background:#A78BFA"></div></div>
+                    <span class="signal-val" id="sval-emotion" style="color:#A78BFA">–</span>
+                </div>
+                <div class="signal-row">
+                    <span class="signal-name" style="font-size:.62rem">👁 Eyes</span>
+                    <div class="signal-bar"><div class="signal-fill" id="sig-wg" style="width:0%;background:#38BDF8"></div></div>
+                    <span class="signal-val" id="sval-wg" style="color:#38BDF8">–</span>
                 </div>
             </div>
 
@@ -1046,7 +1058,14 @@ const S={
     passage:null,faceTimer:null,mainTimer:null,
     cameraOk:false,speechOk:false,recognition:null,
     active:false,faceMesh:null,mpCamera:null,
-    signals:{head:50,eyes:50,gaze:50,pitch:0}
+    signals:{head:50,eyes:50,gaze:50,pitch:0},
+    // ML enhancements
+    faceApiOk:false,webGazerOk:false,
+    emotionScore:50,gazeOnText:true,lastEmotion:'–',
+    calibrated:false,calibSamples:[],
+    calibHead:0.7,calibEyes:0.25,calibGaze:0.65,
+    blinkCount:0,lastBlinkReset:0,_lastEarDip:false,
+    mouthScore:0,faceApiInterval:null
 };
 
 /* ══════════════════════════════════════
@@ -1135,6 +1154,30 @@ async function startSetup(){
         setLS('ls3','done');
     }else{setLS('ls3','fail');}
 
+    // face-api.js — emotion detection
+    setLS('ls4','loading');
+    try{
+        await loadFaceApi();
+        S.faceApiOk=true;
+        setLS('ls4','done');
+    }catch(e){
+        setLS('ls4','fail');
+        showMLWarning('Emotion detection failed to load. Focus tracking continues without it.');
+        console.warn('face-api failed:',e);
+    }
+
+    // WebGazer — eye tracking on screen
+    setLS('ls5','loading');
+    try{
+        await loadWebGazer();
+        S.webGazerOk=true;
+        setLS('ls5','done');
+    }catch(e){
+        setLS('ls5','fail');
+        showMLWarning('Eye tracking (WebGazer) failed to load. Focus tracking continues without it.');
+        console.warn('WebGazer failed:',e);
+    }
+
     await sleep(500);
     beginSession();
 }
@@ -1176,6 +1219,95 @@ function startMediaPipe(vid){
         width:640,height:480
     });
     S.mpCamera.start();
+}
+
+/* ══════════════════════════════════════
+   ML — FACE-API.JS EMOTION DETECTION
+══════════════════════════════════════ */
+async function loadFaceApi(){
+    return new Promise((resolve,reject)=>{
+        if(typeof faceapi!=='undefined'){resolve();return;}
+        const s=document.createElement('script');
+        s.src='https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/dist/face-api.min.js';
+        s.onload=async()=>{
+            try{
+                const W='https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/weights';
+                await faceapi.nets.tinyFaceDetector.loadFromUri(W);
+                await faceapi.nets.faceExpressionNet.loadFromUri(W);
+                resolve();
+            }catch(e){reject(e);}
+        };
+        s.onerror=()=>reject(new Error('face-api.js CDN unreachable'));
+        document.head.appendChild(s);
+    });
+}
+
+function beginFaceApiLoop(){
+    if(!S.faceApiOk||S.faceApiInterval)return;
+    const vid=document.getElementById('video');
+    S.faceApiInterval=setInterval(async()=>{
+        if(!S.active||!S.faceApiOk)return;
+        try{
+            const det=await faceapi
+                .detectSingleFace(vid,new faceapi.TinyFaceDetectorOptions({scoreThreshold:0.4}))
+                .withFaceExpressions();
+            if(!det)return;
+            const ex=det.expressions;
+            // engaged = happy + weighted neutral; disengaged = sad + angry + disgusted
+            const engaged=(ex.happy||0)+(ex.neutral||0)*0.65+(ex.surprised||0)*0.3;
+            const disengaged=(ex.sad||0)*0.9+(ex.angry||0)+(ex.disgusted||0);
+            const raw=Math.max(0,Math.min(1,engaged-disengaged*0.8+0.4));
+            S.emotionScore=S.emotionScore*0.6+raw*100*0.4;
+            const top=Object.entries(ex).sort((a,b)=>b[1]-a[1])[0][0];
+            const emojiMap={happy:'😊',neutral:'😐',sad:'😢',angry:'😠',disgusted:'🙄',surprised:'😲',fearful:'😨'};
+            S.lastEmotion=emojiMap[top]||top;
+        }catch(e){}
+    },2000);
+}
+
+/* ══════════════════════════════════════
+   ML — WEBGAZER EYE TRACKING
+══════════════════════════════════════ */
+function onGaze(data){
+    if(!data||!S.active)return;
+    try{
+        const book=document.getElementById('readingText');
+        if(!book)return;
+        const rect=book.getBoundingClientRect();
+        const margin=100;
+        S.gazeOnText=(data.x>=rect.left-margin&&data.x<=rect.right+margin&&
+                      data.y>=rect.top-margin&&data.y<=rect.bottom+margin);
+    }catch(e){}
+}
+
+async function loadWebGazer(){
+    return new Promise((resolve,reject)=>{
+        if(typeof webgazer!=='undefined'){resolve();return;}
+        const s=document.createElement('script');
+        s.src='https://cdn.jsdelivr.net/npm/webgazer@2.1.0/dist/webgazer.min.js';
+        s.onload=async()=>{
+            try{
+                webgazer.params.showVideoPreview=false;
+                webgazer.params.showFaceOverlay=false;
+                webgazer.params.showFaceFeedbackBox=false;
+                await webgazer.setGazeListener(onGaze).begin();
+                webgazer.showVideoPreview(false);
+                webgazer.showPredictionPoints(false);
+                resolve();
+            }catch(e){reject(e);}
+        };
+        s.onerror=()=>reject(new Error('WebGazer CDN unreachable'));
+        document.head.appendChild(s);
+    });
+}
+
+function showMLWarning(msg){
+    const w=document.createElement('div');
+    w.style.cssText='position:fixed;top:0;left:0;right:0;background:#FFB800;color:#1a1a1a;padding:.4rem 1rem;font-size:.72rem;font-weight:700;text-align:center;z-index:9999;cursor:pointer;';
+    w.textContent='⚠️ '+msg+' (tap to dismiss)';
+    w.onclick=()=>w.remove();
+    document.body.appendChild(w);
+    setTimeout(()=>{if(w.parentNode)w.remove();},9000);
 }
 
 /* ══════════════════════════════════════
@@ -1243,16 +1375,53 @@ function onFaceResults(results){
         if(gazeDown) gazeScore=Math.min(gazeScore,0.3);
     }
 
+    // ── BLINK DETECTION (healthy blink rate = 4-28 blinks/min) ──
+    const earDip=avgEAR<0.14;
+    if(earDip&&!S._lastEarDip)S.blinkCount++;
+    S._lastEarDip=earDip;
+    const nowMs=Date.now();
+    if(nowMs-S.lastBlinkReset>60000){S.blinkCount=0;S.lastBlinkReset=nowMs;}
+    const blinkPenalty=(S.blinkCount<2||S.blinkCount>30)?0.75:1.0;
+
+    // ── MOUTH MOVEMENT (lips parted = actively speaking/reading) ──
+    const mTop=lm[13],mBot=lm[14],mLeft=lm[61],mRight=lm[291];
+    const mH=Math.abs(mTop.y-mBot.y);
+    const mW=Math.abs(mLeft.x-mRight.x)||0.01;
+    const mar=mH/mW;
+    S.mouthScore=S.mouthScore*0.75+(mar>0.15?80:35)*0.25;
+
+    // ── PER-CHILD CALIBRATION (first 4s of session) ──
+    if(!S.calibrated&&S.sessionSecs<4){
+        S.calibSamples.push({head:headScore,eyes:eyeScore,gaze:gazeScore});
+        if(S.calibSamples.length>=8){
+            const avg=k=>S.calibSamples.reduce((a,s)=>a+s[k],0)/S.calibSamples.length;
+            S.calibHead=Math.max(0.3,avg('head'));
+            S.calibEyes=Math.max(0.15,avg('eyes'));
+            S.calibGaze=Math.max(0.3,avg('gaze'));
+            S.calibrated=true;
+        }
+    }
+    // Normalise against this child's personal baseline so slight tilts aren't penalised
+    const normHead=Math.min(1,headScore/S.calibHead);
+    const normEyes=Math.min(1,eyeScore/S.calibEyes);
+    const normGaze=Math.min(1,gazeScore/S.calibGaze);
+
     // ── WEIGHTED ENGAGEMENT SCORE ──
-    // Penalise hard if looking down (phone)
     const pitchPenalty=lookingDown?0.4:1.0;
-    const raw=((headScore*0.35)+(eyeScore*0.3)+(gazeScore*0.35))*pitchPenalty;
+    const mpRaw=((normHead*0.35)+(normEyes*0.3)+(normGaze*0.35))*pitchPenalty*blinkPenalty;
+    // Blend in emotion (face-api) and gaze-on-text (WebGazer) when available
+    const hasEmotion=S.faceApiOk;
+    const hasGaze=S.webGazerOk;
+    const mpW=hasEmotion&&hasGaze?0.6:hasEmotion||hasGaze?0.8:1.0;
+    const emotionW=hasEmotion?0.2:0;
+    const gazeW=hasGaze?0.2:0;
+    const raw=mpRaw*mpW+(S.emotionScore/100)*emotionW+(S.gazeOnText?1.0:0.3)*gazeW;
     const target=raw*100;
     S.focusScore=S.focusScore*0.75+target*0.25;
     S.signals={
-        head:Math.round(headScore*100),
-        eyes:Math.round(eyeScore*100),
-        gaze:Math.round(gazeScore*100),
+        head:Math.round(normHead*100),
+        eyes:Math.round(normEyes*100),
+        gaze:Math.round(normGaze*100),
         pitch:Math.round(pitch*100)
     };
     S.focusSum+=S.focusScore;S.focusSamples++;
@@ -1399,6 +1568,26 @@ function updateFocusUI(){
     if(phoneEl){phoneEl.style.width=phonePct+'%';phoneEl.style.background=phonePct>50?'#EF4444':'#94A3B8';}
     if(phoneValEl){phoneValEl.textContent=phonePct>50?'⚠️':'OK';}
 
+    // Emotion signal (face-api)
+    const emEl=document.getElementById('sig-emotion'),emValEl=document.getElementById('sval-emotion');
+    if(emEl&&emValEl){
+        const ep=S.faceApiOk?Math.round(S.emotionScore):0;
+        emEl.style.cssText=`width:${ep}%;background:${S.faceApiOk?'#A78BFA':'#333'};`;
+        emValEl.textContent=S.faceApiOk?S.lastEmotion:'–';
+        emValEl.style.color=S.faceApiOk?'#A78BFA':'#64748B';
+    }
+    // WebGazer signal
+    const wgEl=document.getElementById('sig-wg'),wgValEl=document.getElementById('sval-wg');
+    if(wgEl&&wgValEl){
+        if(S.webGazerOk){
+            wgEl.style.cssText=`width:${S.gazeOnText?88:18}%;background:${S.gazeOnText?'#38BDF8':'#64748B'};`;
+            wgValEl.textContent=S.gazeOnText?'✅':'👀';
+            wgValEl.style.color=S.gazeOnText?'#38BDF8':'#64748B';
+        }else{
+            wgEl.style.width='0%';
+            wgValEl.textContent='–';wgValEl.style.color='#64748B';
+        }
+    }
     // Bot face
     const eyeCol=sc>=70?'#00FF88':sc>=42?'#FFB800':'#FF4444';
     document.getElementById('bEyeL').style.background=eyeCol;
@@ -1410,7 +1599,12 @@ function updateFocusUI(){
    SESSION
 ══════════════════════════════════════ */
 function beginSession(){
-    Object.assign(S,{sessionSecs:0,earnedSecs:0,focusScore:50,focusSum:0,focusSamples:0,wordIdx:0,wordsRead:0,lastSpeech:0,lastBot:0,lastBotKind:'',lastMilestone:0,speechEvents:[],active:true});
+    Object.assign(S,{sessionSecs:0,earnedSecs:0,focusScore:50,focusSum:0,focusSamples:0,wordIdx:0,wordsRead:0,lastSpeech:0,lastBot:0,lastBotKind:'',lastMilestone:0,speechEvents:[],active:true,
+        emotionScore:50,gazeOnText:true,lastEmotion:'–',
+        calibrated:false,calibSamples:[],blinkCount:0,lastBlinkReset:Date.now(),
+        mouthScore:0,_lastEarDip:false,faceApiInterval:null});
+    beginFaceApiLoop();
+    if(S.webGazerOk){try{webgazer.resume();}catch(e){}}
     // Update streak
     const st=gs();
     const td=today();
@@ -1699,8 +1893,10 @@ function confirmEnd(){if(confirm('End the session now?'))endSession();}
 function endSession(){
     S.active=false;
     clearInterval(S.faceTimer);clearInterval(S.mainTimer);
+    if(S.faceApiInterval){clearInterval(S.faceApiInterval);S.faceApiInterval=null;}
     if(S.mpCamera)try{S.mpCamera.stop();}catch(e){}
     if(S.recognition)try{S.recognition.stop();}catch(e){}
+    if(S.webGazerOk){try{webgazer.pause();}catch(e){}}
     window.speechSynthesis&&window.speechSynthesis.cancel();
 
     const em=Math.round(S.earnedSecs/60);
