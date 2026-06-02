@@ -546,6 +546,139 @@ input,select{display:none;}
 /* ── CONFETTI ── */
 .confetti-p{position:fixed;width:9px;height:9px;border-radius:2px;top:-10px;pointer-events:none;z-index:9999;animation:cFall linear forwards;}
 @keyframes cFall{to{transform:translateY(110vh) rotate(720deg);opacity:0}}
+
+/* ═══════════════════════════════
+   BOOK LIBRARY SCREEN
+═══════════════════════════════ */
+#bookLibraryScreen{
+    flex-direction:column;
+    background:linear-gradient(180deg,#29B6F6 0%,#4FC3F7 45%,#B3E5FC 100%);
+    overflow-y:auto;min-height:100vh;
+}
+.lib-header{
+    width:100%;padding:1rem 1.5rem;
+    display:flex;align-items:center;gap:1rem;
+    position:sticky;top:0;z-index:10;
+    background:rgba(255,255,255,.15);backdrop-filter:blur(10px);
+    flex-shrink:0;
+}
+.lib-back-btn{
+    background:white;border:none;border-radius:50px;
+    padding:.45rem 1.1rem;font-size:.82rem;font-weight:800;
+    color:#1E293B;cursor:pointer;
+    box-shadow:0 3px 12px rgba(0,0,0,.12);transition:all .2s;
+}
+.lib-back-btn:hover{transform:translateY(-1px);}
+.lib-header-title{font-size:1.15rem;font-weight:900;color:white;flex:1;
+    text-shadow:0 2px 6px rgba(0,0,0,.15);}
+.lib-age-badge{
+    background:rgba(255,255,255,.25);border-radius:50px;
+    padding:.35rem .9rem;font-size:.78rem;font-weight:800;color:white;
+}
+.lib-body{
+    width:100%;max-width:1000px;margin:0 auto;
+    padding:1.25rem;
+}
+.lib-section-title{
+    font-size:1rem;font-weight:800;color:white;
+    margin-bottom:1rem;opacity:.9;
+}
+.books-grid{
+    display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));
+    gap:1rem;
+}
+.book-card{
+    background:white;border-radius:20px;
+    padding:1.1rem 1rem;cursor:pointer;
+    transition:transform .2s,box-shadow .2s;
+    display:flex;flex-direction:column;align-items:center;text-align:center;
+    box-shadow:0 4px 16px rgba(0,0,0,.1);
+    border:none;
+}
+.book-card:hover{transform:translateY(-4px);box-shadow:0 12px 30px rgba(0,0,0,.18);}
+.book-card:active{transform:translateY(-1px);}
+.book-emoji-wrap{
+    width:72px;height:72px;border-radius:18px;
+    display:flex;align-items:center;justify-content:center;
+    font-size:2.6rem;margin-bottom:.75rem;
+}
+.book-card-title{
+    font-size:.82rem;font-weight:800;color:#1E293B;
+    line-height:1.3;margin-bottom:.2rem;
+}
+.book-card-author{
+    font-size:.68rem;color:#64748B;line-height:1.3;
+}
+.book-card-btn{
+    margin-top:.75rem;background:var(--primary);
+    border:none;border-radius:50px;
+    padding:.3rem .9rem;font-size:.7rem;font-weight:800;
+    color:white;cursor:pointer;
+}
+
+/* ═══════════════════════════════
+   SHORT QUIZ SCREEN
+═══════════════════════════════ */
+#shortQuizScreen{
+    flex-direction:column;align-items:center;
+    background:linear-gradient(160deg,#38BDF8,#818CF8 55%,#A78BFA);
+    overflow-y:auto;padding:1.5rem;
+}
+.sq-container{width:100%;max-width:500px;}
+.sq-header{
+    display:flex;align-items:center;justify-content:space-between;
+    margin-bottom:1.25rem;
+}
+.sq-back{
+    background:rgba(255,255,255,.2);border:none;color:white;
+    border-radius:50px;padding:.5rem 1rem;font-weight:700;cursor:pointer;
+}
+.sq-title{color:white;font-weight:800;font-size:1rem;}
+.sq-earned-disp{
+    background:rgba(255,255,255,.2);border-radius:50px;
+    padding:.35rem .85rem;font-size:.8rem;font-weight:700;color:white;
+}
+.sq-progress-bar{
+    background:rgba(255,255,255,.2);border-radius:10px;
+    height:10px;margin-bottom:1.25rem;overflow:hidden;
+}
+.sq-progress-fill{height:100%;background:white;border-radius:10px;transition:width .4s;}
+.sq-card{
+    background:white;border-radius:28px;
+    padding:2rem;text-align:center;
+    box-shadow:0 16px 50px rgba(0,0,0,.2);
+}
+.sq-meta{
+    display:flex;justify-content:space-between;
+    margin-bottom:1.5rem;font-size:.82rem;font-weight:700;color:#64748B;
+}
+.sq-score-disp{color:#6C63FF;}
+.sq-question{
+    font-size:1.05rem;font-weight:800;color:#1E293B;
+    line-height:1.5;margin-bottom:1.4rem;
+}
+.sq-options{
+    display:grid;grid-template-columns:1fr 1fr;gap:.75rem;margin-bottom:1rem;
+}
+.sq-opt{
+    padding:.85rem .5rem;border:2.5px solid #E2E8F0;border-radius:14px;
+    background:#F8FAFF;font-size:.85rem;font-weight:700;color:#1E293B;
+    cursor:pointer;transition:all .2s;font-family:inherit;
+}
+.sq-opt:hover:not(:disabled){border-color:#6C63FF;background:#F5F3FF;transform:translateY(-1px);}
+.sq-feedback{font-size:.9rem;font-weight:700;min-height:24px;margin-bottom:.5rem;}
+.sq-next-btn{
+    display:none;background:linear-gradient(135deg,#6C63FF,#818CF8);
+    color:white;border:none;border-radius:50px;
+    padding:.875rem 2rem;font-size:1rem;font-weight:800;
+    cursor:pointer;width:100%;
+}
+.sq-result{
+    display:none;background:white;border-radius:28px;
+    padding:2rem;text-align:center;
+    box-shadow:0 16px 50px rgba(0,0,0,.2);
+}
+
 </style>
 </head>
 <body>
@@ -611,21 +744,21 @@ input,select{display:none;}
                 <div class="age-card" style="--age-col:#F59E0B;--age-bg:#FFFBEB" onclick="selectAge('easy',this)">
                     <span class="age-card-icon">🧸</span>
                     <div class="age-card-info">
-                        <div class="age-card-label">4 – 6 years</div>
+                        <div class="age-card-label">3 – 6 years</div>
                         <div class="age-card-sub">Short fun stories</div>
                     </div>
                 </div>
                 <div class="age-card" style="--age-col:#6C63FF;--age-bg:#F5F3FF" onclick="selectAge('medium',this)">
                     <span class="age-card-icon">🚀</span>
                     <div class="age-card-info">
-                        <div class="age-card-label">7 – 9 years</div>
+                        <div class="age-card-label">6 – 9 years</div>
                         <div class="age-card-sub">Adventure stories</div>
                     </div>
                 </div>
                 <div class="age-card" style="--age-col:#10B981;--age-bg:#ECFDF5" onclick="selectAge('hard',this)">
                     <span class="age-card-icon">🐉</span>
                     <div class="age-card-info">
-                        <div class="age-card-label">10 – 12 years</div>
+                        <div class="age-card-label">9 – 12 years</div>
                         <div class="age-card-sub">Challenge chapters</div>
                     </div>
                 </div>
@@ -702,7 +835,6 @@ input,select{display:none;}
 
                 <!-- Short Quiz -->
                 <div class="act-card quiz" onclick="launchActivity('quiz')">
-                    <div class="coming-soon">Coming Soon</div>
                     <div class="act-card-content">
                         <div class="act-card-title">Short Quiz</div>
                         <div class="act-card-sub">Answer questions, earn bonus time</div>
@@ -976,6 +1108,52 @@ input,select{display:none;}
     </div>
 </div>
 
+
+<!-- ══════ BOOK LIBRARY ══════ -->
+<div id="bookLibraryScreen" class="screen">
+    <div class="lib-header">
+        <button class="lib-back-btn" onclick="refreshHomeStats();show('welcomeScreen')">← Home</button>
+        <div class="lib-header-title">📚 Choose Your Book</div>
+        <div class="lib-age-badge" id="libAgeBadge">Ages 6–9</div>
+    </div>
+    <div class="lib-body">
+        <div class="lib-section-title" id="libSectionTitle">Pick a book and start reading to earn screen time!</div>
+        <div class="books-grid" id="booksGrid"></div>
+    </div>
+</div>
+
+<!-- ══════ SHORT QUIZ ══════ -->
+<div id="shortQuizScreen" class="screen">
+    <div class="sq-container">
+        <div class="sq-header">
+            <button class="sq-back" onclick="refreshHomeStats();show('welcomeScreen')">← Home</button>
+            <span class="sq-title">🧠 Short Quiz</span>
+            <div class="sq-earned-disp" id="sqEarnedDisp">🎮 +0 min</div>
+        </div>
+        <div class="sq-progress-bar">
+            <div class="sq-progress-fill" id="sqProgressFill" style="width:0%"></div>
+        </div>
+        <div class="sq-card" id="sqCard">
+            <div class="sq-meta">
+                <span id="sqQLabel">Question 1 of 10</span>
+                <span class="sq-score-disp" id="sqScoreDisp">⭐ 0 correct</span>
+            </div>
+            <div class="sq-question" id="sqQuestion">Loading…</div>
+            <div class="sq-options" id="sqOptions"></div>
+            <div class="sq-feedback" id="sqFeedback"></div>
+            <button class="sq-next-btn" id="sqNextBtn" onclick="nextQuizQ()">Next →</button>
+        </div>
+        <div class="sq-result" id="sqResult">
+            <div style="font-size:4rem;margin-bottom:.5rem">🏆</div>
+            <div style="font-size:1.5rem;font-weight:900;color:#1E293B;margin-bottom:.25rem">Quiz Complete!</div>
+            <div style="font-size:3rem;font-weight:900;color:#6C63FF;margin:.5rem 0"><span id="sqResultScore">0/10</span></div>
+            <div style="font-size:.9rem;color:#64748B;margin-bottom:1rem">Screen time earned: <strong style="color:#FFD700;font-size:1.3rem"><span id="sqResultEarned">+0</span> min 🎮</strong></div>
+            <button onclick="startShortQuiz()" style="background:linear-gradient(135deg,#6C63FF,#818CF8);color:white;border:none;border-radius:50px;padding:.875rem 1.5rem;font-size:.95rem;font-weight:800;cursor:pointer;width:100%;margin-bottom:.75rem">🔄 Try Again</button>
+            <button onclick="refreshHomeStats();show('welcomeScreen')" style="background:#F1F5F9;color:#64748B;border:none;border-radius:50px;padding:.875rem 1.5rem;font-size:.95rem;font-weight:700;cursor:pointer;width:100%">← Back to Home</button>
+        </div>
+    </div>
+</div>
+
 <!-- Toast -->
 <div class="toast" id="toast"><div class="toast-t" id="toastT">—</div><div class="toast-b" id="toastB">—</div></div>
 
@@ -984,7 +1162,7 @@ input,select{display:none;}
    GOOGLE SIGN IN
 ══════════════════════════════════════ */
 const GOOGLE_CLIENT_ID = '529318528256-lddep3j5fq8gn78637ded6ic9nd8u0q2.apps.googleusercontent.com';
-// Hosted at: https://mohammed101-moh.github.io/Learnbot/ — v3 live
+// Hosted at: https://mohammed101-moh.github.io/Learnbot/ — updated 2026-06-02 17:59
 
 function initGoogleSignIn() {
     if (typeof google === 'undefined') { setTimeout(initGoogleSignIn, 500); return; }
@@ -1108,6 +1286,272 @@ const LIBRARY = {
     ]
 };
 
+
+/* ══════════════════════════════════════
+   BOOK LIBRARY — 25 books per age group
+══════════════════════════════════════ */
+const BOOKS = {
+easy:[
+ {id:'wtwta',title:"Where the Wild Things Are",author:"Maurice Sendak",emoji:"🦁",col:"#7C6FFF",
+  text:"Max loved being wild! He wore his wolf costume and jumped around making lots of noise. His mum sent him to bed without supper. That night something magical happened. Trees began to grow in his bedroom and the walls turned into a jungle. Max sailed away to where the wild things lived and became their king. He had a marvellous wild rumpus with all the monsters. But when he felt lonely he sailed back home where his supper was still hot waiting for him."},
+ {id:'vhc',title:"The Very Hungry Caterpillar",author:"Eric Carle",emoji:"🐛",col:"#10B981",
+  text:"On Sunday a tiny caterpillar hatched from a small egg. He was very hungry! He ate one apple on Monday, two pears on Tuesday, three plums on Wednesday, four strawberries on Thursday and five oranges on Friday. He was still hungry so on Saturday he ate through ten different things and got a tummy ache. He built a warm cocoon around himself and slept for two weeks. When he came out he was a beautiful butterfly with big colourful wings."},
+ {id:'gnm',title:"Goodnight Moon",author:"Margaret Wise Brown",emoji:"🌙",col:"#8B5CF6",
+  text:"In the great green room there was a telephone and a red balloon and a picture of a cow jumping over the moon. There were two little kittens and a pair of mittens. There was a bowl full of mush and a quiet old lady whispering hush. Good night room. Good night moon. Good night cow jumping over the moon. Good night little stars everywhere. Good night noises everywhere. The little bunny slowly closed his eyes and drifted off to sleep in the quiet cosy room."},
+ {id:'cith',title:"The Cat in the Hat",author:"Dr. Seuss",emoji:"🎩",col:"#EF4444",
+  text:"It was cold and wet and the two children had nothing to do. Then a tall cat with a big striped hat knocked on their door! He said he knew lots of fun games to play inside. He brought Thing One and Thing Two who flew kites and made a terrible mess. The fish was very worried that Mother would come home and see everything. But just in time the Cat used a special machine to clean up every single mess. Mother came home and everything was perfect."},
+ {id:'geah',title:"Green Eggs and Ham",author:"Dr. Seuss",emoji:"🍳",col:"#F59E0B",
+  text:"Sam-I-Am asked his friend to try green eggs and ham. Would he eat them in a house? No! Would he eat them with a mouse? No! Would he eat them here or there? He would not eat them anywhere! He did not like green eggs and ham. Sam kept asking and asking. Would he try them on a train? In the rain? With a fox? In a box? Finally the friend agreed to try them just to make Sam stop. He tasted them and was amazed. He liked green eggs and ham! He would eat them anywhere!"},
+ {id:'bb',title:"Brown Bear, Brown Bear",author:"Bill Martin Jr",emoji:"🐻",col:"#92400E",
+  text:"Brown Bear, Brown Bear, what do you see? I see a red bird looking at me. Red Bird, Red Bird, what do you see? I see a yellow duck looking at me. Yellow Duck, yellow duck, what do you see? I see a blue horse looking at me. Blue Horse, Blue Horse, what do you see? I see a green frog looking at me. Green Frog, Green Frog, what do you see? I see children looking at me! Children, children, what do you see? We see a teacher looking at us!"},
+ {id:'chbb',title:"Chicka Chicka Boom Boom",author:"Bill Martin Jr",emoji:"🌴",col:"#10B981",
+  text:"A told B and B told C, I will meet you at the top of the coconut tree! Whee said D to E F G, I will meet you at the top of the coconut tree! Chicka chicka boom boom, will there be enough room? Here comes H and I and J and K! L and M and N and O and P. Q R S and T! U V W and X Y Z! Chicka chicka boom boom! The whole alphabet climbed the coconut tree and came tumbling down together."},
+ {id:'iyg',title:"If You Give a Mouse a Cookie",author:"Laura Numeroff",emoji:"🍪",col:"#F97316",
+  text:"If you give a mouse a cookie he will want a glass of milk. When you give him the milk he will want a straw. When he is done he will ask for a napkin and want to look in a mirror. When he looks in the mirror he might notice his hair needs cutting and ask for scissors. After his haircut he will want to sweep up and when he sees a broom he will want to make a broom picture which will remind him of cookies. He will want another cookie!"},
+ {id:'gt',title:"The Giving Tree",author:"Shel Silverstein",emoji:"🌳",col:"#16A34A",
+  text:"Once there was a tree who loved a little boy. Every day the boy came to eat her apples, swing from her branches and slide down her trunk. The tree was happy. As the boy grew older he wanted money so the tree gave him her apples. When he wanted a house she gave her branches. When he wanted a boat she gave her trunk. Years later when the old man needed somewhere to sit the old stump said she could be a good sitting stump. And the tree was happy."},
+ {id:'cor',title:"Corduroy",author:"Don Freeman",emoji:"🧸",col:"#7C3AED",
+  text:"Corduroy was a small teddy bear in a toy store with one button missing from his overalls. Every day he hoped someone would take him home. One day a little girl named Lisa wanted him very much but her mum said he had a button missing. That night Corduroy searched the whole store for his lost button. The next morning Lisa came back with her own money to buy him. She took him home and sewed a brand new button on his overalls. You are my very own bear said Lisa and Corduroy smiled."},
+ {id:'ptc',title:"Pete the Cat",author:"James Dean",emoji:"🐱",col:"#0EA5E9",
+  text:"Pete the Cat walked down the street wearing his brand new white shoes. He loved his shoes so much! He stepped in a pile of strawberries and his shoes turned red. Did Pete cry? Goodness no! He kept walking and singing. He stepped in blueberries and his shoes turned blue. He stepped in mud and they turned brown. He stepped in a bucket of water and his shoes were white again. The moral of Pete's story was this. No matter what happens in life you just keep walking and singing your song."},
+ {id:'dlt',title:"Dragons Love Tacos",author:"Adam Rubin",emoji:"🐉",col:"#DC2626",
+  text:"Dragons absolutely love tacos. Big tacos, small tacos, tacos of every size and kind. They love chicken tacos and beef tacos. Dragons will travel very far for a good taco. But there is one very important thing to remember if you want to have a dragon over for a taco party. Never ever serve spicy salsa! Even a tiny bit of spicy salsa makes a dragon sneeze enormous flames. This causes tremendous problems at parties. Stick to mild salsa only and your dragon party will be the best party ever."},
+ {id:'snd',title:"The Snowy Day",author:"Ezra Jack Keats",emoji:"❄️",col:"#38BDF8",
+  text:"Peter woke up one morning and looked out his window. Snow had fallen everywhere! He put on his snowsuit and went outside. He walked through the deep soft snow making footprints. He found a stick and hit a snow covered tree. Plop! Snow fell on his head. He made a snowman and made snow angels. He tried to save a snowball in his pocket but when he looked that night it was gone. The next morning he woke up to find it had snowed again and he ran out to play."},
+ {id:'cg',title:"Curious George",author:"H.A. Rey",emoji:"🐒",col:"#FBBF24",
+  text:"George was a curious little monkey who lived with the Man with the Yellow Hat in the big city. George loved to explore and try new things but his curiosity always got him into trouble. One day George picked up a telephone and accidentally called the fire brigade! Lots of fire engines came rushing down the street. The firemen were cross at first but George helped them find a real fire! Everyone forgave him. George did not mean to cause trouble. He was just curious about everything in the wonderful world around him."},
+ {id:'hpc',title:"Harold and the Purple Crayon",author:"Crockett Johnson",emoji:"✏️",col:"#A855F7",
+  text:"Harold wanted to go for a walk in the moonlight but there was no moon. So he drew one with his purple crayon. He drew a straight path and when he needed a forest he drew one. He drew a mountain and a boat and a whole ocean to sail across. Harold drew everything he needed for his adventure. When he got tired he could not find his bedroom window anywhere. He remembered that his window was always near the moon. He drew it there and climbed safely into his bed and fell fast asleep."},
+ {id:'vbs',title:"The Very Busy Spider",author:"Eric Carle",emoji:"🕷️",col:"#64748B",
+  text:"Early in the morning a spider blew onto a fence near a farm and began to spin her web. A horse asked if she would like to go for a ride. The spider did not answer. She was busy. A cow asked if she would like to eat some grass. The spider did not answer. She kept spinning. A dog asked if she would like to chase a cat. The spider did not answer. By evening her beautiful web was all finished. A fly buzzed into it. And the spider had her supper. What a wonderful web!"},
+ {id:'plp',title:"Don't Let the Pigeon Drive the Bus",author:"Mo Willems",emoji:"🚌",col:"#EAB308",
+  text:"The bus driver had to leave for a moment and asked you one thing. Please do not let the pigeon drive the bus. Soon a pigeon showed up and started begging. Please please please let me drive the bus! I will be very careful! Just this once! I never get to do anything fun! The pigeon tried every trick and threw a huge tantrum. But you remembered your promise to the driver. No. The pigeon was not allowed to drive the bus. When the driver came back the pigeon spotted a truck and had a brand new idea."},
+ {id:'ccm',title:"Click Clack Moo",author:"Doreen Cronin",emoji:"🐄",col:"#166534",
+  text:"Farmer Brown had a problem. His cows found a typewriter and could type. They typed a note saying the barn was cold and they wanted electric blankets. Farmer Brown could not believe it! He wrote back saying absolutely no. The cows went on strike and stopped giving milk. The hens joined and stopped giving eggs. Farmer Brown had no choice but to make a deal through Duck who was the neutral party. The animals got their blankets and gave the typewriter back. But then Duck had his own demands. He wanted a diving board."},
+ {id:'llrp',title:"Llama Llama Red Pajama",author:"Anna Dewdney",emoji:"🦙",col:"#EC4899",
+  text:"Llama Llama, Red Pajama, reading stories with his mama. After kisses and tucking in and lights out, baby llama is alone in the dark. He hears sounds. He starts to worry and calls for Mama Llama. When she does not come right away he starts to worry more and calls louder and louder. Then Mama comes running upstairs. Mama Llama had been just downstairs all along. She told him that even when they are not right next to each other she is always nearby. Baby Llama snuggled up safe and warm and fell asleep."},
+ {id:'dob',title:"Duck on a Bike",author:"David Shannon",emoji:"🦆",col:"#0891B2",
+  text:"One day Duck got a very silly idea. He decided to ride a bike. He wobbled a little at first but he kept going. He rode past the cow who thought it was strange but said hello. He rode past the horse and the pig and the cat and the dog. Each animal thought riding a bike looked rather silly. But secretly every single animal thought it looked like enormous fun. That evening the children went inside and left their bikes outside. Every animal on the farm picked up a bike and they all rode together!"},
+ {id:'oli',title:"Olivia",author:"Ian Falconer",emoji:"🐷",col:"#F43F5E",
+  text:"Olivia is a pig who is very good at lots of things. She is very good at building enormous sandcastles. She is very good at singing at the top of her voice. She is very good at wearing people out. In the morning it takes her a very long time to decide what to wear. She likes to look at paintings in art museums and sometimes tries to make them herself. At bedtime Mama reads her one book and usually only one. I love you Olivia says Mama. I love you too says Olivia after a moment."},
+ {id:'caps',title:"Caps for Sale",author:"Esphyr Slobodkina",emoji:"🎩",col:"#7C3AED",
+  text:"A peddler walked through town with all his caps piled high on his head. He had his own checked cap, then grey caps, then brown caps, then blue caps, then red caps on top. He could not sell a single cap today so he sat under a tree and fell asleep. When he woke up all his caps were gone! He looked up and saw monkeys in the tree wearing every single cap. He was very angry and stamped his foot. The monkeys copied him! He threw his own cap down and all the monkeys copied him and threw all the caps right down."},
+ {id:'snt',title:"The Sneetches",author:"Dr. Seuss",emoji:"⭐",col:"#F59E0B",
+  text:"The Star-Belly Sneetches had stars on their bellies and thought they were the best. The Plain-Belly Sneetches had no stars and felt left out. Then Sylvester McMonkey McBean arrived with a machine. For three dollars he put stars on everyone! But then the original star-bellies paid to have theirs removed to be different again. Back and forth they went all day spending all their money going in and out of the machine. By evening nobody could remember who had stars first. They all looked the same. And at last they understood that stars should not matter at all."},
+ {id:'hop',title:"Hop on Pop",author:"Dr. Seuss",emoji:"📖",col:"#10B981",
+  text:"Up cup. Pup in cup. Pup up cup. Mouse in house. House on mouse. Mouse in house with a grouse! Hop on pop. We like to hop on top of pop. Stop! You must not hop on pop. Pat sat. Pat sat on a flat cat. Flat cat! Pat sat on a flat cat. Silly Sally sat on a wall. Silly Sally sat by the tall wall. Tall wall, small ball, small ball on a tall wall. Mr. Brown sat on Brown. Mr. Brown sat on the crown. Down brown, down crown! Our fun little book of words is done."},
+ {id:'aymm',title:"Are You My Mother?",author:"P.D. Eastman",emoji:"🐦",col:"#0EA5E9",
+  text:"A baby bird hatched while his mother was away looking for food. The baby bird looked everywhere for her. He climbed out of the nest and walked along asking everyone he met. Are you my mother? he asked a kitten. No. Are you my mother? he asked a hen. No! He asked a dog and a cow and even a big snorting machine called a Snort. Nobody was his mother. Then the Snort lifted him high up and dropped him gently right back into his own nest! And there was his mother with a big fat worm. He had found her."}
+],
+medium:[
+ {id:'cw',title:"Charlotte's Web",author:"E.B. White",emoji:"🕷️",col:"#7C6FFF",
+  text:"Wilbur the pig discovered he was to be killed for food and was terribly sad. His friend Charlotte the spider decided to save him using the only tool she had, her web. She wove the words SOME PIG into the silk above his pen. The farmer was astonished and thought Wilbur must be truly special. Charlotte wrote TERRIFIC and RADIANT and HUMBLE. People came from miles around to see the famous pig. Wilbur became so famous nobody could bear to slaughter him. Charlotte saved her best friend using nothing but her brilliant mind and patient work."},
+ {id:'jgp',title:"James and the Giant Peach",author:"Roald Dahl",emoji:"🍑",col:"#F97316",
+  text:"James lived miserably with his horrible aunts Aunt Sponge and Aunt Spiker until a strange old man gave him glowing green magical things. One got under the old peach tree and the tree grew the most enormous peach imaginable. Inside James found a group of giant friendly insects who had been waiting for him. A Centipede, a Grasshopper, an Earthworm, a Spider, a Glow-worm and a Ladybird became his family. Together they broke free from the aunts and floated across the ocean on the most extraordinary adventure any child had ever had."},
+ {id:'mth',title:"Magic Tree House",author:"Mary Pope Osborne",emoji:"🌳",col:"#10B981",
+  text:"Jack and his sister Annie discovered a mysterious tree house in the woods filled with books about every time and place imaginable. When Jack pointed to a picture and wished to go there the tree house started to spin wildly. The wind howled and everything went dark. When it stopped they were standing in a real prehistoric jungle! Real dinosaurs walked past them. Jack scribbled notes while Annie made friends with a baby dinosaur. They had to use the books cleverly to find their way home. Every time the tree house spun it took them somewhere new."},
+ {id:'dwk',title:"Diary of a Wimpy Kid",author:"Jeff Kinney",emoji:"📓",col:"#EF4444",
+  text:"Greg Heffley kept a journal even though he would never call it a diary. Greg had big plans to be famous and rich one day. But first he had to survive middle school. Everything seemed designed to humiliate him. His best friend Rowley was embarrassingly uncool. His older brother Rodrick made his life miserable. Cheese touched the playground and anyone who touched it got the Cheese Touch. Greg made some clever decisions and many catastrophically bad ones. Through it all he wrote everything down with great honesty because he knew future generations would want to understand what middle school was really like."},
+ {id:'ccf',title:"Charlie and the Chocolate Factory",author:"Roald Dahl",emoji:"🍫",col:"#92400E",
+  text:"Charlie Bucket was desperately poor but good-hearted. He loved chocolate but could only afford one bar per year. When the eccentric chocolatier Willy Wonka hid five golden tickets inside chocolate bars the whole world went wild searching for them. Against all odds Charlie found the final ticket. Inside the factory he found a world beyond imagination. Rivers of chocolate. Rooms made entirely of candy. Everlasting gobstoppers and fizzy lifting drinks. One by one the other children were eliminated by their own greed and bad behaviour. Only Charlie remained. He was given the greatest prize of all because he was kind and honest."},
+ {id:'mat',title:"Matilda",author:"Roald Dahl",emoji:"📚",col:"#8B5CF6",
+  text:"Matilda was an extraordinary little girl who taught herself to read at age three and had devoured the entire children's library by the time she started school. Her dreadful parents ignored her brilliance. The terrifying headmistress Miss Trunchbull terrorised every child and teacher. But Matilda's kind teacher Miss Honey saw exactly how exceptional she was. One day Matilda discovered she could move objects with her mind. Using this power and her extraordinary intelligence she engineered a plan to defeat Miss Trunchbull and rescue Miss Honey from the cruel situation she had endured all her life. Brains and courage were all she needed."},
+ {id:'bfg',title:"The BFG",author:"Roald Dahl",emoji:"👣",col:"#0EA5E9",
+  text:"Sophie was snatched from her orphanage bed in the middle of the night by an enormous figure and carried to Giant Country. The BFG was different from the other giants. He was Big Friendly and collected dreams in glass jars, blowing them through a trumpet into children's windows while they slept. Sophie hatched a daring plan. She and the BFG visited the Queen of England to expose the bloodthirsty giants who were eating children. With the Queen's help the army was sent to capture the horrible giants and the BFG was given his own house with a proper kitchen."},
+ {id:'box',title:"The Boxcar Children",author:"Gertrude Chandler Warner",emoji:"🚃",col:"#16A34A",
+  text:"Four orphaned children named Henry, Jessie, Violet and Benny were afraid their unknown grandfather would be unkind so they ran away. They found an old abandoned railway boxcar in the forest and made it their home. They swept it clean and built furniture from crates. Henry found work on a farm to earn money for food. They were brave and resourceful and completely self-sufficient. But their grandfather had been searching for them and when they finally met him they discovered he was a warm and generous man who had been heartbroken to lose them. It was the home they had always wished for."},
+ {id:'fst',title:"Flat Stanley",author:"Jeff Brown",emoji:"📄",col:"#FBBF24",
+  text:"Stanley Lambchop was squashed completely flat by a falling bulletin board overnight. He was only half an inch thick but absolutely fine. Being flat had surprising advantages. He could slide under doors and travel by post in a flat envelope. He flew magnificently as a human kite. He helped the police catch thieves at a museum by disguising himself as a painting on the wall and then jumping out to surprise them. The criminals were astonished to be caught by a flat boy. Eventually his brother Arthur used a bicycle pump to inflate him back to normal shape."},
+ {id:'mws',title:"My Weird School",author:"Dan Gutman",emoji:"🏫",col:"#EC4899",
+  text:"A.J. hated school with a passion and declared he would never learn anything ever. His teacher Miss Daisy was wonderfully strange. She announced to the class that she herself could not read or count and that the students would have to teach her everything. A.J. thought perhaps school would not be entirely terrible if he was the one doing the teaching. Through hilarious adventures and ridiculous situations A.J. and his classmates somehow absorbed enormous amounts of knowledge without quite noticing it was happening. A.J. even started to secretly enjoy reading though he would absolutely never tell anyone."},
+ {id:'ntg',title:"Nate the Great",author:"Marjorie Weinman Sharmat",emoji:"🔍",col:"#F97316",
+  text:"Nate the Great was a young detective who always wore a trenchcoat, ate pancakes while thinking, and left notes for his mother before heading out on cases. His friend Annie could not find her painting of a dog. Nate interviewed every possible suspect methodically. He asked precise questions and followed every clue however small it seemed. He even interviewed Annie's fearsome dog Fang who was completely unhelpful. By working through the evidence carefully and logically Nate worked out exactly where the painting had gone. The solution was simpler than expected. Good detectives always consider the most obvious explanation first."},
+ {id:'rq',title:"Ramona Quimby, Age 8",author:"Beverly Cleary",emoji:"👧",col:"#A855F7",
+  text:"Ramona Quimby started third grade feeling proud and grown-up but things kept going spectacularly wrong. She cracked what she thought was a hard-boiled egg on her own head at lunch only to discover her mother had packed a raw one by mistake. Her teacher did not seem to understand her at all. Her family was worried about money. Her father was going to university while working and everyone was stressed. But Ramona was irrepressibly funny and determined. She discovered that families who truly love each other can survive misfortune, embarrassment, and raw eggs on heads without falling apart."},
+ {id:'mm',title:"The Mouse and the Motorcycle",author:"Beverly Cleary",emoji:"🐭",col:"#0891B2",
+  text:"Ralph was a young mouse who lived in a hotel wall and watched humans with great curiosity. When a boy named Keith came to stay and carelessly left a toy motorcycle on the bedside table, Ralph could not resist. By making a vroom sound with his mouth he discovered he could make it go! Keith woke and was amazed to find a talking mouse. The two became genuine friends. Keith gave Ralph the motorcycle as a gift. But Ralph had to prove his responsibility when Keith fell ill and needed an aspirin that only Ralph could find by making a dangerous nighttime journey."},
+ {id:'sl',title:"Stuart Little",author:"E.B. White",emoji:"🐭",col:"#6366F1",
+  text:"Stuart Little was born to an ordinary New York family but looked exactly like a mouse, small grey and with a fine tail. His family loved him completely and accepted him without question. Stuart was ingenious and brave despite his size. He raced tiny sailboats in Central Park and drove a miniature car around New York City with great confidence. When his best friend Margalo the bird disappeared one day Stuart climbed into his car and drove north in search of her. He asked everyone he met if they had seen a small bird. He kept going full of hope."},
+ {id:'mfd',title:"My Father's Dragon",author:"Ruth Stiles Gannett",emoji:"🐉",col:"#DC2626",
+  text:"Elmer Elevator's father told him about a baby dragon trapped on Wild Island, forced to carry animals across a river all day. Elmer packed his knapsack with carefully chosen supplies: chewing gum, lollipops, rubber bands, a magnifying glass and hair ribbon. On the island he encountered dangerous lions and tigers and rhinoceroses and gorillas. Each time Elmer used exactly the right object from his knapsack to cleverly distract each creature. He found the dragon with its wings bound with rope. He freed it and the dragon carried him gratefully up into the sky. Smart preparation beats brute strength every time."},
+ {id:'cits',title:"Cricket in Times Square",author:"George Selden",emoji:"🦗",col:"#16A34A",
+  text:"Chester the cricket was accidentally transported from his quiet Connecticut meadow to the noisy Times Square subway station inside a picnic basket. He found refuge in a newspaper kiosk run by the Bellini family who were struggling to make ends meet. Chester befriended Tucker Mouse and Harry Cat who lived nearby and knew every secret of the city. Chester discovered he had a remarkable gift. After hearing a piece of music just once he could reproduce it perfectly on his wings. His beautiful concerts drew huge crowds to the newsstand and saved Mario Bellini's family. But Chester's heart remained in the meadow."},
+ {id:'eb',title:"Encyclopedia Brown",author:"Donald J. Sobol",emoji:"🔍",col:"#7C3AED",
+  text:"Leroy Brown was called Encyclopedia because his head was stuffed with more facts than most adults ever learn. He ran a detective agency from his garage charging twenty-five cents per case plus expenses. No mystery in Idaville could defeat him. His father the chief of police secretly brought cases home for Leroy to solve at the dinner table. His nemesis was Bugs Meany who ran a gang of cheats and bullies. His partner Sally Kimball contributed her formidable fists when necessary. Leroy solved every case using observation, logical reasoning, and his remarkable command of facts. Knowledge truly was his superpower."},
+ {id:'fj',title:"Freckle Juice",author:"Judy Blume",emoji:"🥤",col:"#F59E0B",
+  text:"Andrew Marcus wanted freckles more than anything. His classmate Nicky had magnificent freckles that hid the dirt on his neck so he never needed to wash. Sharon, seeing a business opportunity, offered to sell Andrew a secret freckle juice recipe for fifty cents. The recipe contained grape juice, mustard, mayonnaise, vinegar and other revolting ingredients. Andrew drank the entire glass and turned a spectacular shade of greenish blotchy. His teacher sent him home to wash his face. Andrew learned an important lesson about wanting what other people have and spending your money on sensible things."},
+ {id:'sw',title:"Sideways Stories from Wayside School",author:"Louis Sachar",emoji:"🏫",col:"#0EA5E9",
+  text:"Wayside School was meant to be built with thirty classrooms on one floor but the builder made a mistake and built it thirty storeys high with one room on each level. The bottom two floors had no classrooms at all which was very inconvenient. Extraordinary things happened in this extraordinary school. Mrs. Gorf turned misbehaving students into apples. There was a floor that did not exist but nobody discussed it. The three Erics were completely different despite sharing a name. Everything about Wayside School was peculiar but somehow also wonderful and the students would not have changed it for anything."},
+ {id:'mpw',title:"Mrs. Piggle-Wiggle",author:"Betty MacDonald",emoji:"🏠",col:"#A855F7",
+  text:"Mrs. Piggle-Wiggle was an unusual old woman who lived in an upside-down house and adored children. Parents telephoned her in desperation when their children developed horrible habits they could not cure. A boy refused all baths for so long that radishes grew in the dirt behind his ears. A girl was so untidy her bedroom became completely uninhabitable. Mrs. Piggle-Wiggle had a cure for every problem. She sent magic powders in little envelopes with precise instructions. Her cures always worked but always in the most unexpected and amusing fashion. Children always ended up discovering that good habits were actually more enjoyable than bad ones."},
+ {id:'ab',title:"Amelia Bedelia",author:"Peggy Parish",emoji:"🧹",col:"#EC4899",
+  text:"Amelia Bedelia was a new housekeeper who followed every single instruction with absolute literal precision. When told to dust the furniture she spread dusting powder all over everything. When told to dress the chicken for dinner she sewed it a complete miniature outfit. When told to draw the drapes she produced a detailed pencil sketch of the curtains. Her employers returned home to scenes of magnificent chaos. They were furious right up until the moment they tasted her extraordinary lemon meringue pie. You simply cannot fire someone who bakes like that. Amelia Bedelia kept her job and kept taking everything literally."},
+ {id:'htc',title:"Hank the Cowdog",author:"John R. Erickson",emoji:"🐕",col:"#92400E",
+  text:"Hank was Head of Ranch Security on a Texas cattle ranch and he approached this responsibility with tremendous seriousness even when nobody else appreciated his dedication. He investigated every suspicious smell and sound on the property. He was absolutely certain the coyotes were plotting something sinister and maintained careful surveillance. His sidekick Drover was cheerful but spectacularly cowardly. Hank had numerous misadventures including being falsely accused of serious crimes, being outsmarted by cats he considered his intellectual inferiors, and making questionable decisions. Nevertheless he always returned to his post. Duty was duty and Hank would never abandon it."},
+ {id:'pt',title:"The Phantom Tollbooth",author:"Norton Juster",emoji:"🚗",col:"#6366F1",
+  text:"Milo found everything in the world dull and pointless. A mysterious tollbooth appeared in his room and he drove through it in his toy car into the Lands Beyond. He was joined by the watchdog Tock whose body was an actual ticking clock. He visited Dictionopolis where words grew on trees and Digitopolis where numbers were mined from the ground. Rhyme and Reason had been banished and the land was falling into chaos. Milo undertook a quest to rescue them facing extraordinary dangers. By the end of his journey he had discovered that the world was absolutely overflowing with fascinating things for anyone willing to look."},
+ {id:'ic',title:"The Indian in the Cupboard",author:"Lynne Reid Banks",emoji:"🏺",col:"#F97316",
+  text:"Omri received a small plastic Native American figure and an old wooden cupboard for his birthday. He put the figure inside, turned a special key and locked it. The next morning the figure had come to life. Little Bear was a real Iroquois warrior from the eighteenth century, now three inches tall and absolutely bewildered. Omri had to hide him, feed him real food and learn to be responsible for another living person. He brought more figures to life including a cowboy called Boone. He learned the hardest lesson: bringing people to life is not a game. Every life is real and precious and carries enormous responsibility."},
+ {id:'ec',title:"The Enormous Crocodile",author:"Roald Dahl",emoji:"🐊",col:"#16A34A",
+  text:"The Enormous Crocodile was a greedy selfish reptile who boasted of his horrible secret plans and cunning tricks. He wanted to eat delicious children for lunch. He disguised himself as a see-saw in the park and as a coconut tree on the beach and as a bench in the town square. Children very nearly sat on him each time. But every single time the other jungle animals came and foiled his plans. The Elephant, the Muggle-Wump Monkey, the Roly-Poly Bird and the Hippopotamus all worked together. At last Trunky the Elephant grabbed the crocodile by the tail and flung him far into the blazing sun."}
+],
+hard:[
+ {id:'hp',title:"Harry Potter and the Philosopher's Stone",author:"J.K. Rowling",emoji:"⚡",col:"#7C3AED",
+  text:"Harry Potter had always been told his parents died in a car crash and that he should be grateful the Dursleys had taken him in. He slept in a cupboard and wore his cousin's cast-offs. On his eleventh birthday an enormous man named Hagrid arrived to tell him the truth. Harry was a wizard. His parents had been murdered by the darkest sorcerer of the age, Lord Voldemort, who had then inexplicably failed to kill Harry as a baby, leaving only a lightning bolt scar. Now Harry was invited to Hogwarts School of Witchcraft and Wizardry where he would discover a world of extraordinary magic, genuine friendship, and a destiny he never imagined."},
+ {id:'pj',title:"Percy Jackson and the Lightning Thief",author:"Rick Riordan",emoji:"🏺",col:"#0EA5E9",
+  text:"Percy Jackson had been expelled from six schools in six years and had no explanation for why terrible things kept happening around him. During a school trip his mathematics teacher transformed into a winged monster and tried to destroy him. His Latin teacher Mr. Brunner threw him a ball-point pen that became a bronze sword. Percy's entire understanding of his life collapsed. He was the son of a Greek god, which explained everything and nothing simultaneously. He learned that Olympus was real and that Mount Olympus sat above the Empire State Building. He had been accused of stealing Zeus's master lightning bolt and given ten days to return it or face a war of the gods."},
+ {id:'cn',title:"The Chronicles of Narnia",author:"C.S. Lewis",emoji:"🦁",col:"#FBBF24",
+  text:"During the evacuation of children from London in the Second World War, four siblings were sent to live with an elderly professor in his rambling country house. The youngest, Lucy, discovered that the wardrobe in the spare room was a passage between worlds. She pushed through coats of fur and emerged in a snowy forest in the land of Narnia, where it had been winter for a hundred years by the magic of the White Witch. She met Mr. Tumnus the faun over tea and crumpets. When her siblings finally believed her and followed her through, they discovered a world of prophecy, ancient magic and a great lion called Aslan who was the true king."},
+ {id:'hob',title:"The Hobbit",author:"J.R.R. Tolkien",emoji:"🧙",col:"#92400E",
+  text:"Bilbo Baggins was a thoroughly respectable hobbit who wanted nothing more than his comfortable hole, his pipe and his six meals a day. Then Gandalf the wizard arrived with thirteen dwarves to recruit him as a burglar on a quest to reclaim the Lonely Mountain from the dragon Smaug. Bilbo was horrified and said absolutely not. But something stirred within him, an adventurous spirit that had been sleeping his entire life. He signed the contract and ran out the door without even a pocket handkerchief. Over the following journey he encountered trolls, goblins, eagles, a skin-changer and deep in a mountain cave a wretched creature called Gollum who possessed an extraordinary ring."},
+ {id:'wt',title:"A Wrinkle in Time",author:"Madeleine L'Engle",emoji:"✨",col:"#6366F1",
+  text:"Meg Murry was miserable at school, perpetually in trouble, and consumed by worry about her father who had vanished two years earlier while working on a secret project for the government. One stormy night three extraordinary women appeared, Mrs. Whatsit, Mrs. Who and Mrs. Which, who were not human at all. They took Meg, her preternaturally intelligent brother Charles Wallace, and their friend Calvin across the universe by tesseract, which was a fold in the fabric of space-time. They arrived on a dark planet entirely controlled by a disembodied brain called IT that had enslaved all thought and abolished all individuality. The weapon capable of defeating IT was one IT could not comprehend: love."},
+ {id:'hol',title:"Holes",author:"Louis Sachar",emoji:"🕳️",col:"#F59E0B",
+  text:"Stanley Yelnats was convicted of stealing a pair of trainers he did not steal and sent to Camp Green Lake as an alternative to prison. The lake had been dry for over a century. Every day in the merciless Texas heat each boy was required to dig one hole exactly five feet deep and five feet wide. The warden claimed it built character but Stanley became increasingly certain she was searching for something specific. He befriended a withdrawn boy called Zero and began teaching him to read in exchange for help with the digging. Slowly Stanley uncovered the tangled truth about a century-old injustice, a family curse, a buried treasure and a friendship powerful enough to break both."},
+ {id:'hat',title:"Hatchet",author:"Gary Paulsen",emoji:"🪓",col:"#DC2626",
+  text:"Thirteen-year-old Brian Robeson was flying in a small bush plane to visit his father in the Canadian wilderness when the pilot suffered a fatal heart attack at the controls. Brian had forty minutes of chaotic flying before the plane plunged into a lake. He swam clear of the wreck and dragged himself onto the bank, alone in thousands of miles of trackless forest with nothing but the hatchet his mother had given him as a parting gift. No food. No shelter. No compass. No way to signal for help. Every mistake had direct and immediate consequences. Hunger, fear, a bear, a moose and a tornado all tried to defeat him. Brian refused to be defeated."},
+ {id:'giv',title:"The Giver",author:"Lois Lowry",emoji:"📚",col:"#0891B2",
+  text:"Jonas lived in a Community that had achieved Sameness: no conflict, no hunger, no colour, no music, no choice and no pain. At the Ceremony of Twelve each child was assigned their lifelong occupation. Jonas received the rarest assignment of all, Receiver of Memory. The elderly Giver began transmitting to Jonas the accumulated memories of everything that had existed before Sameness: the beauty of snow, the warmth of sunshine, the agony of war, the meaning of love. Jonas began to understand what his Community had surrendered to achieve its false perfection. When a devastating secret about his Community was revealed Jonas faced a choice that could not be undone."},
+ {id:'won',title:"Wonder",author:"R.J. Palacio",emoji:"🌟",col:"#F97316",
+  text:"August Pullman had been born with a severe craniofacial difference that required twenty-seven operations in his first decade of life. He had never attended school. Starting fifth grade at a mainstream school was terrifying. On his first day he wore his astronaut helmet to feel invisible. Some children were cruel in the casual thoughtless way children can be. But Jack Will sat with him at lunch, and Summer did too. Auggie was funny and brilliant and passionate about Star Wars. He was not defined by his face, though others kept trying to reduce him to it. Over the course of one school year ordinary kindness proved more powerful than he had dared hope."},
+ {id:'nts',title:"Number the Stars",author:"Lois Lowry",emoji:"🌟",col:"#16A34A",
+  text:"In 1943 Nazi Germany occupied Denmark and Annemarie Johansen's Copenhagen had become an intimidating place full of German soldiers on every corner. Her best friend Ellen Rosen was Jewish. When the Nazis announced they were rounding up all Danish Jews for relocation Annemarie's family hid Ellen in their apartment as a second daughter. When German soldiers came that night Ellen pretended to be Annemarie's sister. The entire Danish nation was conspiring to smuggle its Jewish citizens to safety in neutral Sweden across the dark water. Annemarie was given a task whose true importance she did not understand until afterwards. She discovered that ordinary people performing small acts of courage can alter the course of history."},
+ {id:'btt',title:"Bridge to Terabithia",author:"Katherine Paterson",emoji:"🌉",col:"#7C6FFF",
+  text:"Jess Aarons woke every morning before dawn to practice running so he could be the fastest boy in fifth grade. Then Leslie Burke moved in next door and effortlessly beat everyone on the first day of school. Instead of rivals they became inseparable. They created a secret kingdom in the woods across a rope swing over a creek. They called it Terabithia and there they were rulers of an imaginary realm. Leslie was fearless and unconventional. She introduced Jess to classical music, fine art and the possibility that the world was bigger than either of them had imagined. And then one morning the world contracted without warning into something much smaller and darker than it had been."},
+ {id:'tev',title:"Tuck Everlasting",author:"Natalie Babbitt",emoji:"🌊",col:"#0EA5E9",
+  text:"Winnie Foster felt trapped by her orderly respectable family and longed for something she could not name. She discovered a spring in the forbidden wood and encountered the Tuck family who had drunk from it eighty-seven years earlier. The spring gave them immortality. They could not age or die. The Tucks were not grateful for this gift. Angus Tuck used the image of a wheel to explain it to Winnie: living things are part of the wheel of existence, turning and changing. The Tucks were stuck outside the wheel, existing but not living. Mae Tuck was imprisoned for an act of violence and Winnie faced the most profound decision of her young life."},
+ {id:'out',title:"The Outsiders",author:"S.E. Hinton",emoji:"🌅",col:"#EF4444",
+  text:"Ponyboy Curtis was fourteen and a Greaser, defined by his long hair and his address on the wrong side of town. The Greasers were in perpetual conflict with the Socs, the wealthy kids from the wealthy side. Ponyboy's parents were dead and his brother Darry was raising him with quiet ferocity, working double shifts to keep the family together. After a terrifying confrontation in a park where Johnny killed a Soc to save Ponyboy's life, the two friends hid in an abandoned church in the countryside. Ponyboy read Dickens aloud and thought about gold. He was learning that the world was more complicated than Greasers versus Socs and that empathy might be the only thing worth holding onto."},
+ {id:'ibd',title:"Island of the Blue Dolphins",author:"Scott O'Dell",emoji:"🐬",col:"#0891B2",
+  text:"Karana's people lived on an island shaped like a dolphin off the coast of California. When Aleut hunters arrived and violence erupted, the tribe evacuated on a ship. Karana jumped back to shore to be with her little brother who had not made it aboard. Her brother was killed by wild dogs and Karana was completely alone on the island for eighteen years. She built weapons against tribal law because there was no longer any tribe to enforce it. She made a home. She tamed the dog that had been part of the pack that killed her brother. She made friends with a sea otter and seabirds. Her solitude became something close to sovereignty."},
+ {id:'msm',title:"My Side of the Mountain",author:"Jean Craighead George",emoji:"🏔️",col:"#16A34A",
+  text:"Sam Gribley ran away from his overcrowded New York apartment to live alone in the Catskill Mountains. He had studied survival guides intensively and believed he could do it. He found a colossal hollow hemlock tree and made it his home, furnishing it with a bed of deer hide and a clay fireplace. He learned to identify wild plants for food, to tan leather, and to smoke meat. He trained a baby peregrine falcon he named Frightful to hunt rabbits and birds. He withstood an Adirondack winter alone. A wandering folk singer and a local librarian kept his secret. Sam proved that self-reliance is possible if you are willing to study, to fail, and to learn from every mistake."},
+ {id:'sg',title:"The Secret Garden",author:"Frances Hodgson Burnett",emoji:"🌺",col:"#EC4899",
+  text:"Mary Lennox arrived in Yorkshire from India after her parents died of cholera, sour and sullen and convinced that nothing was any good. The vast and gloomy Misselthwaite Manor seemed to reflect her mood. She was entirely neglected which meant she had perfect freedom to explore. A robin led her to a hidden key and then to a locked door set into an old stone wall. Behind it was a garden that had been sealed for ten years since the death of Mr. Archibald Craven's wife. Weeds had choked it but living things still struggled beneath. Mary decided to secretly restore it. In the act of bringing the garden back to life she began, without noticing, to transform herself and the sad boy locked away in the manor."},
+ {id:'bb2',title:"Black Beauty",author:"Anna Sewell",emoji:"🐴",col:"#1E293B",
+  text:"Black Beauty was born on an English farm and raised with kindness by a patient master who trained him gently and treated him as a partner. He grew up handsome and willing. But horses did not choose their masters and Beauty's life was a succession of owners: some conscientious and caring, others negligent or deliberately cruel. He worked as a fashionable carriage horse, then as a cab horse in London where overwork and indifference nearly destroyed him. Through every hardship he retained his dignity and gave his best to whoever held his reins. His story asked a direct question of every human reader: how much suffering are you willing to look away from in exchange for your own convenience?"},
+ {id:'ti',title:"Treasure Island",author:"Robert Louis Stevenson",emoji:"☠️",col:"#F59E0B",
+  text:"Jim Hawkins lived at his parents' seaside inn when a weather-beaten old sailor arrived and took lodgings. Billy Bones was haunted by a one-legged man and drank himself to an early grave. In his sea chest Jim found a map, and not just any map: the map to the buried treasure of the infamous pirate Captain Flint. Jim sailed with Squire Trelawney and Doctor Livesey to recover the fortune. But most of the crew recruited for the voyage were pirates themselves, working for the brilliant and treacherous Long John Silver who was dangerous precisely because he was so likeable. Jim had to use extraordinary resourcefulness and courage against men who treated killing as simply part of the work."},
+ {id:'jb',title:"The Jungle Book",author:"Rudyard Kipling",emoji:"🐯",col:"#16A34A",
+  text:"A small human boy found his way into the jungle as a toddler and was adopted by a family of wolves who called him Mowgli, the Frog. He grew up learning the Law of the Jungle from the great brown bear Baloo and the black panther Bagheera who watched over him. He swam with the wolf pack and spoke with the great elephants. But the lame tiger Shere Khan had decreed that no man-cub should live among animals and worked constantly to turn the pack against him. Mowgli was neither entirely animal nor entirely human. He faced the question of where he truly belonged with the Master Word that opened every creature's confidence: We be of one blood, you and I."},
+ {id:'cow',title:"The Call of the Wild",author:"Jack London",emoji:"🐺",col:"#92400E",
+  text:"Buck was a large, powerful mixed-breed dog living a comfortable life on a judge's estate in California when he was stolen and sold into the brutal world of Klondike sled dog teams during the Alaskan Gold Rush. The law of the club and the fang replaced everything he had known. He learned to fight, to steal food, and to trust nothing. He rose through the hierarchy of dogs by intelligence and raw courage, eventually becoming lead dog. A man named John Thornton showed him genuine tenderness, which Buck had nearly forgotten was possible. But always, in the forest beyond the firelight, wolves howled. The wild called to something ancient in Buck's blood that civilisation had only covered, never removed."},
+ {id:'lw',title:"Little Women",author:"Louisa May Alcott",emoji:"👩‍👧‍👦",col:"#EC4899",
+  text:"The March sisters, Meg, Jo, Beth and Amy, lived with their mother Marmee while their father was away at war. The family was not wealthy but their home was rich with love and fierce moral seriousness. Jo burned with ambition to be a writer and raged against the constraints placed on women. Meg was responsible and romantic. Beth was gentle and musical to her core. Amy was the youngest and most conventionally ambitious. Their wealthy neighbour Laurie became their devoted companion. Each sister faced particular trials: poverty, jealousy, illness, artistic disappointment and heartbreak. The novel asked what women owed themselves and each other, and whether goodness required sacrifice or whether it might be its own reward."},
+ {id:'rc',title:"Robinson Crusoe",author:"Daniel Defoe",emoji:"🏝️",col:"#0891B2",
+  text:"Robinson Crusoe defied his father's counsel and went to sea, and the sea punished him for his recklessness repeatedly before finally depositing him alone on a deserted tropical island with nothing but the tools he could salvage from the wreck. For twenty-eight years he lived on the island by his own ingenuity: building shelter, growing crops, taming goats, making pottery, sewing clothing from animal hides. He kept a meticulous calendar. He never surrendered to despair. When he eventually encountered another human being, a man he called Friday, he faced new questions about authority, knowledge and the assumptions he had carried from the old world into the new one he had built entirely from scratch."},
+ {id:'sfr',title:"Swiss Family Robinson",author:"Johann David Wyss",emoji:"🌴",col:"#F97316",
+  text:"A Swiss family, their ship wrecked by a storm, found themselves on a tropical island with no sign of other survivors. The father, mother and their four sons Fritz, Ernest, Jack and Franz worked together with systematic ingenuity to build a life from nothing. Their first home was built in a great tree for safety from wild animals. Over the following years they constructed farms, bridges, stables and eventually an entire settlement. They tamed an ostrich and a zebra for transport. They discovered new species of animals and plants. They were entirely self-sufficient. When a rescue vessel eventually appeared, the family faced a genuine dilemma: after building something this extraordinary together, some of them no longer wished to leave."},
+ {id:'ttl',title:"Twenty Thousand Leagues Under the Sea",author:"Jules Verne",emoji:"🐙",col:"#1D4ED8",
+  text:"In 1866 reports multiplied of ships being rammed by a colossal sea monster. Marine biologist Professor Aronnax joined an American expedition to find and eliminate the creature. When they caught up with it, the truth was far stranger than any sea monster: it was the Nautilus, an extraordinary submarine of completely unknown design, commanded by the mysterious and brilliant Captain Nemo. Aronnax, his manservant Conseil, and the harpooner Ned Land were taken aboard involuntarily and denied all freedom to leave. They travelled twenty thousand leagues through the world's oceans, visiting the lost city of Atlantis, the South Pole and the coral forests of the deep. Captain Nemo was magnificent and terrible and completely inexplicable."},
+ {id:'wiw',title:"The Wind in the Willows",author:"Kenneth Grahame",emoji:"🐸",col:"#16A34A",
+  text:"Mole abandoned his spring cleaning on impulse and dug upward into a world of sunlight and riverbanks he had never experienced. The Water Rat introduced him to the supreme pleasures of messing about in boats, and they became the best of friends. The ancient badger Mister Badger lived deep in the Wild Wood and rarely emerged but was fundamentally decent and wise. And then there was Toad of Toad Hall: wealthy, boastful, generous, absolutely incorrigible, and fatally susceptible to the next new obsession. Motor cars in particular consumed him entirely and led to his imprisonment, escape and ultimately the loss and recovery of his ancestral home. The English countryside had never seemed so worth defending."}
+]
+};
+
+
+/* ══════════════════════════════════════
+   QUIZ QUESTIONS — per age group
+══════════════════════════════════════ */
+const QUIZ_QUESTIONS = {
+easy:[
+ {q:"What colour is the sun?",opts:["Yellow","Blue","Green","Red"],ans:"Yellow"},
+ {q:"How many legs does a spider have?",opts:["8","4","6","2"],ans:"8"},
+ {q:"What sound does a cow make?",opts:["Moo","Woof","Meow","Baa"],ans:"Moo"},
+ {q:"What do we call a baby cat?",opts:["Kitten","Puppy","Cub","Foal"],ans:"Kitten"},
+ {q:"Which animal has a very long neck?",opts:["Giraffe","Elephant","Tiger","Horse"],ans:"Giraffe"},
+ {q:"What shape has 3 sides?",opts:["Triangle","Square","Circle","Oval"],ans:"Triangle"},
+ {q:"What do birds use to fly?",opts:["Wings","Fins","Legs","Tails"],ans:"Wings"},
+ {q:"What colour is grass?",opts:["Green","Purple","Orange","Pink"],ans:"Green"},
+ {q:"Where do fish live?",opts:["In water","In trees","Underground","In clouds"],ans:"In water"},
+ {q:"How many eyes do you have?",opts:["2","4","1","3"],ans:"2"},
+ {q:"Which animal says 'woof'?",opts:["Dog","Cat","Duck","Frog"],ans:"Dog"},
+ {q:"What colour is a ripe banana?",opts:["Yellow","Blue","Red","White"],ans:"Yellow"},
+ {q:"What do we call frozen water?",opts:["Ice","Steam","Rain","Fog"],ans:"Ice"},
+ {q:"How many seasons are there?",opts:["4","2","6","3"],ans:"4"},
+ {q:"Which is the biggest animal?",opts:["Blue whale","Elephant","Giraffe","Lion"],ans:"Blue whale"},
+ {q:"What do caterpillars turn into?",opts:["Butterflies","Birds","Bees","Beetles"],ans:"Butterflies"},
+ {q:"What colour is the sky on a sunny day?",opts:["Blue","Green","Yellow","Purple"],ans:"Blue"},
+ {q:"How many fingers are on one hand?",opts:["5","10","3","7"],ans:"5"},
+ {q:"What do we drink when we are thirsty?",opts:["Water","Sand","Mud","Rocks"],ans:"Water"},
+ {q:"Which animal hops and has long ears?",opts:["Rabbit","Dog","Fish","Bird"],ans:"Rabbit"}
+],
+medium:[
+ {q:"What is the largest planet in our solar system?",opts:["Jupiter","Saturn","Earth","Mars"],ans:"Jupiter"},
+ {q:"How many continents are there on Earth?",opts:["7","5","6","8"],ans:"7"},
+ {q:"What is the capital of France?",opts:["Paris","London","Rome","Berlin"],ans:"Paris"},
+ {q:"Which gas do plants absorb to make food?",opts:["Carbon dioxide","Oxygen","Nitrogen","Hydrogen"],ans:"Carbon dioxide"},
+ {q:"How many sides does a hexagon have?",opts:["6","5","7","8"],ans:"6"},
+ {q:"What is the fastest land animal?",opts:["Cheetah","Lion","Horse","Tiger"],ans:"Cheetah"},
+ {q:"What do we call water turning into vapour?",opts:["Evaporation","Condensation","Precipitation","Absorption"],ans:"Evaporation"},
+ {q:"How many planets are in our solar system?",opts:["8","9","7","10"],ans:"8"},
+ {q:"Which is the largest ocean?",opts:["Pacific","Atlantic","Indian","Arctic"],ans:"Pacific"},
+ {q:"What is 7 multiplied by 8?",opts:["56","54","64","48"],ans:"56"},
+ {q:"Which country built the Eiffel Tower?",opts:["France","Italy","Germany","Spain"],ans:"France"},
+ {q:"What is the study of living things called?",opts:["Biology","Chemistry","Physics","Geology"],ans:"Biology"},
+ {q:"How many hours are in a day?",opts:["24","12","48","36"],ans:"24"},
+ {q:"What is the tallest mountain in the world?",opts:["Mount Everest","K2","Kilimanjaro","Mont Blanc"],ans:"Mount Everest"},
+ {q:"How many days are in a leap year?",opts:["366","365","364","368"],ans:"366"},
+ {q:"Which is the smallest planet in our solar system?",opts:["Mercury","Mars","Venus","Neptune"],ans:"Mercury"},
+ {q:"What type of animals are warm-blooded?",opts:["Mammals","Reptiles","Fish","Insects"],ans:"Mammals"},
+ {q:"What is the capital of Japan?",opts:["Tokyo","Beijing","Seoul","Bangkok"],ans:"Tokyo"},
+ {q:"What force pulls objects toward Earth?",opts:["Gravity","Magnetism","Friction","Pressure"],ans:"Gravity"},
+ {q:"How many sides does an octagon have?",opts:["8","6","7","9"],ans:"8"}
+],
+hard:[
+ {q:"What is the chemical symbol for gold?",opts:["Au","Go","Ag","Gd"],ans:"Au"},
+ {q:"Who wrote the play Romeo and Juliet?",opts:["William Shakespeare","Charles Dickens","Mark Twain","Jane Austen"],ans:"William Shakespeare"},
+ {q:"What is the process plants use to make food from sunlight?",opts:["Photosynthesis","Respiration","Osmosis","Digestion"],ans:"Photosynthesis"},
+ {q:"Approximately how fast does light travel per second?",opts:["300,000 km","150,000 km","1,000 km","3,000,000 km"],ans:"300,000 km"},
+ {q:"Which empire was ruled by Julius Caesar?",opts:["Roman","Greek","Ottoman","Persian"],ans:"Roman"},
+ {q:"What is the atomic number of carbon?",opts:["6","8","12","14"],ans:"6"},
+ {q:"In which year did World War I begin?",opts:["1914","1939","1918","1905"],ans:"1914"},
+ {q:"What is the longest river in the world?",opts:["Nile","Amazon","Yangtze","Mississippi"],ans:"Nile"},
+ {q:"Who developed the theory of general relativity?",opts:["Albert Einstein","Isaac Newton","Nikola Tesla","Galileo"],ans:"Albert Einstein"},
+ {q:"What is the square root of 144?",opts:["12","14","11","13"],ans:"12"},
+ {q:"What is the chemical symbol for iron?",opts:["Fe","Ir","In","Fi"],ans:"Fe"},
+ {q:"What is the closest star to Earth after the Sun?",opts:["Proxima Centauri","Sirius","Betelgeuse","Vega"],ans:"Proxima Centauri"},
+ {q:"Who wrote Pride and Prejudice?",opts:["Jane Austen","Charlotte Brontë","George Eliot","Virginia Woolf"],ans:"Jane Austen"},
+ {q:"What is the capital of Australia?",opts:["Canberra","Sydney","Melbourne","Brisbane"],ans:"Canberra"},
+ {q:"How many bones are in the adult human body?",opts:["206","208","198","212"],ans:"206"},
+ {q:"What is the most abundant gas in Earth's atmosphere?",opts:["Nitrogen","Oxygen","Carbon dioxide","Argon"],ans:"Nitrogen"},
+ {q:"In what year did the Berlin Wall fall?",opts:["1989","1991","1987","1993"],ans:"1989"},
+ {q:"What is the currency of Japan?",opts:["Yen","Won","Yuan","Rupee"],ans:"Yen"},
+ {q:"Who discovered penicillin?",opts:["Alexander Fleming","Louis Pasteur","Robert Koch","Joseph Lister"],ans:"Alexander Fleming"},
+ {q:"What is the largest hot desert in the world?",opts:["Sahara","Arabian","Gobi","Kalahari"],ans:"Sahara"}
+]
+};
+
+/* ══════════════════════════════════════
+   AGE-SPECIFIC FUN FACTS / HADITH
+══════════════════════════════════════ */
+const FUNFACTS = {
+easy:[
+ {title:"Elephants Never Forget!",icon:"🐘",bonus:5,
+  text:"Elephants are the biggest animals that walk on land! They use their long trunk like a nose and a hand at the same time. Baby elephants drink their mother's milk just like human babies. Elephants remember their friends even after many years. They fan their huge ears to keep cool in hot weather. A group of elephants is called a herd and they look after each other. The oldest female elephant, called the matriarch, is the wise leader who remembers where to find water and food."},
+ {title:"Rainbows are Magic!",icon:"🌈",bonus:5,
+  text:"When it rains and the sun shines at the same time something magical happens in the sky! The raindrops act like tiny mirrors that split sunlight into seven beautiful colours. Red, orange, yellow, green, blue, indigo and violet. These colours always appear in the same order in every single rainbow everywhere in the world. If you are very lucky you might see two rainbows at once. You can never actually reach the end of a rainbow because as you walk towards it the rainbow moves away. Rainbows are nature's most beautiful trick."},
+ {title:"Bees are Amazing!",icon:"🐝",bonus:5,
+  text:"Honeybees are some of the most hardworking insects in the world. A single worker bee must visit about two million flowers just to make one jar of honey. Bees live together in large groups called colonies or hives. They talk to each other by doing a special waggle dance to tell other bees exactly where to find flowers. Honey is the only food made by insects that humans eat. Honey never goes bad. Scientists found honey in ancient Egyptian tombs thousands of years old that was still perfectly good to eat!"}
+],
+medium:[
+ {title:"The Ocean's Deepest Secrets",icon:"🌊",bonus:5,
+  text:"The deepest point in all of Earth's oceans is the Mariana Trench in the Pacific Ocean, reaching eleven kilometres below the surface. Mount Everest could fit inside it with two kilometres of water still above the peak. Scientists believe only five percent of the world's oceans have been explored. Deep-sea creatures survive in complete darkness under crushing pressure that would destroy a submarine. The ocean generates more than half of the oxygen we breathe through microscopic plants called phytoplankton. We know more about the surface of the Moon than we do about the floor of our own oceans."},
+ {title:"Your Brain is Extraordinary",icon:"🧠",bonus:5,
+  text:"The human brain controls everything your body does and it never stops working, even when you are deeply asleep. While you dream your brain is actively sorting through the day's experiences and consolidating memories. Despite weighing only about one and a half kilograms the brain consumes approximately twenty percent of your body's total energy. Every new experience you have creates new neural pathways. Exercise, quality sleep and nutritious food all measurably improve brain function. The brain contains around eighty-six billion neurons, each connected to thousands of others, forming a network more complex than any computer ever built."},
+ {title:"Space is Bigger Than Imagination",icon:"🚀",bonus:5,
+  text:"Our galaxy the Milky Way contains between two hundred and four hundred billion stars. And there are billions of galaxies in the observable universe, each containing billions of stars. Light travels at approximately three hundred thousand kilometres per second, the fastest speed possible, and yet light from the nearest star beyond our Sun takes more than four years to reach us. The most distant galaxies we can observe are over forty-six billion light-years away. Scientists calculate the universe began around thirteen point eight billion years ago in an event called the Big Bang from a single point smaller than an atom."}
+],
+hard:[
+ {title:"DNA: The Code of Life",icon:"🧬",bonus:5,
+  text:"Every cell in your body contains a complete copy of your DNA, the biological instruction manual that built you. The human genome consists of approximately three billion base pairs of DNA organised into twenty-three chromosome pairs. If you stretched all the DNA from a single cell into a line it would extend nearly two metres. All six trillion cells in your body each contain this same complete blueprint. The international Human Genome Project completed mapping our entire genome in 2003 after thirteen years of collaboration across six countries. Understanding our genetic code has transformed medicine, enabling identification of genetic diseases and the development of personalised treatments."},
+ {title:"Climate Science and Our Future",icon:"🌍",bonus:5,
+  text:"Earth's average surface temperature has increased by approximately one point two degrees Celsius since industrialisation began. While this sounds modest the consequences are profound and accelerating. Arctic sea ice is declining at unprecedented rates causing sea levels to rise globally. Coral reefs are bleaching as ocean temperatures increase. The frequency and intensity of extreme weather events including hurricanes, wildfires, floods and droughts is measurably increasing. Atmospheric carbon dioxide concentration now exceeds four hundred and twenty parts per million, higher than at any point in eight hundred thousand years of ice core records. Scientists agree the cause is human activity. Renewable energy technologies are advancing rapidly enough to address the problem if deployed at sufficient scale."},
+ {title:"The Age of Artificial Intelligence",icon:"🤖",bonus:5,
+  text:"Artificial intelligence refers to systems capable of performing tasks that previously required human intelligence: recognising speech, understanding natural language, generating text and images, making complex decisions. Machine learning allows AI systems to improve their performance by analysing vast datasets rather than following explicit programmed rules. Large language models are trained on enormous quantities of human-written text and can engage in sophisticated reasoning and creative tasks. AI has already accelerated drug discovery, protein structure prediction and materials science research in ways that are genuinely transforming these fields. As AI systems become more capable society faces profound questions about labour, creativity, privacy, autonomy and what aspects of human intelligence are truly irreplaceable."}
+]
+};
+
 const ALL_BADGES=[
     {id:'first_read',icon:'📖',label:'First Read'},
     {id:'focus_star',icon:'👁️',label:'Focus Star'},
@@ -1168,8 +1612,10 @@ function show(id){document.querySelectorAll('.screen').forEach(s=>s.classList.re
 function pickMod(m){S.module=m;}
 
 function launchActivity(type) {
-    if (type === 'quiz') { toast('🧠 Short Quiz','Coming very soon! Try Reading or Quran for now.','#F59E0B'); return; }
-    if (type === 'flags') { startFlagGame(); return; }
+    if (type === 'reading') { showBookLibrary(); return; }
+    if (type === 'quiz')    { showShortQuiz();  return; }
+    if (type === 'flags')   { startFlagGame();  return; }
+    if (type === 'hadith')  { S.module='hadith'; startSetup(); return; }
     S.module = type;
     startSetup();
 }
@@ -1716,7 +2162,7 @@ function beginSession(){
 function loadPassage(){
     let p;
     if(S.module==='quran'){p=LIBRARY.quran[Math.floor(Math.random()*LIBRARY.quran.length)];document.getElementById('bkIcon').textContent='🕌';document.getElementById('bkTag').textContent='Quran';}
-    else if(S.module==='hadith'){p=LIBRARY.hadith[Math.floor(Math.random()*LIBRARY.hadith.length)];document.getElementById('bkIcon').textContent='⭐';document.getElementById('bkTag').textContent='+'+p.bonus+' bonus mins!';}
+    else if(S.module==='hadith'){const pool=FUNFACTS[S.age]||FUNFACTS.medium;p=pool[Math.floor(Math.random()*pool.length)];document.getElementById('bkIcon').textContent='⭐';document.getElementById('bkTag').textContent='+'+p.bonus+' bonus mins!';}
     else{const pool=LIBRARY.reading[S.age];p=pool[Math.floor(Math.random()*pool.length)];document.getElementById('bkIcon').textContent='📖';document.getElementById('bkTag').textContent='Reading';}
     S.passage=p;S.words=p.text.split(/\s+/);S.wordIdx=0;
     document.getElementById('bkTitle').textContent=p.title;
@@ -2034,7 +2480,7 @@ function awardBadges(st,mins,focus,words,mod){
     st.badges=prev;
 }
 
-function readMore(){refreshHomeStats();show('welcomeScreen');}
+function readMore(){refreshHomeStats();if(S.module==='reading'){showBookLibrary();}else{show('welcomeScreen');}}
 
 /* ══════════════════════════════════════
    FLAG GAME
@@ -2158,6 +2604,139 @@ function loadDash(){
 function toast(t,b,c='#00FF88'){const el=document.getElementById('toast');el.style.borderLeftColor=c;document.getElementById('toastT').textContent=t;document.getElementById('toastB').textContent=b;el.classList.add('show');setTimeout(()=>el.classList.remove('show'),4500);}
 function confetti(){const cols=['#6C63FF','#00FF88','#FFD700','#FF4444','#FFB800','#A78BFA'];for(let i=0;i<90;i++){const p=document.createElement('div');p.className='confetti-p';p.style.left=Math.random()*100+'vw';p.style.background=cols[Math.floor(Math.random()*cols.length)];p.style.width=(6+Math.random()*8)+'px';p.style.height=(6+Math.random()*8)+'px';p.style.animationDuration=(1.5+Math.random()*2.5)+'s';p.style.animationDelay=Math.random()*.8+'s';document.body.appendChild(p);setTimeout(()=>p.remove(),4000);}}
 function sleep(ms){return new Promise(r=>setTimeout(r,ms));}
+
+
+/* ══════════════════════════════════════
+   BOOK LIBRARY
+══════════════════════════════════════ */
+function showBookLibrary(){
+    const age = S.age || 'medium';
+    const ageLabelMap = {easy:'Ages 3–6',medium:'Ages 6–9',hard:'Ages 9–12'};
+    document.getElementById('libAgeBadge').textContent = ageLabelMap[age] || 'Ages 6–9';
+    document.getElementById('libSectionTitle').textContent =
+        'Pick a book and start reading to earn screen time!';
+    const grid = document.getElementById('booksGrid');
+    grid.innerHTML = '';
+    const bookList = BOOKS[age] || BOOKS.medium;
+    bookList.forEach(book => {
+        const card = document.createElement('button');
+        card.className = 'book-card';
+        card.innerHTML = `
+            <div class="book-emoji-wrap" style="background:${book.col}22">
+                <span>${book.emoji}</span>
+            </div>
+            <div class="book-card-title">${book.title}</div>
+            <div class="book-card-author">${book.author}</div>
+            <div class="book-card-btn">Read Now</div>
+        `;
+        card.onclick = () => selectBook(book);
+        grid.appendChild(card);
+    });
+    show('bookLibraryScreen');
+}
+
+function selectBook(book){
+    S.module = 'reading';
+    S.selectedBook = book;
+    startSetup();
+}
+
+/* Override loadPassage to use selected book when available */
+const _origLoadPassage = loadPassage;
+loadPassage = function(){
+    if(S.module === 'reading' && S.selectedBook){
+        const book = S.selectedBook;
+        S.passage = {title:book.title, text:book.text};
+        S.words = book.text.split(/\s+/);
+        S.wordIdx = 0;
+        document.getElementById('bkTitle').textContent = book.title;
+        document.getElementById('bkIcon').textContent = book.emoji;
+        document.getElementById('bkTag').textContent = 'Reading';
+        document.getElementById('readingText').innerHTML =
+            S.words.map((w,i)=>`<span class="word${i===0?' current':''}" id="w${i}">${w}</span>`).join(' ');
+        updateProg();
+    } else {
+        _origLoadPassage();
+    }
+};
+
+/* ══════════════════════════════════════
+   SHORT QUIZ
+══════════════════════════════════════ */
+var sqState = {q:0,score:0,earned:0,total:10,questions:[]};
+
+function showShortQuiz(){ startShortQuiz(); }
+
+function startShortQuiz(){
+    const age = S.age || 'medium';
+    const pool = QUIZ_QUESTIONS[age] || QUIZ_QUESTIONS.medium;
+    const shuffled = [...pool].sort(()=>Math.random()-.5).slice(0,10);
+    sqState = {q:0,score:0,earned:0,total:10,questions:shuffled};
+    document.getElementById('sqCard').style.display='block';
+    document.getElementById('sqResult').style.display='none';
+    showQuizQ();
+    show('shortQuizScreen');
+}
+
+function showQuizQ(){
+    const q = sqState.questions[sqState.q];
+    document.getElementById('sqQLabel').textContent = `Question ${sqState.q+1} of ${sqState.total}`;
+    document.getElementById('sqScoreDisp').textContent = `⭐ ${sqState.score} correct`;
+    document.getElementById('sqEarnedDisp').textContent = `🎮 +${sqState.earned} min`;
+    document.getElementById('sqProgressFill').style.width = ((sqState.q/sqState.total)*100)+'%';
+    document.getElementById('sqQuestion').textContent = q.q;
+    document.getElementById('sqFeedback').textContent = '';
+    document.getElementById('sqNextBtn').style.display = 'none';
+    const opts = [...q.opts].sort(()=>Math.random()-.5);
+    const container = document.getElementById('sqOptions');
+    container.innerHTML = '';
+    opts.forEach(o => {
+        const btn = document.createElement('button');
+        btn.className = 'sq-opt';
+        btn.textContent = o;
+        btn.onclick = () => answerQuizQ(o, q.ans, btn);
+        container.appendChild(btn);
+    });
+}
+
+function answerQuizQ(chosen, correct, btn){
+    document.querySelectorAll('.sq-opt').forEach(b=>b.disabled=true);
+    const fb = document.getElementById('sqFeedback');
+    if(chosen === correct){
+        btn.style.background='#10B981';btn.style.color='white';btn.style.borderColor='#10B981';
+        sqState.score++;
+        if(sqState.score%5===0) sqState.earned+=2; // +2 min every 5 correct
+        fb.textContent='✅ Correct! Well done!';fb.style.color='#10B981';
+    } else {
+        btn.style.background='#EF4444';btn.style.color='white';btn.style.borderColor='#EF4444';
+        document.querySelectorAll('.sq-opt').forEach(b=>{
+            if(b.textContent===correct){b.style.background='#10B981';b.style.color='white';b.style.borderColor='#10B981';}
+        });
+        fb.textContent='❌ The answer was: '+correct;fb.style.color='#EF4444';
+    }
+    document.getElementById('sqScoreDisp').textContent=`⭐ ${sqState.score} correct`;
+    document.getElementById('sqEarnedDisp').textContent=`🎮 +${sqState.earned} min`;
+    document.getElementById('sqNextBtn').style.display='block';
+}
+
+function nextQuizQ(){
+    sqState.q++;
+    if(sqState.q>=sqState.total){ endShortQuiz(); return; }
+    showQuizQ();
+}
+
+function endShortQuiz(){
+    const st=gs();
+    st.totalMins=(st.totalMins||0)+sqState.earned;
+    st.todayMins=(st.todayDate===todayStr()?(st.todayMins||0):0)+sqState.earned;
+    st.todayDate=todayStr();ss(st);
+    document.getElementById('sqCard').style.display='none';
+    document.getElementById('sqResult').style.display='block';
+    document.getElementById('sqResultScore').textContent=sqState.score+'/'+sqState.total;
+    document.getElementById('sqResultEarned').textContent='+'+sqState.earned;
+    if(sqState.score>=8)confetti();
+    speak('Great job! You got '+sqState.score+' out of '+sqState.total+'!');
+}
 
 /* ══════════════════════════════════════
    LIVE RELOAD
