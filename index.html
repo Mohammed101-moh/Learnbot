@@ -180,83 +180,159 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(
 /* ═══════════════════════════════
    HOME SCREEN
 ═══════════════════════════════ */
+/* ═══════════════════════════════
+   HOME SCREEN — REDESIGNED
+═══════════════════════════════ */
 #welcomeScreen{
     flex-direction:column;align-items:center;
     padding:0;overflow-y:auto;
-    background:linear-gradient(160deg,#38BDF8 0%,#818CF8 55%,#A78BFA 100%);
-    min-height:100vh;
+    background:linear-gradient(180deg,#29B6F6 0%,#4FC3F7 45%,#81D4FA 100%);
+    min-height:100vh;position:relative;
 }
 
-/* Home header */
+/* Background clouds */
+.home-cloud{
+    position:absolute;background:rgba(255,255,255,.55);
+    border-radius:100px;pointer-events:none;z-index:0;
+}
+.home-cloud::before,.home-cloud::after{
+    content:'';position:absolute;
+    background:rgba(255,255,255,.55);border-radius:50%;
+}
+.hc1{width:180px;height:42px;top:7%;left:4%;}
+.hc1::before{width:68px;height:68px;top:-34px;left:22px;}
+.hc1::after{width:50px;height:50px;top:-25px;left:78px;}
+.hc2{width:150px;height:36px;top:14%;right:6%;}
+.hc2::before{width:56px;height:56px;top:-28px;left:18px;}
+.hc2::after{width:42px;height:42px;top:-21px;left:64px;}
+.hc3{width:120px;height:30px;top:52%;left:1%;opacity:.35;}
+.hc3::before{width:44px;height:44px;top:-22px;left:14px;}
+.hc3::after{width:34px;height:34px;top:-17px;left:52px;}
+.home-star{
+    position:absolute;pointer-events:none;z-index:0;
+    animation:hStarFloat 3.5s ease-in-out infinite;font-size:1.1rem;opacity:.75;
+}
+@keyframes hStarFloat{0%,100%{transform:translateY(0) rotate(0deg)}50%{transform:translateY(-9px) rotate(18deg)}}
+
+/* Header */
 .home-header{
-    width:100%;padding:1rem 1.5rem;
+    width:100%;padding:1.1rem 1.5rem;
     display:flex;align-items:center;justify-content:space-between;
-    background:rgba(255,255,255,.15);backdrop-filter:blur(10px);
     position:sticky;top:0;z-index:10;flex-shrink:0;
 }
-.home-greeting{font-size:1.1rem;font-weight:900;color:white;}
-.home-greeting span{font-size:.85rem;font-weight:500;opacity:.85;display:block;}
-.home-stats{display:flex;gap:.75rem;align-items:center;}
-.home-stat{background:rgba(255,255,255,.2);border-radius:50px;padding:.35rem .9rem;font-size:.82rem;font-weight:700;color:white;display:flex;align-items:center;gap:.3rem;}
+.home-greet-wrap{display:flex;align-items:center;gap:.75rem;}
+.home-avatar-circle{
+    width:54px;height:54px;border-radius:50%;
+    background:linear-gradient(135deg,#FFD93D,#FF9500);
+    display:flex;align-items:center;justify-content:center;
+    font-size:1.8rem;flex-shrink:0;
+    box-shadow:0 4px 16px rgba(0,0,0,.18);
+}
+.home-greeting{font-size:1.2rem;font-weight:900;color:white;line-height:1.2;
+    text-shadow:0 2px 8px rgba(0,0,0,.15);}
+.home-greeting .hsub{font-size:.78rem;font-weight:500;color:rgba(255,255,255,.88);display:block;}
+.home-stats{display:flex;gap:.55rem;align-items:center;}
+.home-stat{
+    background:white;border-radius:50px;
+    padding:.42rem 1rem;font-size:.8rem;font-weight:800;
+    color:#1E293B;display:flex;align-items:center;gap:.35rem;
+    box-shadow:0 3px 12px rgba(0,0,0,.12);
+}
+.home-stat.hstreak{background:linear-gradient(135deg,#FF6B6B,#FF8E53);color:white;}
+
+/* Parent button — inside header stats */
+.parent-btn{
+    background:white;border:none;border-radius:50px;
+    padding:.42rem 1rem;font-size:.8rem;font-weight:800;
+    color:#1E293B;cursor:pointer;transition:all .2s;
+    box-shadow:0 3px 12px rgba(0,0,0,.12);
+}
+.parent-btn:hover{transform:translateY(-1px);box-shadow:0 6px 20px rgba(0,0,0,.16);}
+
+/* Body container */
+.home-body{
+    width:100%;max-width:880px;
+    padding:0 1.25rem 2rem;
+    display:flex;flex-direction:column;gap:1.1rem;
+    margin:0 auto;position:relative;z-index:1;
+}
+.home-content-box{
+    background:white;border-radius:30px;
+    padding:1.4rem;
+    box-shadow:0 8px 40px rgba(0,0,0,.1);
+}
 
 /* Activity grid */
-.home-body{width:100%;max-width:700px;padding:1.25rem;display:flex;flex-direction:column;gap:1rem;margin:0 auto;}
-
 .activity-grid{display:grid;grid-template-columns:1fr 1fr;gap:1rem;}
 
+/* Activity cards */
 .act-card{
-    border-radius:24px;padding:1.5rem 1.25rem;cursor:pointer;
+    border-radius:22px;padding:1.35rem 1.2rem;cursor:pointer;
     transition:transform .2s,box-shadow .2s;position:relative;overflow:hidden;
-    display:flex;flex-direction:column;justify-content:space-between;min-height:160px;
-    border:none;text-align:left;
+    display:flex;flex-direction:row;align-items:center;justify-content:space-between;
+    min-height:148px;border:none;text-align:left;
+    box-shadow:0 6px 20px rgba(0,0,0,.14);
 }
-.act-card:hover{transform:translateY(-4px);box-shadow:0 16px 40px rgba(0,0,0,.2);}
+.act-card:hover{transform:translateY(-4px);box-shadow:0 18px 40px rgba(0,0,0,.22);}
 .act-card:active{transform:translateY(-1px);}
-
-.act-card.reading{background:linear-gradient(135deg,#6C63FF,#4F46E5);}
-.act-card.quiz{background:linear-gradient(135deg,#F59E0B,#EF4444);}
-.act-card.flags{background:linear-gradient(135deg,#10B981,#0EA5E9);}
-.act-card.quran{background:linear-gradient(135deg,#8B5CF6,#6D28D9);}
-
-.act-card-icon{font-size:2.8rem;margin-bottom:.5rem;display:block;}
-.act-card-title{font-size:1.15rem;font-weight:900;color:white;margin-bottom:.2rem;}
-.act-card-sub{font-size:.75rem;color:rgba(255,255,255,.75);line-height:1.4;}
+.act-card.reading{background:linear-gradient(135deg,#7C6FFF,#4F46E5);}
+.act-card.quiz   {background:linear-gradient(135deg,#FB923C,#EF4444);}
+.act-card.flags  {background:linear-gradient(135deg,#10B981,#0EA5E9);}
+.act-card.quran  {background:linear-gradient(135deg,#9333EA,#6D28D9);}
+.act-card-icon{display:none;}
+.act-card-bg{display:none;}
+.act-card-content{flex:1;z-index:1;}
+.act-card-illus{
+    font-size:4.2rem;line-height:1;flex-shrink:0;
+    margin-left:.5rem;z-index:1;
+    filter:drop-shadow(0 4px 10px rgba(0,0,0,.22));
+}
+.act-card-title{font-size:1.15rem;font-weight:900;color:white;margin-bottom:.25rem;
+    text-shadow:0 1px 4px rgba(0,0,0,.15);}
+.act-card-sub{font-size:.71rem;color:rgba(255,255,255,.82);line-height:1.4;margin-bottom:.7rem;}
 .act-earn{
     display:inline-flex;align-items:center;gap:.3rem;
-    background:rgba(255,255,255,.2);border-radius:50px;
-    padding:.25rem .7rem;font-size:.72rem;font-weight:700;color:white;
-    margin-top:.75rem;align-self:flex-start;
+    background:rgba(255,255,255,.28);border-radius:50px;
+    padding:.28rem .82rem;font-size:.71rem;font-weight:800;color:white;
+    box-shadow:0 2px 8px rgba(0,0,0,.1);backdrop-filter:blur(4px);
 }
-.act-card-bg{position:absolute;right:-15px;bottom:-15px;font-size:5rem;opacity:.12;pointer-events:none;}
+.coming-soon{
+    position:absolute;top:11px;right:11px;
+    background:rgba(255,255,255,.28);color:white;
+    border-radius:50px;padding:.22rem .65rem;
+    font-size:.63rem;font-weight:800;
+    backdrop-filter:blur(4px);
+}
 
-/* Coming soon badge */
-.coming-soon{position:absolute;top:12px;right:12px;background:rgba(255,255,255,.25);color:white;border-radius:50px;padding:.2rem .6rem;font-size:.65rem;font-weight:700;}
-
-/* Fun fact card - horizontal */
+/* Fun Fact banner */
 .funfact-card{
-    background:linear-gradient(135deg,#FFD93D,#FF6B6B);
-    border-radius:24px;padding:1.25rem 1.5rem;cursor:pointer;
+    background:linear-gradient(135deg,#FFFBEB,#FFF3CC);
+    border-radius:22px;padding:1.15rem 1.4rem;cursor:pointer;
     transition:transform .2s,box-shadow .2s;
     display:flex;align-items:center;gap:1rem;
     position:relative;overflow:hidden;
+    box-shadow:0 4px 20px rgba(251,191,36,.22);
+    border:2px solid rgba(251,191,36,.25);
 }
-.funfact-card:hover{transform:translateY(-3px);box-shadow:0 12px 30px rgba(0,0,0,.2);}
-.funfact-icon{font-size:3rem;flex-shrink:0;}
+.funfact-card:hover{transform:translateY(-3px);box-shadow:0 14px 32px rgba(251,191,36,.3);}
+.funfact-icon{
+    font-size:3rem;flex-shrink:0;
+    filter:drop-shadow(0 3px 6px rgba(245,158,11,.35));
+    animation:hStarFloat 2.5s ease-in-out infinite;
+}
 .funfact-content{flex:1;}
-.funfact-label{font-size:.72rem;font-weight:800;color:rgba(255,255,255,.75);text-transform:uppercase;letter-spacing:.08em;margin-bottom:.2rem;}
-.funfact-title{font-size:1rem;font-weight:900;color:white;margin-bottom:.2rem;}
-.funfact-sub{font-size:.78rem;color:rgba(255,255,255,.8);}
-.funfact-earn{background:rgba(255,255,255,.25);border-radius:50px;padding:.3rem .85rem;font-size:.75rem;font-weight:800;color:white;white-space:nowrap;}
-.funfact-bg{position:absolute;right:-10px;bottom:-10px;font-size:6rem;opacity:.1;}
-
-/* Parent button */
-.parent-btn{
-    position:fixed;top:1rem;right:1rem;background:rgba(255,255,255,.2);
-    border:1.5px solid rgba(255,255,255,.4);backdrop-filter:blur(8px);
-    border-radius:50px;padding:.45rem 1rem;font-size:.8rem;font-weight:700;color:white;
-    cursor:pointer;transition:all .2s;z-index:100;
+.funfact-label{font-size:.66rem;font-weight:800;color:#F59E0B;
+    text-transform:uppercase;letter-spacing:.08em;margin-bottom:.18rem;}
+.funfact-title{font-size:1rem;font-weight:900;color:#1E293B;margin-bottom:.18rem;}
+.funfact-sub{font-size:.73rem;color:#64748B;line-height:1.4;}
+.funfact-earn{
+    background:linear-gradient(135deg,#FFD93D,#FF9500);
+    border-radius:50px;padding:.42rem 1.05rem;
+    font-size:.78rem;font-weight:900;color:white;
+    white-space:nowrap;flex-shrink:0;
+    box-shadow:0 3px 12px rgba(245,158,11,.35);
 }
-.parent-btn:hover{background:rgba(255,255,255,.35);}
+.funfact-bg{display:none;}
 
 /* Reused form inputs (hidden fields) */
 .form-row{display:none;}
@@ -577,17 +653,29 @@ input,select{display:none;}
 
 <!-- ══════ HOME SCREEN ══════ -->
 <div id="welcomeScreen" class="screen">
-    <button class="parent-btn" onclick="openParent()">🔒 Parent</button>
+
+    <!-- Background decoration -->
+    <div class="home-cloud hc1" aria-hidden="true"></div>
+    <div class="home-cloud hc2" aria-hidden="true"></div>
+    <div class="home-cloud hc3" aria-hidden="true"></div>
+    <div class="home-star" style="top:10%;left:14%;animation-delay:0s" aria-hidden="true">⭐</div>
+    <div class="home-star" style="top:7%;right:22%;animation-delay:.9s" aria-hidden="true">✨</div>
+    <div class="home-star" style="top:50%;right:4%;animation-delay:1.6s;font-size:.9rem" aria-hidden="true">⭐</div>
+    <div class="home-star" style="top:68%;left:2%;animation-delay:.4s;font-size:.85rem" aria-hidden="true">✨</div>
 
     <!-- Header -->
     <div class="home-header">
-        <div class="home-greeting">
-            Hi <span id="homeGreetName">there</span>! 👋
-            <span>What are we learning today?</span>
+        <div class="home-greet-wrap">
+            <div class="home-avatar-circle">⭐</div>
+            <div class="home-greeting">
+                Hi, <span id="homeGreetName">there</span>! 👋
+                <span class="hsub">What are we learning today?</span>
+            </div>
         </div>
         <div class="home-stats">
-            <div class="home-stat" id="homeStreak" style="display:none">🔥 <span id="homeStreakVal">0</span></div>
+            <div class="home-stat hstreak" id="homeStreak" style="display:none">🔥 <span id="homeStreakVal">0</span></div>
             <div class="home-stat">🎮 <span id="homeTodayMins">0</span>m earned</div>
+            <button class="parent-btn" onclick="openParent()">🔒 Parent</button>
         </div>
     </div>
 
@@ -598,57 +686,55 @@ input,select{display:none;}
 
     <div class="home-body">
 
-        <!-- Activity grid -->
-        <div class="activity-grid">
+        <!-- White activity container -->
+        <div class="home-content-box">
+            <div class="activity-grid">
 
-            <!-- Reading -->
-            <div class="act-card reading" onclick="launchActivity('reading')">
-                <div>
-                    <span class="act-card-icon">📚</span>
-                    <div class="act-card-title">Reading</div>
-                    <div class="act-card-sub">Stories, science & adventures</div>
-                    <div class="act-earn">🎮 1 min per min</div>
+                <!-- Reading -->
+                <div class="act-card reading" onclick="launchActivity('reading')">
+                    <div class="act-card-content">
+                        <div class="act-card-title">Reading</div>
+                        <div class="act-card-sub">Stories, science &amp; adventures</div>
+                        <div class="act-earn">⏱ 1 min per min</div>
+                    </div>
+                    <div class="act-card-illus">📚</div>
                 </div>
-                <div class="act-card-bg">📚</div>
-            </div>
 
-            <!-- Short Quiz -->
-            <div class="act-card quiz" onclick="launchActivity('quiz')">
-                <div class="coming-soon">Coming Soon</div>
-                <div>
-                    <span class="act-card-icon">🧠</span>
-                    <div class="act-card-title">Short Quiz</div>
-                    <div class="act-card-sub">Answer questions, earn bonus time</div>
-                    <div class="act-earn">⭐ +5 min bonus</div>
+                <!-- Short Quiz -->
+                <div class="act-card quiz" onclick="launchActivity('quiz')">
+                    <div class="coming-soon">Coming Soon</div>
+                    <div class="act-card-content">
+                        <div class="act-card-title">Short Quiz</div>
+                        <div class="act-card-sub">Answer questions, earn bonus time</div>
+                        <div class="act-earn">⭐ +5 min bonus</div>
+                    </div>
+                    <div class="act-card-illus">🧠</div>
                 </div>
-                <div class="act-card-bg">🧠</div>
-            </div>
 
-            <!-- World Quiz / Flag Game -->
-            <div class="act-card flags" onclick="launchActivity('flags')">
-                <div>
-                    <span class="act-card-icon">🌍</span>
-                    <div class="act-card-title">World Quiz</div>
-                    <div class="act-card-sub">Guess the flag — how many can you get?</div>
-                    <div class="act-earn">🏆 +2 min per 5 correct</div>
+                <!-- World Quiz -->
+                <div class="act-card flags" onclick="launchActivity('flags')">
+                    <div class="act-card-content">
+                        <div class="act-card-title">World Quiz</div>
+                        <div class="act-card-sub">Guess the flag — how many can you get?</div>
+                        <div class="act-earn">🏆 +2 min per 5 correct</div>
+                    </div>
+                    <div class="act-card-illus">🌍</div>
                 </div>
-                <div class="act-card-bg">🌍</div>
-            </div>
 
-            <!-- Holy Quran -->
-            <div class="act-card quran" onclick="launchActivity('quran')">
-                <div>
-                    <span class="act-card-icon">🕌</span>
-                    <div class="act-card-title">Holy Quran</div>
-                    <div class="act-card-sub">Recite surahs and earn rewards</div>
-                    <div class="act-earn">🎮 1 min per min</div>
+                <!-- Holy Quran -->
+                <div class="act-card quran" onclick="launchActivity('quran')">
+                    <div class="act-card-content">
+                        <div class="act-card-title">Holy Quran</div>
+                        <div class="act-card-sub">Recite surahs and earn rewards</div>
+                        <div class="act-earn">🎮 1 min per min</div>
+                    </div>
+                    <div class="act-card-illus">🕌</div>
                 </div>
-                <div class="act-card-bg">🕌</div>
-            </div>
 
+            </div>
         </div>
 
-        <!-- Fun Fact — horizontal -->
+        <!-- Fun Fact banner -->
         <div class="funfact-card" onclick="launchActivity('hadith')">
             <div class="funfact-icon">⭐</div>
             <div class="funfact-content">
@@ -656,8 +742,7 @@ input,select{display:none;}
                 <div class="funfact-title">Fun Fact of the Day</div>
                 <div class="funfact-sub">Read today's hadith or fun fact and earn bonus minutes!</div>
             </div>
-            <div class="funfact-earn">+5 min 🎁</div>
-            <div class="funfact-bg">✨</div>
+            <div class="funfact-earn">⭐ +5 min</div>
         </div>
 
     </div>
