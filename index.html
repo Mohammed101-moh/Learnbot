@@ -1242,11 +1242,12 @@ var selectedAge = '';
 
 // Step navigation
 function goToStep2() {
-    S.name = (document.getElementById('signInName').value||'').trim() || 'Tester';
-    S.age = selectedAge || 'medium';
-    try{document.getElementById('userNameHud').textContent=S.name;}catch(e){}
-    try{document.getElementById('homeGreetName').textContent=S.name;}catch(e){}
-    show('welcomeScreen');
+    const name = (document.getElementById('signInName').value||'').trim();
+    if(!name){ document.getElementById('signInName').focus(); return; }
+    S.name = name;
+    // Show step 2 (age selection)
+    document.getElementById('step1Panel').classList.remove('active');
+    document.getElementById('step2Panel').classList.add('active');
 }
 
 function selectAge(age, el) {
