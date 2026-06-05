@@ -899,7 +899,8 @@ input,select{display:none;}
     <!-- HUD -->
     <div class="hud">
         <div class="hud-logo" style="display:flex;align-items:center;gap:.5rem">
-            <span>🤖 LearnBot</span>
+            <span>🦖 Kidzilla</span>
+            <span id="versionChip" style="font-size:.6rem;font-weight:700;background:rgba(108,99,255,.25);color:#A78BFA;border-radius:50px;padding:.1rem .5rem;letter-spacing:.03em"></span>
             <img class="user-avatar" id="userAvatar" src="" style="display:none" />
             <span class="user-name-hud" id="userNameHud"></span>
         </div>
@@ -1575,6 +1576,7 @@ const BOT={
 /* ══════════════════════════════════════
    STATE
 ══════════════════════════════════════ */
+const APP_VERSION='v3';
 const S={
     user:null,name:'',age:'medium',goal:10,module:'reading',
     sessionSecs:0,earnedSecs:0,
@@ -2908,5 +2910,6 @@ function endShortQuiz(){
 ══════════════════════════════════════ */
 (function(){let t=null;setInterval(async()=>{try{const r=await fetch('/reload-check',{cache:'no-store'});const d=await r.json();if(t===null){t=d.mtime;return;}if(d.mtime!==t)location.reload();}catch(e){}},2000);})();
 </script>
+<script>const vc=document.getElementById('versionChip');if(vc)vc.textContent=APP_VERSION;</script>
 </body>
 </html>
