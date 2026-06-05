@@ -682,8 +682,7 @@ input,select{display:none;}
 </style>
 </head>
 <body>
-
-<!-- ══════ VERSION BADGE (always visible) ══════ -->
+<!-- ══════ VERSION BADGE ══════ -->
 <div id="globalVersionBadge" style="position:fixed;bottom:10px;right:12px;z-index:99999;background:rgba(108,99,255,.18);border:1px solid rgba(108,99,255,.4);color:#A78BFA;font-size:.6rem;font-weight:700;letter-spacing:.08em;padding:.25rem .55rem;border-radius:50px;pointer-events:none;font-family:'Segoe UI',system-ui,sans-serif;"></div>
 
 <!-- ══════ SIGN IN ══════ -->
@@ -1245,7 +1244,6 @@ function goToStep2() {
     const name = (document.getElementById('signInName').value||'').trim();
     if(!name){ document.getElementById('signInName').focus(); return; }
     S.name = name;
-    // Show step 2 (age selection)
     document.getElementById('step1Panel').classList.remove('active');
     document.getElementById('step2Panel').classList.add('active');
 }
@@ -2227,10 +2225,10 @@ const ASSEMBLYAI_KEY = '589eeaf3db6740b8be6c5384b4de78e6';
 // Module-level state
 let _aaiToken  = null;
 let _aaiSocket = null;
+let _partialWordsProcessed = 0;
 let _aaiCtx    = null;
 let _aaiStream = null;
 let _aaiNode   = null;
-let _partialWordsProcessed = 0; // tracks how many words from current partial utterance already matched
 
 // Step 1 — called during loading screen: get short-lived token
 async function initAssemblyAI(){
@@ -2361,33 +2359,28 @@ function onSpeech(e){
     }
 }
 
-// Called on every partial/interim — matches only NEW words since last partial
+// Called on every partial — matches only NEW words since last partial
 function handlePartialTranscript(t){
     if(!S.words||S.wordIdx>=S.words.length)return;
     const allWords=t.split(/\s+/).map(w=>cl(w)).filter(w=>w.length>1);
     let si=_partialWordsProcessed;
-    if(si>=allWords.length){matchInterim(t);return;} // no new words yet
+    if(si>=allWords.length){matchInterim(t);return;}
     let ti=S.wordIdx,advanced=false;
     while(si<allWords.length&&ti<S.words.length){
         const exp=cl(S.words[ti]);
-        // auto-skip 1-char expected words (a, I)
         if(exp.length<=1&&!isMatch(allWords[si],exp)){ti++;continue;}
         if(isMatch(allWords[si],exp)){
             markRead(ti);ti++;si++;S.wordsRead++;
             S.lastWordAdvance=Date.now();advanced=true;
         } else if(ti+1<S.words.length&&isMatch(allWords[si],cl(S.words[ti+1]))){
-            // one word ahead — skip the unmatched word
             markRead(ti);markRead(ti+1);ti+=2;si++;
             S.wordsRead++;S.lastWordAdvance=Date.now();advanced=true;
-        } else {
-            break; // can't match yet — wait for more words
-        }
+        } else { break; }
     }
     if(advanced){_partialWordsProcessed=si;S.wordIdx=ti;hlCurrent();updateProg();}
-    matchInterim(t); // blue pulse on current word
+    matchInterim(t);
 }
-
-// Called on final transcript — resets partial counter then does full match
+// Called on final — resets partial counter then does full match
 function handleFinalTranscript(t){
     document.querySelectorAll('.word.speaking').forEach(el=>el.classList.remove('speaking'));
     _partialWordsProcessed=0;
@@ -2402,7 +2395,6 @@ function matchInterim(transcript){
     const spokenWords=transcript.split(/\s+/).map(w=>cl(w)).filter(w=>w.length>0);
     if(!spokenWords.length)return;
     const lastSpoken=spokenWords[spokenWords.length-1];
-    // Check current word and one ahead — purely visual, no pointer movement
     for(let i=0;i<=1;i++){
         const idx=S.wordIdx+i;
         if(idx>=S.words.length)break;
@@ -2968,4 +2960,26 @@ function nextQuizQ(){
 function endShortQuiz(){
     const st=gs();
     st.totalMins=(st.totalMins||0)+sqState.earned;
-    st.todayMins=(st.todayDate===todayStr()?(st.todayMins||0):0)+sqState.ea
+    st.todayMins=(st.todayDate===todayStr()?(st.todayMins||0):0)+sqState.earned;
+    st.todayDate=todayStr();ss(st);
+    document.getElementById('sqCard').style.display='none';
+    document.getElementById('sqResult').style.display='block';
+    document.getElementById('sqResultScore').textContent=sqState.score+'/'+sqState.total;
+    document.getElementById('sqResultEarned').textContent='+'+sqState.earned;
+    if(sqState.score>=8)confetti();
+    speak('Great job! You got '+sqState.score+' out of '+sqState.total+'!');
+}
+
+/* ══════════════════════════════════════
+   LIVE RELOAD
+══════════════════════════════════════ */
+(function(){let t=null;setInterval(async()=>{try{const r=await fetch('/reload-check',{cache:'no-store'});const d=await r.json();if(t===null){t=d.mtime;return;}if(d.mtime!==t)location.reload();}catch(e){}},2000);})();
+</script>
+<script>
+const vc=document.getElementById('versionChip');
+if(vc)vc.textContent='v'+APP_VERSION;
+const gv=document.getElementById('globalVersionBadge');
+if(gv)gv.textContent='v'+APP_VERSION;
+</script>
+</body>
+</html>
