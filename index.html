@@ -2391,7 +2391,7 @@ function matchReading(spoken,isFinal){
     let si=0,ti=S.wordIdx,matched=false;
     while(si<sw.length&&ti<S.words.length){
         const exp=cl(S.words[ti]);
-        if(exp.length<=1&&!isMatch(sw[si],exp)){markRead(ti);ti++;continue;}
+        if(exp.length<=2&&!isMatch(sw[si],exp)){markRead(ti);ti++;continue;}
         if(isMatch(sw[si],exp)){
             markRead(ti);ti++;si++;S.wordsRead++;matched=true;
             S.lastWordAdvance=Date.now();S.voiceMismatchCount=0;
