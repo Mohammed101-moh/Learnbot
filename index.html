@@ -2312,7 +2312,8 @@ function startAssemblyAIStream(){
             S.speechEvents=S.speechEvents.filter(e=>Date.now()-e.time<30000);
             matchReading(t,true);
         }else if(data.message_type==='PartialTranscript'){
-            if(t.length>2)matchReading(t,false);
+            // Only visual pulse — never advance the word pointer on partials
+            if(t.length>2)matchInterim(t);
         }
     };
 
