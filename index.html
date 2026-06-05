@@ -1580,7 +1580,7 @@ const BOT={
 /* ══════════════════════════════════════
    STATE
 ══════════════════════════════════════ */
-const APP_VERSION='005';
+const APP_VERSION='006';
 const S={
     user:null,name:'',age:'medium',goal:10,module:'reading',
     sessionSecs:0,earnedSecs:0,
@@ -2968,26 +2968,4 @@ function nextQuizQ(){
 function endShortQuiz(){
     const st=gs();
     st.totalMins=(st.totalMins||0)+sqState.earned;
-    st.todayMins=(st.todayDate===todayStr()?(st.todayMins||0):0)+sqState.earned;
-    st.todayDate=todayStr();ss(st);
-    document.getElementById('sqCard').style.display='none';
-    document.getElementById('sqResult').style.display='block';
-    document.getElementById('sqResultScore').textContent=sqState.score+'/'+sqState.total;
-    document.getElementById('sqResultEarned').textContent='+'+sqState.earned;
-    if(sqState.score>=8)confetti();
-    speak('Great job! You got '+sqState.score+' out of '+sqState.total+'!');
-}
-
-/* ══════════════════════════════════════
-   LIVE RELOAD
-══════════════════════════════════════ */
-(function(){let t=null;setInterval(async()=>{try{const r=await fetch('/reload-check',{cache:'no-store'});const d=await r.json();if(t===null){t=d.mtime;return;}if(d.mtime!==t)location.reload();}catch(e){}},2000);})();
-</script>
-<script>
-const vc=document.getElementById('versionChip');
-if(vc)vc.textContent='v'+APP_VERSION;
-const gv=document.getElementById('globalVersionBadge');
-if(gv)gv.textContent='v'+APP_VERSION;
-</script>
-</body>
-</html>
+    st.todayMins=(st.todayDate===todayStr()?(st.todayMins||0):0)+sqState.ea
