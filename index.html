@@ -2253,7 +2253,7 @@ function stopVoiceRecognition(){
 function startAssemblyAIStream(){
     if(_aaiSocket && _aaiSocket.readyState===WebSocket.OPEN) return;
     _aaiSocket = new WebSocket(
-        'wss://api.assemblyai.com/v2/realtime/ws?sample_rate=16000&token='+_aaiToken
+        'wss://api.assemblyai.com/v2/realtime/ws?sample_rate=16000&end_utterance_silence_threshold=200&token='+_aaiToken
     );
 
     _aaiSocket.onopen = async () => {
