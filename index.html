@@ -2391,13 +2391,13 @@ function matchReading(spoken,isFinal){
     let si=0,ti=S.wordIdx,matched=false;
     while(si<sw.length&&ti<S.words.length){
         const exp=cl(S.words[ti]);
-        if(exp.length<=2&&!isMatch(sw[si],exp)){markRead(ti);ti++;continue;}
+        if(exp.length<=1&&!isMatch(sw[si],exp)){markRead(ti);ti++;continue;}
         if(isMatch(sw[si],exp)){
             markRead(ti);ti++;si++;S.wordsRead++;matched=true;
             S.lastWordAdvance=Date.now();S.voiceMismatchCount=0;
         } else {
             let found=false;
-            for(let ahead=1;ahead<=4&&ti+ahead<S.words.length;ahead++){
+            for(let ahead=1;ahead<=2&&ti+ahead<S.words.length;ahead++){
                 if(isMatch(sw[si],cl(S.words[ti+ahead]))){
                     for(let k=ti;k<ti+ahead;k++)markRead(k);
                     markRead(ti+ahead);ti+=ahead+1;si++;S.wordsRead++;matched=true;
