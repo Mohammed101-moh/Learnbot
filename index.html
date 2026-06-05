@@ -2381,15 +2381,6 @@ function matchInterim(transcript){
             el.classList.add('speaking');
         }
     }
-    // Also check 1-2 words ahead (in case they're slightly ahead)
-    for(let i=1;i<=2;i++){
-        const nextIdx=S.wordIdx+i;
-        if(nextIdx>=S.words.length)break;
-        if(isMatch(lastSpoken,cl(S.words[nextIdx]))){
-            const el=document.getElementById('w'+nextIdx);
-            if(el){el.classList.remove('current');el.classList.add('speaking');}
-        }
-    }
 }
 
 function matchReading(spoken,isFinal){
