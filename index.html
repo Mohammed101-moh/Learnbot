@@ -2304,9 +2304,9 @@ function startAssemblyAIStream(){
             S.speechEvents=S.speechEvents||[];
             S.speechEvents.push({time:Date.now(),matched:false});
             S.speechEvents=S.speechEvents.filter(e=>Date.now()-e.time<30000);
-            matchReading(t);
+            matchReading(t,true);
         }else if(data.message_type==='PartialTranscript'){
-            matchInterim(t);
+            if(t.length>2)matchReading(t,false);
         }
     };
 
@@ -2352,15 +2352,12 @@ function onSpeech(e){
     S.lastSpeech=Date.now();
 
     if(r.isFinal){
-        // Remove any interim highlights
         document.querySelectorAll('.word.speaking').forEach(el=>el.classList.remove('speaking'));
-        // Track this speech event for match-rate calculation
         S.speechEvents.push({time:Date.now(),matched:false});
         S.speechEvents=S.speechEvents.filter(e=>Date.now()-e.time<30000);
-        matchReading(t);
+        matchReading(t,true);
     } else {
-        // Real-time interim: pulse current word if spoken word matches
-        matchInterim(t);
+        if(t.length>2)matchReading(t,false);
     }
 }
 
@@ -2390,32 +2387,38 @@ function matchInterim(transcript){
     }
 }
 
-function matchReading(spoken){
+function matchReading(spoken,isFinal){
+    if(isFinal===undefined)isFinal=true;
     if(S.wordIdx>=S.words.length)return;
-    const sw=spoken.split(/\s+/).map(w=>cl(w)).filter(w=>w.length>0);
+    const sw=spoken.split(/\s+/).map(w=>cl(w)).filter(w=>w.length>1);
+    if(!sw.length)return;
     let si=0,ti=S.wordIdx,matched=false;
     while(si<sw.length&&ti<S.words.length){
         const exp=cl(S.words[ti]);
-        if(exp.length<2){markRead(ti);ti++;continue;}
-        if(isMatch(sw[si],exp)){markRead(ti);ti++;si++;S.wordsRead++;matched=true;}
-        else{
-            const ne=ti+1<S.words.length?cl(S.words[ti+1]):'';
-            if(ne.length>=2&&isMatch(sw[si],ne)){markRead(ti);markRead(ti+1);ti+=2;si++;S.wordsRead++;matched=true;}
-            else si++;
+        if(exp.length<=2&&!isMatch(sw[si],exp)){markRead(ti);ti++;continue;}
+        if(isMatch(sw[si],exp)){
+            markRead(ti);ti++;si++;S.wordsRead++;matched=true;
+            S.lastWordAdvance=Date.now();S.voiceMismatchCount=0;
+        } else {
+            let found=false;
+            for(let ahead=1;ahead<=4&&ti+ahead<S.words.length;ahead++){
+                if(isMatch(sw[si],cl(S.words[ti+ahead]))){
+                    for(let k=ti;k<ti+ahead;k++)markRead(k);
+                    markRead(ti+ahead);ti+=ahead+1;si++;S.wordsRead++;matched=true;
+                    S.lastWordAdvance=Date.now();found=true;break;
+                }
+            }
+            if(!found)si++;
         }
     }
     if(matched){
         S.wordIdx=ti;
-        S.lastWordAdvance=Date.now();
-        S.voiceMismatchCount=0;
-        // Mark last speech event as matched
         if(S.speechEvents.length>0)S.speechEvents[S.speechEvents.length-1].matched=true;
         hlCurrent();updateProg();
-    } else {
+    } else if(isFinal){
         S.voiceMismatchCount=(S.voiceMismatchCount||0)+1;
-        // Flash current word red if mismatch happens repeatedly
-        if(S.voiceMismatchCount>=2) flashWrong();
-        botSay('silent');
+        if(S.voiceMismatchCount>=3)flashWrong();
+        if(S.voiceMismatchCount===3)botSay('silent');
     }
     if(S.wordIdx>=Math.floor(S.words.length*0.9)){
         for(let i=S.wordIdx;i<S.words.length;i++)markRead(i);
@@ -2434,6 +2437,7 @@ function isMatch(a,b){
     const n=Math.min(4,a.length,b.length);
     if(a.slice(0,n)===b.slice(0,n))return true;
     if(Math.abs(a.length-b.length)<=1){let d=0;for(let i=0;i<Math.min(a.length,b.length);i++)if(a[i]!==b[i])d++;if(d<=1)return true;}
+    if(a.length>=5&&b.length>=5&&a.slice(0,3)===b.slice(0,3))return true;
     return false;
 }
 function markRead(i){const e=document.getElementById('w'+i);if(e){e.classList.remove('current','speaking','wrong');e.classList.add('read');}}
