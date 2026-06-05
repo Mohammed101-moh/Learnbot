@@ -2647,28 +2647,74 @@ function readMore(){refreshHomeStats();if(S.module==='reading'){showBookLibrary(
 /* ══════════════════════════════════════
    FLAG GAME
 ══════════════════════════════════════ */
-const FLAGS=[
-    {flag:'🇬🇧',name:'United Kingdom',opts:['United Kingdom','Ireland','Australia','New Zealand']},
+const FLAGS_BY_AGE={
+easy:[
     {flag:'🇺🇸',name:'United States',opts:['United States','Canada','Australia','Mexico']},
-    {flag:'🇫🇷',name:'France',opts:['France','Belgium','Italy','Spain']},
-    {flag:'🇩🇪',name:'Germany',opts:['Germany','Austria','Switzerland','Netherlands']},
-    {flag:'🇯🇵',name:'Japan',opts:['Japan','China','South Korea','Taiwan']},
-    {flag:'🇧🇷',name:'Brazil',opts:['Brazil','Argentina','Colombia','Chile']},
-    {flag:'🇸🇦',name:'Saudi Arabia',opts:['Saudi Arabia','UAE','Kuwait','Oman']},
-    {flag:'🇿🇦',name:'South Africa',opts:['South Africa','Nigeria','Kenya','Ghana']},
-    {flag:'🇮🇳',name:'India',opts:['India','Pakistan','Bangladesh','Sri Lanka']},
-    {flag:'🇷🇺',name:'Russia',opts:['Russia','Ukraine','Poland','Belarus']},
-    {flag:'🇨🇳',name:'China',opts:['China','Japan','Mongolia','Vietnam']},
+    {flag:'🇬🇧',name:'United Kingdom',opts:['United Kingdom','Ireland','Germany','France']},
+    {flag:'🇫🇷',name:'France',opts:['France','Italy','Spain','Germany']},
+    {flag:'🇩🇪',name:'Germany',opts:['Germany','Austria','France','Italy']},
+    {flag:'🇯🇵',name:'Japan',opts:['Japan','China','South Korea','Vietnam']},
+    {flag:'🇧🇷',name:'Brazil',opts:['Brazil','Argentina','Mexico','Colombia']},
     {flag:'🇨🇦',name:'Canada',opts:['Canada','United States','Australia','UK']},
-    {flag:'🇦🇺',name:'Australia',opts:['Australia','New Zealand','UK','Canada']},
-    {flag:'🇮🇹',name:'Italy',opts:['Italy','France','Spain','Portugal']},
-    {flag:'🇪🇸',name:'Spain',opts:['Spain','Portugal','Italy','France']},
-    {flag:'🇹🇷',name:'Turkey',opts:['Turkey','Pakistan','Morocco','Tunisia']},
-    {flag:'🇰🇷',name:'South Korea',opts:['South Korea','Japan','China','Vietnam']},
-    {flag:'🇲🇾',name:'Malaysia',opts:['Malaysia','Indonesia','Brunei','Singapore']},
-    {flag:'🇦🇪',name:'UAE',opts:['UAE','Saudi Arabia','Kuwait','Qatar']},
-    {flag:'🇵🇰',name:'Pakistan',opts:['Pakistan','India','Bangladesh','Afghanistan']},
-];
+    {flag:'🇦🇺',name:'Australia',opts:['Australia','New Zealand','United Kingdom','Canada']},
+    {flag:'🇮🇹',name:'Italy',opts:['Italy','France','Spain','Germany']},
+    {flag:'🇪🇸',name:'Spain',opts:['Spain','Italy','France','Portugal']},
+    {flag:'🇨🇳',name:'China',opts:['China','Japan','Vietnam','South Korea']},
+    {flag:'🇮🇳',name:'India',opts:['India','Pakistan','Bangladesh','Iran']},
+    {flag:'🇲🇽',name:'Mexico',opts:['Mexico','Brazil','Argentina','Colombia']},
+    {flag:'🇷🇺',name:'Russia',opts:['Russia','France','Netherlands','Germany']},
+    {flag:'🇿🇦',name:'South Africa',opts:['South Africa','Nigeria','Kenya','Ghana']},
+    {flag:'🇰🇷',name:'South Korea',opts:['South Korea','Japan','China','Taiwan']},
+    {flag:'🇸🇦',name:'Saudi Arabia',opts:['Saudi Arabia','UAE','Kuwait','Oman']},
+    {flag:'🇹🇷',name:'Turkey',opts:['Turkey','Pakistan','Tunisia','Morocco']},
+    {flag:'🇦🇪',name:'UAE',opts:['UAE','Saudi Arabia','Egypt','Jordan']},
+    {flag:'🇵🇹',name:'Portugal',opts:['Portugal','Spain','Italy','France']}
+],
+medium:[
+    {flag:'🇺🇸',name:'United States',opts:['United States','Liberia','Puerto Rico','Chile']},
+    {flag:'🇬🇧',name:'United Kingdom',opts:['United Kingdom','Australia','New Zealand','Fiji']},
+    {flag:'🇫🇷',name:'France',opts:['France','Chad','Andorra','Ivory Coast']},
+    {flag:'🇳🇱',name:'Netherlands',opts:['Netherlands','France','Luxembourg','Croatia']},
+    {flag:'🇸🇪',name:'Sweden',opts:['Sweden','Finland','Norway','Denmark']},
+    {flag:'🇳🇴',name:'Norway',opts:['Norway','Iceland','Denmark','Sweden']},
+    {flag:'🇧🇪',name:'Belgium',opts:['Belgium','Germany','Chad','Cameroon']},
+    {flag:'🇦🇷',name:'Argentina',opts:['Argentina','Uruguay','Guatemala','Honduras']},
+    {flag:'🇪🇬',name:'Egypt',opts:['Egypt','Syria','Iraq','Yemen']},
+    {flag:'🇳🇬',name:'Nigeria',opts:['Nigeria','Ireland','Italy','Ivory Coast']},
+    {flag:'🇳🇿',name:'New Zealand',opts:['New Zealand','Australia','Fiji','Tuvalu']},
+    {flag:'🇵🇱',name:'Poland',opts:['Poland','Monaco','Indonesia','Singapore']},
+    {flag:'🇵🇰',name:'Pakistan',opts:['Pakistan','Saudi Arabia','Algeria','Maldives']},
+    {flag:'🇨🇭',name:'Switzerland',opts:['Switzerland','Denmark','Georgia','Tonga']},
+    {flag:'🇨🇴',name:'Colombia',opts:['Colombia','Ecuador','Venezuela','Bolivia']},
+    {flag:'🇮🇷',name:'Iran',opts:['Iran','Algeria','Nigeria','Hungary']},
+    {flag:'🇮🇩',name:'Indonesia',opts:['Indonesia','Monaco','Poland','Singapore']},
+    {flag:'🇲🇾',name:'Malaysia',opts:['Malaysia','United States','Liberia','Cuba']},
+    {flag:'🇺🇦',name:'Ukraine',opts:['Ukraine','Kazakhstan','Honduras','Sweden']},
+    {flag:'🇬🇷',name:'Greece',opts:['Greece','Uruguay','El Salvador','Finland']}
+],
+hard:[
+    {flag:'🇷🇴',name:'Romania',opts:['Romania','Chad','Moldova','Andorra']},
+    {flag:'🇹🇩',name:'Chad',opts:['Chad','Romania','Andorra','Moldova']},
+    {flag:'🇮🇪',name:'Ireland',opts:['Ireland','Ivory Coast','Italy','Niger']},
+    {flag:'🇨🇮',name:'Ivory Coast',opts:['Ivory Coast','Ireland','Italy','Guinea']},
+    {flag:'🇸🇮',name:'Slovenia',opts:['Slovenia','Slovakia','Russia','Serbia']},
+    {flag:'🇸🇰',name:'Slovakia',opts:['Slovakia','Slovenia','Russia','Ukraine']},
+    {flag:'🇲🇨',name:'Monaco',opts:['Monaco','Indonesia','Poland','Singapore']},
+    {flag:'🇱🇺',name:'Luxembourg',opts:['Luxembourg','Netherlands','Liechtenstein','France']},
+    {flag:'🇱🇮',name:'Liechtenstein',opts:['Liechtenstein','Haiti','Luxembourg','Netherlands']},
+    {flag:'🇨🇿',name:'Czech Republic',opts:['Czech Republic','Slovakia','Croatia','Serbia']},
+    {flag:'🇺🇾',name:'Uruguay',opts:['Uruguay','Argentina','Greece','El Salvador']},
+    {flag:'🇧🇴',name:'Bolivia',opts:['Bolivia','Ghana','Guinea','Lithuania']},
+    {flag:'🇸🇸',name:'South Sudan',opts:['South Sudan','Sudan','Kenya','Ethiopia']},
+    {flag:'🇸🇩',name:'Sudan',opts:['Sudan','South Sudan','Jordan','Yemen']},
+    {flag:'🇲🇰',name:'North Macedonia',opts:['North Macedonia','Kosovo','Bosnia','Serbia']},
+    {flag:'🇧🇦',name:'Bosnia',opts:['Bosnia','Kosovo','North Macedonia','Croatia']},
+    {flag:'🇲🇩',name:'Moldova',opts:['Moldova','Romania','Chad','Andorra']},
+    {flag:'🇦🇲',name:'Armenia',opts:['Armenia','Bulgaria','Bolivia','Lithuania']},
+    {flag:'🇰🇬',name:'Kyrgyzstan',opts:['Kyrgyzstan','Kazakhstan','Uzbekistan','Tajikistan']},
+    {flag:'🇪🇪',name:'Estonia',opts:['Estonia','Botswana','Gambia','Nigeria']}
+]};
+const FLAGS=FLAGS_BY_AGE.medium;
 
 let flagState={q:0,score:0,earned:0,total:10};
 
@@ -2913,3 +2959,4 @@ if(gv)gv.textContent='v'+APP_VERSION;
 </script>
 </body>
 </html>
+                                                                                                                                                                                                                                                                                                                                                            
