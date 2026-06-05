@@ -1578,7 +1578,7 @@ const BOT={
 /* ══════════════════════════════════════
    STATE
 ══════════════════════════════════════ */
-const APP_VERSION='007';
+const APP_VERSION='008';
 const S={
     user:null,name:'',age:'medium',goal:10,module:'reading',
     sessionSecs:0,earnedSecs:0,
@@ -1676,25 +1676,9 @@ async function startSetup(){
 
     // Speech — AssemblyAI Universal-2 (primary) + Web Speech API (fallback)
     setLS('ls3','loading');
-    try{
-        await initAssemblyAI();
-        S.speechOk=true;
-        setLS('ls3','done');
-    }catch(e){
-        console.warn('AssemblyAI init failed, falling back to Web Speech API:',e);
-        const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
-        if(SR){
-            S.recognition=new SR();
-            S.recognition.continuous=true;
-            S.recognition.interimResults=true;
-            S.recognition.lang='en-US';
-            S.recognition.onresult=onSpeech;
-            S.recognition.onerror=e=>{if(e.error!=='no-speech')console.warn('SR:',e.error);};
-            S.recognition.onend=()=>{if(S.active){try{S.recognition.start();}catch(e){}}};
-            S.speechOk=true;
-            setLS('ls3','done');
-        }else{setLS('ls3','fail');}
-    }
+    // AssemblyAI token is fetched when the session starts — no blocking here
+    S.speechOk=true;
+    setLS('ls3','done');
 
     // Hume AI — emotion detection (48 expressions)
     setLS('ls4','loading');
@@ -2233,7 +2217,7 @@ let _aaiNode   = null;
 // Step 1 — called during loading screen: get short-lived token
 async function initAssemblyAI(){
     const ctrl = new AbortController();
-    const t = setTimeout(()=>ctrl.abort(), 5000); // 5s timeout — fallback to Web Speech if slow
+    const t = setTimeout(()=>ctrl.abort(), 10000); // 10s timeout
     try{
         const resp = await fetch('https://api.assemblyai.com/v2/realtime/token',{
             method:'POST',
@@ -2250,9 +2234,14 @@ async function initAssemblyAI(){
 }
 
 // Step 2 — called in beginSession
-function startVoiceRecognition(){
-    if(_aaiToken) startAssemblyAIStream();
-    else if(S.recognition){ try{S.recognition.start();}catch(e){} }
+async function startVoiceRecognition(){
+    try{
+        if(!_aaiToken) await initAssemblyAI();
+        startAssemblyAIStream();
+    }catch(e){
+        console.warn('AssemblyAI connect failed, retrying in 3s:',e);
+        setTimeout(()=>{ if(S.active) startVoiceRecognition(); },3000);
+    }
 }
 
 // Called in endSession
