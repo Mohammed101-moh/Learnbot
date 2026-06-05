@@ -2230,6 +2230,7 @@ let _aaiSocket = null;
 let _aaiCtx    = null;
 let _aaiStream = null;
 let _aaiNode   = null;
+let _partialWordsProcessed = 0; // tracks how many words from current partial utterance already matched
 
 // Step 1 — called during loading screen: get short-lived token
 async function initAssemblyAI(){
