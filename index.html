@@ -2374,14 +2374,14 @@ function matchInterim(transcript){
     const spokenWords=transcript.split(/\s+/).map(w=>cl(w)).filter(w=>w.length>0);
     if(!spokenWords.length)return;
     const lastSpoken=spokenWords[spokenWords.length-1];
-    const expected=cl(S.words[S.wordIdx]);
-
-    // Check if last spoken word matches current expected word
-    if(isMatch(lastSpoken,expected)){
-        const el=document.getElementById('w'+S.wordIdx);
-        if(el){
-            el.classList.remove('current','wrong');
-            el.classList.add('speaking');
+    // Check current word and one ahead — purely visual, no pointer movement
+    for(let i=0;i<=1;i++){
+        const idx=S.wordIdx+i;
+        if(idx>=S.words.length)break;
+        if(isMatch(lastSpoken,cl(S.words[idx]))){
+            const el=document.getElementById('w'+idx);
+            if(el){el.classList.remove('current','wrong');el.classList.add('speaking');}
+            break;
         }
     }
 }
