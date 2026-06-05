@@ -2720,7 +2720,8 @@ let flagState={q:0,score:0,earned:0,total:10};
 
 function startFlagGame(){
     flagState={q:0,score:0,earned:0,total:10};
-    const shuffled=[...FLAGS].sort(()=>Math.random()-.5).slice(0,10);
+    const pool=FLAGS_BY_AGE[S.age]||FLAGS_BY_AGE.medium;
+    const shuffled=[...pool].sort(()=>Math.random()-.5).slice(0,10);
     flagState.questions=shuffled;
     showFlagQuestion();
     show('flagScreen');
