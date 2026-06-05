@@ -2232,15 +2232,21 @@ let _aaiNode   = null;
 
 // Step 1 — called during loading screen: get short-lived token
 async function initAssemblyAI(){
-    const resp = await fetch('https://api.assemblyai.com/v2/realtime/token',{
-        method:'POST',
-        headers:{'authorization':ASSEMBLYAI_KEY,'content-type':'application/json'},
-        body:JSON.stringify({expires_in:7200})
-    });
-    if(!resp.ok) throw new Error('AssemblyAI token failed: '+resp.status);
-    const json = await resp.json();
-    _aaiToken = json.token;
-    console.log('✅ AssemblyAI token obtained');
+    const ctrl = new AbortController();
+    const t = setTimeout(()=>ctrl.abort(), 5000); // 5s timeout — fallback to Web Speech if slow
+    try{
+        const resp = await fetch('https://api.assemblyai.com/v2/realtime/token',{
+            method:'POST',
+            headers:{'authorization':ASSEMBLYAI_KEY,'content-type':'application/json'},
+            body:JSON.stringify({expires_in:7200}),
+            signal:ctrl.signal
+        });
+        clearTimeout(t);
+        if(!resp.ok) throw new Error('AssemblyAI token failed: '+resp.status);
+        const json = await resp.json();
+        _aaiToken = json.token;
+        console.log('✅ AssemblyAI token obtained');
+    }catch(e){ clearTimeout(t); throw e; }
 }
 
 // Step 2 — called in beginSession
