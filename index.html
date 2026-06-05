@@ -1578,7 +1578,7 @@ const BOT={
 /* ══════════════════════════════════════
    STATE
 ══════════════════════════════════════ */
-const APP_VERSION='009';
+const APP_VERSION='010';
 const S={
     user:null,name:'',age:'medium',goal:10,module:'reading',
     sessionSecs:0,earnedSecs:0,
@@ -2209,8 +2209,7 @@ const ASSEMBLYAI_KEY = '589eeaf3db6740b8be6c5384b4de78e6';
 // Module-level state
 let _aaiToken  = null;
 let _aaiSocket = null;
-let _partialWordsProcessed = 0;
-let _utteranceStartIdx   = 0;
+// speech tracking vars removed — using simple matchReading on finals only
 let _aaiCtx    = null;
 let _aaiStream = null;
 let _aaiNode   = null;
@@ -2357,25 +2356,15 @@ function onSpeech(e){
 
 // Called on every partial — matches only NEW words since last partial
 function handlePartialTranscript(t){
-    if(!S.words||!t)return;
-    // Save where this utterance started (on first partial)
-    if(_partialWordsProcessed===0) _utteranceStartIdx=S.wordIdx;
-    _partialWordsProcessed++;
-    // Reset to utterance start then re-match full cumulative transcript
-    // This prevents drift from stacking partials
-    S.wordIdx=_utteranceStartIdx;
-    matchReading(t,false);
-    matchInterim(t);
+    // Partials = visual pulse only. matchReading runs on finals.
+    if(t.length>2) matchInterim(t);
 }
-// Called on final — resets partial counter then does full match
+
 function handleFinalTranscript(t){
     document.querySelectorAll('.word.speaking').forEach(el=>el.classList.remove('speaking'));
-    _partialWordsProcessed=0;
     S.speechEvents=S.speechEvents||[];
     S.speechEvents.push({time:Date.now(),matched:false});
     S.speechEvents=S.speechEvents.filter(e=>Date.now()-e.time<30000);
-    // Reset to utterance start so final matches from same position as partials
-    S.wordIdx=_utteranceStartIdx;
     matchReading(t,true);
 }
 
@@ -2595,8 +2584,6 @@ function spawnCoin(){
 function confirmEnd(){if(confirm('End the session now?'))endSession();}
 function endSession(){
     S.active=false;
-    _partialWordsProcessed=0;
-    _utteranceStartIdx=0;
     clearInterval(S.faceTimer);clearInterval(S.mainTimer);
     if(S.faceApiInterval){clearInterval(S.faceApiInterval);S.faceApiInterval=null;}
     stopHumeLoop();
