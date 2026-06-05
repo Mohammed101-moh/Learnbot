@@ -2355,13 +2355,9 @@ function onSpeech(e){
     S.lastSpeech=Date.now();
 
     if(r.isFinal){
-        document.querySelectorAll('.word.speaking').forEach(el=>el.classList.remove('speaking'));
-        S.speechEvents.push({time:Date.now(),matched:false});
-        S.speechEvents=S.speechEvents.filter(e=>Date.now()-e.time<30000);
-        matchReading(t,true);
+        handleFinalTranscript(t);
     } else {
-        // Only visual pulse — never advance the word pointer on interim
-        if(t.length>2)matchInterim(t);
+        if(t.length>2)handlePartialTranscript(t);
     }
 }
 
