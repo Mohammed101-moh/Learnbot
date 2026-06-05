@@ -2307,14 +2307,9 @@ function startAssemblyAIStream(){
         S.lastSpeech=Date.now();
 
         if(data.message_type==='FinalTranscript'){
-            document.querySelectorAll('.word.speaking').forEach(el=>el.classList.remove('speaking'));
-            S.speechEvents=S.speechEvents||[];
-            S.speechEvents.push({time:Date.now(),matched:false});
-            S.speechEvents=S.speechEvents.filter(e=>Date.now()-e.time<30000);
-            matchReading(t,true);
+            handleFinalTranscript(t);
         }else if(data.message_type==='PartialTranscript'){
-            // Only visual pulse — never advance the word pointer on partials
-            if(t.length>2)matchInterim(t);
+            if(t.length>2)handlePartialTranscript(t);
         }
     };
 
