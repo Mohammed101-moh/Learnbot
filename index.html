@@ -2614,6 +2614,7 @@ function spawnCoin(){
 function confirmEnd(){if(confirm('End the session now?'))endSession();}
 function endSession(){
     S.active=false;
+    _partialWordsProcessed=0;
     clearInterval(S.faceTimer);clearInterval(S.mainTimer);
     if(S.faceApiInterval){clearInterval(S.faceApiInterval);S.faceApiInterval=null;}
     stopHumeLoop();
