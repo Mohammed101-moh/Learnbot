@@ -1580,7 +1580,7 @@ const BOT={
 /* ══════════════════════════════════════
    STATE
 ══════════════════════════════════════ */
-const APP_VERSION='004';
+const APP_VERSION='005';
 const S={
     user:null,name:'',age:'medium',goal:10,module:'reading',
     sessionSecs:0,earnedSecs:0,
@@ -2953,12 +2953,4 @@ function endShortQuiz(){
    LIVE RELOAD
 ══════════════════════════════════════ */
 (function(){let t=null;setInterval(async()=>{try{const r=await fetch('/reload-check',{cache:'no-store'});const d=await r.json();if(t===null){t=d.mtime;return;}if(d.mtime!==t)location.reload();}catch(e){}},2000);})();
-</script>
-<script>
-const vc=document.getElementById('versionChip');
-if(vc)vc.textContent='v'+APP_VERSION;
-const gv=document.getElementById('globalVersionBadge');
-if(gv)gv.textContent='v'+APP_VERSION;
-</script>
-</body>
-</html>
+</scrip
