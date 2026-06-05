@@ -2979,4 +2979,13 @@ function endShortQuiz(){
 /* ══════════════════════════════════════
    LIVE RELOAD
 ══════════════════════════════════════ */
-(function(){let t=null;setInterval(async()=>{try{const r=await fetch('/reload-check',{cache:'no-store'});const d=await r.json();if(t===null){t=d.mtime;return;}
+(function(){let t=null;setInterval(async()=>{try{const r=await fetch('/reload-check',{cache:'no-store'});const d=await r.json();if(t===null){t=d.mtime;return;}if(d.mtime!==t)location.reload();}catch(e){}},2000);})();
+</script>
+<script>
+const vc=document.getElementById('versionChip');
+if(vc)vc.textContent='v'+APP_VERSION;
+const gv=document.getElementById('globalVersionBadge');
+if(gv)gv.textContent='v'+APP_VERSION;
+</script>
+</body>
+</html>
