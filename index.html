@@ -743,25 +743,39 @@ input,select{display:none;}
             <p style="font-size:1.1rem;font-weight:800;color:#1E293B;margin-bottom:.25rem">How old are you? 🎂</p>
             <p style="font-size:.8rem;color:#64748B;margin-bottom:.5rem">Pick your age group</p>
             <div class="age-cards">
-                <div class="age-card" style="--age-col:#F59E0B;--age-bg:#FFFBEB" onclick="selectAge('easy',this)">
+                <div class="age-card" style="--age-col:#FF6B9D;--age-bg:#FFF0F6" onclick="selectAge('a34',this)">
+                    <span class="age-card-icon">🍼</span>
+                    <div class="age-card-info">
+                        <div class="age-card-label">3 – 4 years</div>
+                        <div class="age-card-sub">Simple picture stories</div>
+                    </div>
+                </div>
+                <div class="age-card" style="--age-col:#F59E0B;--age-bg:#FFFBEB" onclick="selectAge('a56',this)">
                     <span class="age-card-icon">🧸</span>
                     <div class="age-card-info">
-                        <div class="age-card-label">3 – 6 years</div>
-                        <div class="age-card-sub">Short fun stories</div>
+                        <div class="age-card-label">5 – 6 years</div>
+                        <div class="age-card-sub">Fun early reader stories</div>
                     </div>
                 </div>
-                <div class="age-card" style="--age-col:#6C63FF;--age-bg:#F5F3FF" onclick="selectAge('medium',this)">
+                <div class="age-card" style="--age-col:#6C63FF;--age-bg:#F5F3FF" onclick="selectAge('a78',this)">
                     <span class="age-card-icon">🚀</span>
                     <div class="age-card-info">
-                        <div class="age-card-label">6 – 9 years</div>
-                        <div class="age-card-sub">Adventure stories</div>
+                        <div class="age-card-label">7 – 8 years</div>
+                        <div class="age-card-sub">Adventure chapters</div>
                     </div>
                 </div>
-                <div class="age-card" style="--age-col:#10B981;--age-bg:#ECFDF5" onclick="selectAge('hard',this)">
+                <div class="age-card" style="--age-col:#0EA5E9;--age-bg:#F0F9FF" onclick="selectAge('a810',this)">
+                    <span class="age-card-icon">🎯</span>
+                    <div class="age-card-info">
+                        <div class="age-card-label">8 – 10 years</div>
+                        <div class="age-card-sub">Longer exciting stories</div>
+                    </div>
+                </div>
+                <div class="age-card" style="--age-col:#10B981;--age-bg:#ECFDF5" onclick="selectAge('a1012',this)">
                     <span class="age-card-icon">🐉</span>
                     <div class="age-card-info">
-                        <div class="age-card-label">9 – 12 years</div>
-                        <div class="age-card-sub">Challenge chapters</div>
+                        <div class="age-card-label">10 – 12 years</div>
+                        <div class="age-card-sub">Advanced chapter books</div>
                     </div>
                 </div>
             </div>
@@ -816,7 +830,7 @@ input,select{display:none;}
 
     <!-- Hidden fields still needed by session logic -->
     <input type="hidden" id="childName" />
-    <select id="ageGroup" style="display:none"><option value="easy">easy</option><option value="medium" selected>medium</option><option value="hard">hard</option></select>
+    <select id="ageGroup" style="display:none"><option value="a34">a34</option><option value="a56">a56</option><option value="a78" selected>a78</option><option value="a810">a810</option><option value="a1012">a1012</option></select>
     <select id="readingGoal" style="display:none"><option value="10" selected>10</option></select>
 
     <div class="home-body">
@@ -1197,7 +1211,7 @@ function handleSignIn(response) {
 
 function proceedFromSignIn() {
     let name = (document.getElementById('signInName').value||'').trim() || (S.user && S.user.name) || 'Tester';
-    let age  = selectedAge || document.getElementById('signInAge').value || S.age || 'medium';
+    let age  = selectedAge || document.getElementById('signInAge').value || S.age || 'a78';
 
     S.name = name; S.age = age;
 
@@ -1263,17 +1277,17 @@ function selectAge(age, el) {
 ══════════════════════════════════════ */
 const LIBRARY = {
     reading:{
-        easy:[
+        a56:[
             {title:"The Big Red Ball",text:"Tom has a big red ball. The ball is round and soft. Tom likes to play with his ball in the park. He throws it up high. The ball goes up and comes back down. Tom catches it and smiles. Playing with a ball is so much fun!"},
             {title:"My Little Cat",text:"I have a little cat. Her name is Mia. She has soft white fur. She likes to sleep in the sun. She drinks milk from a small bowl. I love my cat. She is my best friend."},
             {title:"The Rain",text:"The rain falls down from the sky. It makes the grass grow green. The flowers drink the rain. The birds hide in the trees. I put on my boots and jump in the puddles. Rain is so much fun!"}
         ],
-        medium:[
+        a78:[
             {title:"The Amazing Ocean",text:"The ocean is one of the most amazing places on Earth. It covers more than half of our planet. Many creatures live in the ocean from tiny fish to giant whales. Dolphins swim in groups called pods. They are very smart animals. Octopuses have eight arms and can change colour to hide from danger."},
             {title:"How Plants Grow",text:"Plants need three things to grow: sunlight, water, and soil. A tiny seed is planted in the ground. Roots grow down to drink water. The stem pushes up through the soil towards the light. Leaves open up to collect sunlight. The plant uses sunlight and water to make its own food. This process is called photosynthesis."},
             {title:"The Honey Bee",text:"Honey bees are some of the most important insects on Earth. They live together in large groups called colonies. Worker bees fly from flower to flower collecting sweet nectar. They bring it back to the hive where it is turned into honey. Without bees many of our fruits and vegetables would not exist."}
         ],
-        hard:[
+        a1012:[
             {title:"The Solar System",text:"Our solar system is made up of the Sun and everything that orbits around it. There are eight planets: Mercury Venus Earth Mars Jupiter Saturn Uranus and Neptune. Mercury is the smallest and closest to the Sun while Neptune is the farthest away. Jupiter is the largest planet so big that all the other planets could fit inside it."},
             {title:"The Water Cycle",text:"The water cycle describes how water moves continuously around our planet. When the Sun heats water in oceans and rivers it evaporates and rises into the air as water vapour. As this vapour rises higher it cools and condenses into tiny water droplets forming clouds. When enough droplets collect they fall back to Earth as rain or snow."},
             {title:"The Human Brain",text:"The human brain is the most complex organ in the known universe. It contains about eighty six billion neurons which are specialised cells that send and receive electrical signals. These neurons are connected by trillions of synapses forming an incredibly complex network. The brain controls every thought movement memory and feeling we experience."}
@@ -1297,7 +1311,39 @@ const LIBRARY = {
    BOOK LIBRARY — 25 books per age group
 ══════════════════════════════════════ */
 const BOOKS = {
-easy:[
+a34:[
+ {id:'spot',title:"Spot Goes to the Park",author:"Eric Hill",emoji:"🐶",col:"#FF6B9D",
+  text:"Spot the puppy loves going to the park with his mum. He chases a ball across the green grass. He splashes in the puddles and gets muddy paws. He sees his friends Sam and Helen on the swings. They all play together. Spot finds a big stick to carry home. Mum gives him a bath and a biscuit. Spot wags his tail. Today was the best day ever."},
+ {id:'peppa',title:"Peppa Pig's Muddy Puddles",author:"Neville Astley",emoji:"🐷",col:"#FF9FBF",
+  text:"Peppa Pig loves jumping in muddy puddles. Splosh! She jumps in the biggest one she can find. Daddy Pig says he loves muddy puddles too. Splosh! Mummy Pig laughs. George wants to jump too. Splosh! Everyone is covered in mud. Mummy Pig says you are all very muddy. But she is smiling. After jumping they go home for a warm bath. Then hot cocoa. Peppa says this is the best day ever."},
+ {id:'bluey',title:"Bluey Plays Keepy Uppy",author:"Ludo Studio",emoji:"🐕",col:"#60B8F5",
+  text:"Bluey has a balloon. She does not want it to touch the ground. Keepy uppy! She hits it up with her hand. The balloon goes to Bingo. Bingo hits it with her nose. Dad catches it with his elbow. Mum saves it with her foot. The whole family runs around the house laughing. The balloon bounces off the wall. It bounces off the ceiling. Will it ever touch the ground? Not if the Heeler family can help it."},
+ {id:'thomas',title:"Thomas and the Troublesome Trucks",author:"Rev W Awdry",emoji:"🚂",col:"#1E88E5",
+  text:"Thomas the Tank Engine has six small wheels and a round cheerful face. Today he must pull the troublesome trucks to the harbour. The trucks were always playing tricks. They pushed Thomas too fast down the hill. Peep peep shouted Thomas. At the bottom he put on his brakes very hard. The trucks bumped and banged. Thomas was cross. But he delivered all the goods safely. The Fat Controller said well done Thomas. Thomas felt very proud indeed."},
+ {id:'clifford',title:"Clifford the Big Red Dog",author:"Norman Bridwell",emoji:"🔴",col:"#E53935",
+  text:"Clifford is the biggest dog you ever saw. He is red all over. Emily Elizabeth loves Clifford very much. Clifford tries to be a good dog. He carries Emily's bag to school but it is very small in his giant mouth. He digs holes to help plant flowers. The holes are as big as swimming pools. When Clifford wags his tail the whole house shakes. Emily always says that is okay. She loves her big red dog more than anything in the world."},
+ {id:'dragon-tacos',title:"Dragons Love Tacos",author:"Adam Rubin",emoji:"🌮",col:"#FF7043",
+  text:"Dragons love tacos! They love big tacos and tiny tacos and tacos with lots of cheese. If you want to make friends with a dragon bring tacos. But here is the most important rule. Do not give dragons spicy salsa. Not even a little bit. Spicy salsa makes their tummies rumble. Then the fire comes out and burns everything up. So when you have a taco party for dragons check every single topping. Keep the spicy salsa far away. Your house will thank you."},
+ {id:'mouse-cookie',title:"If You Give a Mouse a Cookie",author:"Laura Numeroff",emoji:"🍪",col:"#FF9800",
+  text:"If you give a mouse a cookie he will want a glass of milk. When you give him milk he will ask for a straw. Then he will want a napkin. He will look in a mirror. He will need scissors and paper. He will hang a picture on the fridge. Looking at the fridge will make him hungry. He will want more cookies. And if he wants more cookies he will need more milk. It is a very long afternoon when you give a mouse a cookie."},
+ {id:'snowy-day',title:"The Snowy Day",author:"Ezra Jack Keats",emoji:"❄️",col:"#90CAF9",
+  text:"One morning Peter woke up and snow had covered everything. He put on his snowsuit and went outside. He walked making tracks with his feet. He hit a tree with a stick and snow fell on his head. He made a snowman. He made snow angels. He tried to save a snowball in his pocket but when he came inside it was gone. Mum dried his wet clothes. He told her all about his wonderful snowy day. Then he fell asleep and dreamed of tomorrow and more snow."},
+ {id:'chicka',title:"Chicka Chicka Boom Boom",author:"Bill Martin Jr",emoji:"🌴",col:"#66BB6A",
+  text:"A told B and B told C I will race you to the top of the coconut tree! D E F and G all raced up. H I J K ran too. Soon the whole alphabet was in the tree. But the coconut tree bent and bent. And all the letters fell down. A had a black eye. B had a bruise. C had a little scratch. But soon the sun came out. The letters dried off. And when no one was looking little A climbed back up the coconut tree."},
+ {id:'cricket',title:"The Very Quiet Cricket",author:"Eric Carle",emoji:"🦗",col:"#8BC34A",
+  text:"A tiny cricket hatched one warm morning. He rubbed his wings together to say hello but no sound came out. He met a big cricket. Still no sound. He met a praying mantis. Nothing. He tried all day long with every insect he met but could not make a sound. That night he met another little cricket just like himself. He rubbed his wings one more time. And this time a beautiful sound filled the night air. He had found his voice at last."},
+ {id:'paw-patrol',title:"PAW Patrol to the Rescue",author:"Spin Master",emoji:"🐾",col:"#FF5722",
+  text:"Ryder and the PAW Patrol are always ready to help! Chase is the police pup with a megaphone. Marshall is the fire pup with a ladder. Rubble has a digger. Skye flies in her helicopter. Today a cat is stuck in a tall tree. Chase drives up fast. Marshall raises his ladder. Together they reach the kitten and bring it safely down. The children cheer. No job is too big and no pup is too small says Ryder. The PAW Patrol pups bark with joy."},
+ {id:'little-blue',title:"Little Blue Truck",author:"Alice Schertle",emoji:"🚛",col:"#42A5F5",
+  text:"Little Blue Truck drives down the muddy road. Beep beep! He says hello to every animal he meets. Moo says the cow. Cluck says the chicken. Oink says the pig. Then a big yellow dump truck gets stuck deep in the mud. His big wheels cannot move at all. Little Blue calls all his animal friends. Push and pull together! The cow and pig and chicken and horse all help. Together they get the big truck out. Little Blue smiles. That is what good friends are for."},
+ {id:'goodnight-moon2',title:"Goodnight Moon",author:"Margaret Wise Brown",emoji:"🌙",col:"#7E57C2",
+  text:"In the great green room there was a telephone and a red balloon and a picture of a cow jumping over the moon. Goodnight room. Goodnight moon. Goodnight cow jumping over the moon. Goodnight light and the red balloon. Goodnight bears. Goodnight chairs. Goodnight kittens. Goodnight mittens. Goodnight clocks. Goodnight socks. Goodnight little house. Goodnight mouse. Goodnight nobody. Goodnight mush. And goodnight to the old lady whispering hush. Goodnight stars. Goodnight air. Goodnight noises everywhere."},
+ {id:'spot-first',title:"Spot's First Walk",author:"Eric Hill",emoji:"🐾",col:"#FFA726",
+  text:"Spot is going for his very first walk outside. Everything is new and exciting. He sniffs a flower and sneezes achoo! He barks at a butterfly. The butterfly flies away. Spot runs through the long grass and gets his paws muddy. He finds a big stick. It is almost as big as he is but he carries it proudly. He chases a sheep and the sheep says baa very loudly. Spot runs back to mum as fast as he can. Mum gives him a treat. What a big brave dog."},
+ {id:'dora',title:"Dora Finds the Way",author:"Nickelodeon",emoji:"🗺️",col:"#FF80AB",
+  text:"Dora is an explorer. She always carries her backpack. Today she needs to reach Rainbow River. She asks her map for help. The map says cross the Troll Bridge then through the Dark Forest then Rainbow River! Swiper the fox tries to take her map. Swiper no swiping! Dora reaches Rainbow River and the rainbow appears. All her friends cheer. Dora says say it with me we did it! She could not have done it without her friends and you. Thank you for helping Dora explore today."}
+],
+a56:[
  {id:'wtwta',title:"Where the Wild Things Are",author:"Maurice Sendak",emoji:"🦁",col:"#7C6FFF",
   text:"Max loved being wild! He wore his wolf costume and jumped around making lots of noise. His mum sent him to bed without supper. That night something magical happened. Trees began to grow in his bedroom and the walls turned into a jungle. Max sailed away to where the wild things lived and became their king. He had a marvellous wild rumpus with all the monsters. But when he felt lonely he sailed back home where his supper was still hot waiting for him."},
  {id:'vhc',title:"The Very Hungry Caterpillar",author:"Eric Carle",emoji:"🐛",col:"#10B981",
@@ -1349,7 +1395,7 @@ easy:[
  {id:'aymm',title:"Are You My Mother?",author:"P.D. Eastman",emoji:"🐦",col:"#0EA5E9",
   text:"A baby bird hatched while his mother was away looking for food. The baby bird looked everywhere for her. He climbed out of the nest and walked along asking everyone he met. Are you my mother? he asked a kitten. No. Are you my mother? he asked a hen. No! He asked a dog and a cow and even a big snorting machine called a Snort. Nobody was his mother. Then the Snort lifted him high up and dropped him gently right back into his own nest! And there was his mother with a big fat worm. He had found her."}
 ],
-medium:[
+a78:[
  {id:'cw',title:"Charlotte's Web",author:"E.B. White",emoji:"🕷️",col:"#7C6FFF",
   text:"Wilbur the pig discovered he was to be killed for food and was terribly sad. His friend Charlotte the spider decided to save him using the only tool she had, her web. She wove the words SOME PIG into the silk above his pen. The farmer was astonished and thought Wilbur must be truly special. Charlotte wrote TERRIFIC and RADIANT and HUMBLE. People came from miles around to see the famous pig. Wilbur became so famous nobody could bear to slaughter him. Charlotte saved her best friend using nothing but her brilliant mind and patient work."},
  {id:'jgp',title:"James and the Giant Peach",author:"Roald Dahl",emoji:"🍑",col:"#F97316",
@@ -1401,7 +1447,39 @@ medium:[
  {id:'ec',title:"The Enormous Crocodile",author:"Roald Dahl",emoji:"🐊",col:"#16A34A",
   text:"The Enormous Crocodile was a greedy selfish reptile who boasted of his horrible secret plans and cunning tricks. He wanted to eat delicious children for lunch. He disguised himself as a see-saw in the park and as a coconut tree on the beach and as a bench in the town square. Children very nearly sat on him each time. But every single time the other jungle animals came and foiled his plans. The Elephant, the Muggle-Wump Monkey, the Roly-Poly Bird and the Hippopotamus all worked together. At last Trunky the Elephant grabbed the crocodile by the tail and flung him far into the blazing sun."}
 ],
-hard:[
+a810:[
+ {id:'wimpy-kid',title:"Diary of a Wimpy Kid",author:"Jeff Kinney",emoji:"📓",col:"#FFC107",
+  text:"Let me get one thing straight. This is a journal not a diary. I know it says diary on the cover but that was Mum's idea. My name is Greg Heffley and I am starting middle school. Middle school is the worst idea anyone ever had. You have to memorise your locker combination remember six different teachers and look good on the first day all at the same time. Plus everyone acts like those first few days determine your entire social life. I plan to be famous one day so I am writing everything down now."},
+ {id:'big-nate',title:"Big Nate",author:"Lincoln Peirce",emoji:"😎",col:"#FF9800",
+  text:"My name is Nate Wright. I am eleven years old and I am destined for greatness. My teacher Mrs Godfrey does not see it that way. She gave me a D minus on my history project which I thought was brilliant. I hold the all-time record for detentions at P.S. 38. This morning I had a feeling today was going to be spectacular. Dad gave me a bran muffin for breakfast which is always a terrible sign. Then my best friend Francis told me we have a maths test today. My feeling was wrong."},
+ {id:'treehouse',title:"The 13-Storey Treehouse",author:"Andy Griffiths",emoji:"🌳",col:"#66BB6A",
+  text:"Andy and Terry live in a treehouse with thirteen storeys. It has a bowling alley a swimming pool full of sharks a library and a giant catapult for launching old sofas. Terry is always inventing ridiculous things. Today he invented a machine that makes ice cream but it got out of control and covered everything in hot fudge sauce. Their publisher Mr Big Nose keeps ringing because their new book is due tomorrow. Andy and Terry have not started it yet. They have been too busy eating ice cream off the walls."},
+ {id:'geronimo',title:"Geronimo Stilton",author:"Elisabetta Dami",emoji:"🧀",col:"#FF7043",
+  text:"My name is Geronimo Stilton. I run The Rodent's Gazette newspaper in New Mouse City. I prefer staying in my warm office with my hot cheese tea. But today my sister Thea burst in with news of a great adventure. She dragged me to the airport before I could say cheese. I hate flying! I hate heights! I hate adventures! But before I knew it we were flying to the Himalayas to find the legendary Crystal Snowflake. I was already feeling sick and we had not even taken off yet. This was going to be a terrible day."},
+ {id:'wonder',title:"Wonder",author:"R J Palacio",emoji:"⭐",col:"#E91E63",
+  text:"I know I am not an ordinary ten year old kid. I have had twenty seven surgeries. I have a facial condition. My mum taught me at home my whole life. But this year I am starting fifth grade at a real school called Beecher Prep. I am terrified. Mum calls me her wonder. She says what is beautiful to caterpillars is not what is beautiful to butterflies. I think she means that things can change and people can surprise you. My name is August Pullman. I want my story to be about more than just my face."},
+ {id:'how-dragon',title:"How to Train Your Dragon",author:"Cressida Cowell",emoji:"🐲",col:"#7B1FA2",
+  text:"I Hiccup Horrendous Haddock the Third was not a very impressive Viking. I was small and skinny and rubbish at dragon training. Every Viking boy must catch and train a dragon or be banished from the tribe. My dragon Toothless was the most pathetic creature anyone had seen. He was tiny with wobbly teeth and a very bad temper. But Toothless and I had a secret. Together we had figured out something that no Viking had ever discovered. Something that would change everything between humans and dragons forever."},
+ {id:'coraline',title:"Coraline",author:"Neil Gaiman",emoji:"🔮",col:"#283593",
+  text:"Coraline moved into the old house at the end of the summer. It was a draughty and creaking kind of old. Her parents were too busy to pay her much attention. Then she found the little door in the drawing room. Behind it was a dark tunnel. At the other end was an identical house to hers but better. Warmer. With an Other Mother who cooked wonderful food and had buttons where her eyes should be. Everything the Other Mother offered was perfect. Coraline had no idea yet how dangerous perfect things could be."},
+ {id:'ivan',title:"The One and Only Ivan",author:"Katherine Applegate",emoji:"🦍",col:"#5D4037",
+  text:"I am Ivan. I am a gorilla. People come from far away to stare at me through the glass. I live in a domain at Exit Eight Big Top Mall. My domain has a tyre swing but I do not feel like swinging much. I have a swimming pool that is too small to swim in. I used to live in a forest with my family. I remember the green smell of it and my sister Ruby. I have been here nine thousand seven hundred and fifty five days. I count them because no one else does."},
+ {id:'harriet',title:"Harriet the Spy",author:"Louise Fitzhugh",emoji:"📔",col:"#F57F17",
+  text:"Harriet M Welsch was a spy. She carried her notebook everywhere and wrote down everything she saw. Every Tuesday and Thursday she did her spy route around the neighbourhood. She wrote what she really thought about everyone. Mr Agatha had not fixed his fence in three years. Her friend Sport looked like he needed a bath. She never dreamed anyone would read her notebook. But one terrible day her classmates found it. Everything Harriet had written about them made everyone furious. Harriet discovered the hardest lesson of her life. Words matter."},
+ {id:'borrowers',title:"The Borrowers",author:"Mary Norton",emoji:"🏠",col:"#0288D1",
+  text:"The Borrowers are a family of tiny people who live beneath the floorboards. They take small things that humans will not miss. A cotton reel becomes a table. A thimble becomes a cup. Arrietty Clock had never been outside her home under the floor. She longed to see the garden and the open sky. Then one day she went borrowing with her father and saw a boy reading by the window. The boy had kind eyes. He offered to help the Borrowers. But Arrietty's parents knew one terrible truth. Being seen always meant danger."},
+ {id:'wayside',title:"Wayside School is Falling Down",author:"Louis Sachar",emoji:"🏫",col:"#00897B",
+  text:"Wayside School was supposed to have thirty classrooms side by side on one floor. The builder made a mistake. He built thirty classrooms stacked on top of each other making a thirty storey school. Mrs Jewls teaches on the thirtieth floor where something very strange happens every single day. Today a boy named Joe could not count to ten the same way twice. Then a girl named Maurecia got so hungry she started biting everything in sight. And then a cow appeared in the classroom. Mrs Jewls was not even slightly surprised."},
+ {id:'tuck',title:"Tuck Everlasting",author:"Natalie Babbitt",emoji:"⏳",col:"#37474F",
+  text:"The first week of August hangs at the very top of summer before it tips over into autumn. Winnie Foster had never done anything interesting in her whole life. She lived in a proper house behind a proper fence with a proper family. Then one morning she slipped into the forbidden wood at the edge of her property. She found a boy named Jesse Tuck drinking from a secret spring. What Jesse told her next changed everything she thought she understood about the world. Some gifts are not blessings at all."},
+ {id:'my-fathers-dragon',title:"My Father's Dragon",author:"Ruth Stiles Gannett",emoji:"🐉",col:"#558B2F",
+  text:"My father Elmer Elevator once had the most extraordinary adventure. An alley cat told him about a baby dragon being held captive on Wild Island. The animals used the dragon as a living bridge. My father packed a very strange collection of supplies. Chewing gum. Lollipops. A toothbrush. Rubber bands. Hair ribbons. He stowed away on a ship and swam to Wild Island. There he used his supplies cleverly to outsmart a tiger a rhinoceros a lion and a gorilla. My father always found a way where others saw none."},
+ {id:'judy-moody',title:"Judy Moody",author:"Megan McDonald",emoji:"😤",col:"#AD1457",
+  text:"Judy Moody was in a mood. Not a good mood. A rotten mood. A mad face bad face mood. Third grade was starting tomorrow and her best friend Rocky had moved to California. Now she had to do a Me collage for the first day of school. She did not feel like being creative. She stomped upstairs and slammed her door. She lay on her bed staring at the ceiling. Then she had an idea. She would make the most brilliant Me collage her class had ever seen. Even when Judy was in a terrible mood she was extremely creative."},
+ {id:'captain-underpants',title:"Captain Underpants",author:"Dav Pilkey",emoji:"🩲",col:"#1565C0",
+  text:"George and Harold are best friends and the world's greatest pranksters. They go to Jerome Horwitz Elementary School where their principal Mr Krupp hates them passionately. George makes comic books. Harold draws the pictures. Together they created a superhero called Captain Underpants who fights evil in his underpants. One day they accidentally hypnotised Mr Krupp with a toy ring. Now whenever they snap their fingers he transforms into Captain Underpants and runs outside in his pants. It is very embarrassing for everyone involved. Especially at parents evening."}
+],
+a1012:[
  {id:'hp',title:"Harry Potter and the Philosopher's Stone",author:"J.K. Rowling",emoji:"⚡",col:"#7C3AED",
   text:"Harry Potter had always been told his parents died in a car crash and that he should be grateful the Dursleys had taken him in. He slept in a cupboard and wore his cousin's cast-offs. On his eleventh birthday an enormous man named Hagrid arrived to tell him the truth. Harry was a wizard. His parents had been murdered by the darkest sorcerer of the age, Lord Voldemort, who had then inexplicably failed to kill Harry as a baby, leaving only a lightning bolt scar. Now Harry was invited to Hogwarts School of Witchcraft and Wizardry where he would discover a world of extraordinary magic, genuine friendship, and a destiny he never imagined."},
  {id:'pj',title:"Percy Jackson and the Lightning Thief",author:"Rick Riordan",emoji:"🏺",col:"#0EA5E9",
@@ -1460,7 +1538,29 @@ hard:[
    QUIZ QUESTIONS — per age group
 ══════════════════════════════════════ */
 const QUIZ_QUESTIONS = {
-easy:[
+a34:[
+ {q:"What colour is a banana?",opts:["Yellow","Blue","Green","Purple"],ans:"Yellow"},
+ {q:"How many legs does a dog have?",opts:["4","2","6","8"],ans:"4"},
+ {q:"What sound does a cat make?",opts:["Meow","Woof","Moo","Baa"],ans:"Meow"},
+ {q:"What colour is the sky on a sunny day?",opts:["Blue","Pink","Yellow","Green"],ans:"Blue"},
+ {q:"What do bees make?",opts:["Honey","Milk","Juice","Bread"],ans:"Honey"},
+ {q:"What colour is grass?",opts:["Green","Red","Blue","Yellow"],ans:"Green"},
+ {q:"How many eyes do you have?",opts:["2","4","1","3"],ans:"2"},
+ {q:"What animal says Moo?",opts:["Cow","Pig","Dog","Sheep"],ans:"Cow"},
+ {q:"What colour is a strawberry?",opts:["Red","Yellow","Blue","Green"],ans:"Red"},
+ {q:"Which animal has a long trunk?",opts:["Elephant","Lion","Cat","Fish"],ans:"Elephant"},
+ {q:"What colour is an orange?",opts:["Orange","Purple","Black","White"],ans:"Orange"},
+ {q:"How many fingers on one hand?",opts:["5","4","6","3"],ans:"5"},
+ {q:"What do you call a baby dog?",opts:["Puppy","Kitten","Cub","Chick"],ans:"Puppy"},
+ {q:"What colour is a fire truck?",opts:["Red","Blue","Green","Yellow"],ans:"Red"},
+ {q:"Where do fish live?",opts:["In water","In trees","In the sky","Underground"],ans:"In water"},
+ {q:"What shape is a ball?",opts:["Round","Square","Triangle","Flat"],ans:"Round"},
+ {q:"What do caterpillars turn into?",opts:["Butterflies","Birds","Frogs","Fish"],ans:"Butterflies"},
+ {q:"What is the colour of snow?",opts:["White","Black","Brown","Grey"],ans:"White"},
+ {q:"What do birds use to fly?",opts:["Wings","Legs","Tails","Ears"],ans:"Wings"},
+ {q:"What gives us light in the daytime?",opts:["The sun","The moon","A lamp","Stars"],ans:"The sun"}
+],
+a56:[
  {q:"What colour is the sun?",opts:["Yellow","Blue","Green","Red"],ans:"Yellow"},
  {q:"How many legs does a spider have?",opts:["8","4","6","2"],ans:"8"},
  {q:"What sound does a cow make?",opts:["Moo","Woof","Meow","Baa"],ans:"Moo"},
@@ -1482,7 +1582,7 @@ easy:[
  {q:"What do we drink when we are thirsty?",opts:["Water","Sand","Mud","Rocks"],ans:"Water"},
  {q:"Which animal hops and has long ears?",opts:["Rabbit","Dog","Fish","Bird"],ans:"Rabbit"}
 ],
-medium:[
+a78:[
  {q:"What is the largest planet in our solar system?",opts:["Jupiter","Saturn","Earth","Mars"],ans:"Jupiter"},
  {q:"How many continents are there on Earth?",opts:["7","5","6","8"],ans:"7"},
  {q:"What is the capital of France?",opts:["Paris","London","Rome","Berlin"],ans:"Paris"},
@@ -1504,7 +1604,29 @@ medium:[
  {q:"What force pulls objects toward Earth?",opts:["Gravity","Magnetism","Friction","Pressure"],ans:"Gravity"},
  {q:"How many sides does an octagon have?",opts:["8","6","7","9"],ans:"8"}
 ],
-hard:[
+a810:[
+ {q:"What is the longest river in the world?",opts:["Nile","Amazon","Mississippi","Thames"],ans:"Nile"},
+ {q:"What gas do plants absorb from the air?",opts:["Carbon dioxide","Oxygen","Nitrogen","Hydrogen"],ans:"Carbon dioxide"},
+ {q:"Who wrote Romeo and Juliet?",opts:["Shakespeare","Dickens","Austen","Tolkien"],ans:"Shakespeare"},
+ {q:"How many continents are there?",opts:["7","5","6","8"],ans:"7"},
+ {q:"What is the capital of Australia?",opts:["Canberra","Sydney","Melbourne","Perth"],ans:"Canberra"},
+ {q:"What is H₂O?",opts:["Water","Salt","Sugar","Air"],ans:"Water"},
+ {q:"How many planets are in our solar system?",opts:["8","9","7","10"],ans:"8"},
+ {q:"What is the largest continent?",opts:["Asia","Africa","Europe","America"],ans:"Asia"},
+ {q:"Who was the first person on the moon?",opts:["Neil Armstrong","Buzz Aldrin","Yuri Gagarin","Alan Shepard"],ans:"Neil Armstrong"},
+ {q:"What is the hardest natural substance?",opts:["Diamond","Gold","Iron","Ruby"],ans:"Diamond"},
+ {q:"How many sides does a hexagon have?",opts:["6","5","7","8"],ans:"6"},
+ {q:"What is the powerhouse of the cell?",opts:["Mitochondria","Nucleus","Chloroplast","Ribosome"],ans:"Mitochondria"},
+ {q:"Which is the largest ocean?",opts:["Pacific","Atlantic","Indian","Arctic"],ans:"Pacific"},
+ {q:"Scientists who study fossils are called?",opts:["Palaeontologists","Biologists","Geologists","Astronomers"],ans:"Palaeontologists"},
+ {q:"How many days in a leap year?",opts:["366","365","364","367"],ans:"366"},
+ {q:"What is the currency of Japan?",opts:["Yen","Won","Yuan","Rupee"],ans:"Yen"},
+ {q:"Which planet is known as the Red Planet?",opts:["Mars","Venus","Jupiter","Saturn"],ans:"Mars"},
+ {q:"What is photosynthesis?",opts:["Plants making food from sunlight","Animals eating plants","Water turning to ice","Rocks forming underground"],ans:"Plants making food from sunlight"},
+ {q:"In which country is the Amazon rainforest?",opts:["Brazil","Peru","Colombia","Venezuela"],ans:"Brazil"},
+ {q:"What is the chemical symbol for gold?",opts:["Au","Go","Gd","Gl"],ans:"Au"}
+],
+a1012:[
  {q:"What is the chemical symbol for gold?",opts:["Au","Go","Ag","Gd"],ans:"Au"},
  {q:"Who wrote the play Romeo and Juliet?",opts:["William Shakespeare","Charles Dickens","Mark Twain","Jane Austen"],ans:"William Shakespeare"},
  {q:"What is the process plants use to make food from sunlight?",opts:["Photosynthesis","Respiration","Osmosis","Digestion"],ans:"Photosynthesis"},
@@ -1532,7 +1654,15 @@ hard:[
    AGE-SPECIFIC FUN FACTS / HADITH
 ══════════════════════════════════════ */
 const FUNFACTS = {
-easy:[
+a34:[
+ {title:"Elephants Are Huge!",icon:"🐘",bonus:5,
+  text:"Elephants are the biggest animals that walk on land! A baby elephant is called a calf. Even a baby elephant is bigger than most dogs. Elephants use their long trunk like a nose and an arm. They can pick up tiny things or give themselves a shower. Elephants love their families and stay together always. They are very smart animals. Finish reading this fun fact to earn five bonus minutes of screen time!"},
+ {title:"Dogs Are Amazing Friends!",icon:"🐶",bonus:5,
+  text:"Dogs are called man's best friend for a very good reason. There are hundreds of different kinds of dogs in the world. Some are tiny like teacups and some are as big as ponies. Dogs can smell things we cannot smell at all. They can hear sounds we cannot hear. Dogs wag their tails when they are happy. They lick your face to say hello. A puppy is a baby dog and puppies need lots of sleep just like you do. Dogs make wonderful friends."},
+ {title:"Why is the Sky Blue?",icon:"🌈",bonus:5,
+  text:"Have you ever wondered why the sky is blue? When sunlight comes to Earth it has all the colours of the rainbow mixed together. When the light hits the air the blue colour bounces around more than the other colours. So blue fills the whole sky. At sunset the light travels further through the air and then you see red and orange instead. Rainbows appear when sunlight goes through raindrops. The drops split the light into all its colours at once. Nature is very clever!"}
+],
+a56:[
  {title:"Elephants Never Forget!",icon:"🐘",bonus:5,
   text:"Elephants are the biggest animals that walk on land! They use their long trunk like a nose and a hand at the same time. Baby elephants drink their mother's milk just like human babies. Elephants remember their friends even after many years. They fan their huge ears to keep cool in hot weather. A group of elephants is called a herd and they look after each other. The oldest female elephant, called the matriarch, is the wise leader who remembers where to find water and food."},
  {title:"Rainbows are Magic!",icon:"🌈",bonus:5,
@@ -1540,7 +1670,7 @@ easy:[
  {title:"Bees are Amazing!",icon:"🐝",bonus:5,
   text:"Honeybees are some of the most hardworking insects in the world. A single worker bee must visit about two million flowers just to make one jar of honey. Bees live together in large groups called colonies or hives. They talk to each other by doing a special waggle dance to tell other bees exactly where to find flowers. Honey is the only food made by insects that humans eat. Honey never goes bad. Scientists found honey in ancient Egyptian tombs thousands of years old that was still perfectly good to eat!"}
 ],
-medium:[
+a78:[
  {title:"The Ocean's Deepest Secrets",icon:"🌊",bonus:5,
   text:"The deepest point in all of Earth's oceans is the Mariana Trench in the Pacific Ocean, reaching eleven kilometres below the surface. Mount Everest could fit inside it with two kilometres of water still above the peak. Scientists believe only five percent of the world's oceans have been explored. Deep-sea creatures survive in complete darkness under crushing pressure that would destroy a submarine. The ocean generates more than half of the oxygen we breathe through microscopic plants called phytoplankton. We know more about the surface of the Moon than we do about the floor of our own oceans."},
  {title:"Your Brain is Extraordinary",icon:"🧠",bonus:5,
@@ -1548,7 +1678,15 @@ medium:[
  {title:"Space is Bigger Than Imagination",icon:"🚀",bonus:5,
   text:"Our galaxy the Milky Way contains between two hundred and four hundred billion stars. And there are billions of galaxies in the observable universe, each containing billions of stars. Light travels at approximately three hundred thousand kilometres per second, the fastest speed possible, and yet light from the nearest star beyond our Sun takes more than four years to reach us. The most distant galaxies we can observe are over forty-six billion light-years away. Scientists calculate the universe began around thirteen point eight billion years ago in an event called the Big Bang from a single point smaller than an atom."}
 ],
-hard:[
+a810:[
+ {title:"The Human Brain is Amazing",icon:"🧠",bonus:5,
+  text:"Your brain is the most complex object in the known universe. It contains about 86 billion neurons which are tiny brain cells that send electrical signals to each other. These neurons form over 100 trillion connections. Your brain processes information faster than the world's most powerful computers. It never truly switches off, not even when you sleep. During sleep your brain files away memories and clears out waste products. Every thought, every memory, every feeling you have ever had started with a spark of electricity in your brain."},
+ {title:"DNA: The Code of Life",icon:"🧬",bonus:5,
+  text:"Every living thing on Earth has DNA hidden inside its cells. DNA is like a set of instructions written in a chemical alphabet with only four letters. These letters are arranged in sequences called genes which tell your body how to grow and work. If you uncoiled all the DNA from just one of your cells it would stretch about two metres long. The human genome contains about three billion of these chemical letters. Scientists only finished reading the entire human genome sequence in 2003 after thirteen years of work. You carry an entire library inside every cell."},
+ {title:"Black Holes: Cosmic Monsters",icon:"🌌",bonus:5,
+  text:"Black holes are the most extreme objects in the universe. They form when massive stars collapse under their own gravity at the end of their lives. The gravity of a black hole is so powerful that nothing can escape it, not even light. The point of no return around a black hole is called the event horizon. Time itself slows down near a black hole. If you fell into one you would experience time passing normally but an observer far away would see you freeze at the edge for eternity. The nearest black hole to Earth is about 1000 light years away."}
+],
+a1012:[
  {title:"DNA: The Code of Life",icon:"🧬",bonus:5,
   text:"Every cell in your body contains a complete copy of your DNA, the biological instruction manual that built you. The human genome consists of approximately three billion base pairs of DNA organised into twenty-three chromosome pairs. If you stretched all the DNA from a single cell into a line it would extend nearly two metres. All six trillion cells in your body each contain this same complete blueprint. The international Human Genome Project completed mapping our entire genome in 2003 after thirteen years of collaboration across six countries. Understanding our genetic code has transformed medicine, enabling identification of genetic diseases and the development of personalised treatments."},
  {title:"Climate Science and Our Future",icon:"🌍",bonus:5,
@@ -1581,9 +1719,9 @@ const BOT={
 /* ══════════════════════════════════════
    STATE
 ══════════════════════════════════════ */
-const APP_VERSION='013';
+const APP_VERSION='014';
 const S={
-    user:null,name:'',age:'medium',goal:10,module:'reading',
+    user:null,name:'',age:'a78',goal:10,module:'reading',
     sessionSecs:0,earnedSecs:0,
     focusScore:50,focusSum:0,focusSamples:0,
     words:[],wordIdx:0,wordsRead:0,
@@ -1654,7 +1792,7 @@ function refreshHomeStats() {
 async function startSetup(){
     // Name and age already set from sign-in screen
     if(!S.name) S.name = document.getElementById('childName').value.trim() || 'Explorer';
-    if(!S.age)  S.age  = document.getElementById('ageGroup').value || 'medium';
+    if(!S.age)  S.age  = document.getElementById('ageGroup').value || 'a78';
     S.goal = 10;
     show('loadingScreen');
 
@@ -2663,7 +2801,7 @@ function readMore(){refreshHomeStats();if(S.module==='reading'){showBookLibrary(
    FLAG GAME
 ══════════════════════════════════════ */
 const FLAGS_BY_AGE={
-easy:[
+a56:[
     {flag:'🇺🇸',name:'United States',opts:['United States','Canada','Australia','Mexico']},
     {flag:'🇬🇧',name:'United Kingdom',opts:['United Kingdom','Ireland','Germany','France']},
     {flag:'🇫🇷',name:'France',opts:['France','Italy','Spain','Germany']},
@@ -2685,7 +2823,7 @@ easy:[
     {flag:'🇦🇪',name:'UAE',opts:['UAE','Saudi Arabia','Egypt','Jordan']},
     {flag:'🇵🇹',name:'Portugal',opts:['Portugal','Spain','Italy','France']}
 ],
-medium:[
+a78:[
     {flag:'🇺🇸',name:'United States',opts:['United States','Liberia','Puerto Rico','Chile']},
     {flag:'🇬🇧',name:'United Kingdom',opts:['United Kingdom','Australia','New Zealand','Fiji']},
     {flag:'🇫🇷',name:'France',opts:['France','Chad','Andorra','Ivory Coast']},
@@ -2707,7 +2845,7 @@ medium:[
     {flag:'🇺🇦',name:'Ukraine',opts:['Ukraine','Kazakhstan','Honduras','Sweden']},
     {flag:'🇬🇷',name:'Greece',opts:['Greece','Uruguay','El Salvador','Finland']}
 ],
-hard:[
+a1012:[
     {flag:'🇷🇴',name:'Romania',opts:['Romania','Chad','Moldova','Andorra']},
     {flag:'🇹🇩',name:'Chad',opts:['Chad','Romania','Andorra','Moldova']},
     {flag:'🇮🇪',name:'Ireland',opts:['Ireland','Ivory Coast','Italy','Niger']},
@@ -2729,13 +2867,14 @@ hard:[
     {flag:'🇰🇬',name:'Kyrgyzstan',opts:['Kyrgyzstan','Kazakhstan','Uzbekistan','Tajikistan']},
     {flag:'🇪🇪',name:'Estonia',opts:['Estonia','Botswana','Gambia','Nigeria']}
 ]};
-const FLAGS=FLAGS_BY_AGE.medium;
+const FLAGS=FLAGS_BY_AGE.a78;
 
 let flagState={q:0,score:0,earned:0,total:10};
 
 function startFlagGame(){
     flagState={q:0,score:0,earned:0,total:10};
-    const pool=FLAGS_BY_AGE[S.age]||FLAGS_BY_AGE.medium;
+    const ageToPool={a34:'a56',a56:'a56',a78:'a78',a810:'a1012',a1012:'a1012'};
+    const pool=FLAGS_BY_AGE[ageToPool[S.age]||'a78']||FLAGS_BY_AGE.a78;
     const shuffled=[...pool].sort(()=>Math.random()-.5).slice(0,10);
     flagState.questions=shuffled;
     showFlagQuestion();
@@ -2834,8 +2973,8 @@ function sleep(ms){return new Promise(r=>setTimeout(r,ms));}
    BOOK LIBRARY
 ══════════════════════════════════════ */
 function showBookLibrary(){
-    const age = S.age || 'medium';
-    const ageLabelMap = {easy:'Ages 3–6',medium:'Ages 6–9',hard:'Ages 9–12'};
+    const age = S.age || 'a78';
+    const ageLabelMap = {a34:'Ages 3–4',a56:'Ages 5–6',a78:'Ages 7–8',a810:'Ages 8–10',a1012:'Ages 10–12'};;
     document.getElementById('libAgeBadge').textContent = ageLabelMap[age] || 'Ages 6–9';
     document.getElementById('libSectionTitle').textContent =
         'Pick a book and start reading to earn screen time!';
@@ -2892,8 +3031,8 @@ var sqState = {q:0,score:0,earned:0,total:10,questions:[]};
 function showShortQuiz(){ startShortQuiz(); }
 
 function startShortQuiz(){
-    const age = S.age || 'medium';
-    const pool = QUIZ_QUESTIONS[age] || QUIZ_QUESTIONS.medium;
+    const age = S.age || 'a78';
+    const pool = QUIZ_QUESTIONS[age] || QUIZ_QUESTIONS.a78;
     const shuffled = [...pool].sort(()=>Math.random()-.5).slice(0,10);
     sqState = {q:0,score:0,earned:0,total:10,questions:shuffled};
     document.getElementById('sqCard').style.display='block';
