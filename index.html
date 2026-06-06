@@ -936,7 +936,7 @@ input,select{display:none;}
         <div class="load-step" id="ls1"><span>⏳</span> Loading MediaPipe Face Mesh</div>
         <div class="load-step" id="ls2"><span>⏳</span> Starting camera</div>
         <div class="load-step" id="ls3"><span>⏳</span> Setting up voice recognition</div>
-        <div class="load-step" id="ls4"><span>⏳</span> Loading emotion detection (Hume AI)</div>
+        <div class="load-step" id="ls4"><span>⏳</span> Loading emotion detection (on-device AI)</div>
         <div class="load-step" id="ls5"><span>⏳</span> Starting eye tracking (WebGazer)</div>
     </div>
 </div>
@@ -1968,16 +1968,16 @@ async function startSetup(){
     S.speechOk=true;
     setLS('ls3','done');
 
-    // Hume AI — emotion detection (48 expressions)
+    // On-device emotion detection (MediaPipe blendshapes)
     setLS('ls4','loading');
     try{
-        await initHumeAI();
+        if(!S.faceLandmarker)throw new Error('emotion model not loaded');
         S.faceApiOk=true;
         setLS('ls4','done');
     }catch(e){
         setLS('ls4','fail');
-        showMLWarning('Hume AI emotion detection unavailable. Focus tracking continues without it.');
-        console.warn('Hume AI failed:',e);
+        showMLWarning('Emotion detection unavailable. Focus tracking continues without it.');
+        console.warn('Emotion init failed:',e);
     }
 
     // WebGazer — eye tracking on screen
@@ -2006,110 +2006,77 @@ function setLS(id,state){
    MEDIAPIPE FACE MESH
 ══════════════════════════════════════ */
 async function loadMediaPipe(){
-    return new Promise((resolve,reject)=>{
-        if(typeof FaceMesh==='undefined'){reject(new Error('FaceMesh not loaded'));return;}
-        S.faceMesh=new FaceMesh({
-            locateFile:f=>`https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh@0.4.1633559619/${f}`
-        });
-        S.faceMesh.setOptions({
-            maxNumFaces:1,
-            refineLandmarks:true,
-            minDetectionConfidence:0.55,
-            minTrackingConfidence:0.55
-        });
-        S.faceMesh.onResults(onFaceResults);
-        S.faceMesh.initialize().then(resolve).catch(reject);
+    // Unified on-device model: 478 landmarks + 52 expression blendshapes (emotion)
+    const vision = await import("https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.20/+esm");
+    const fileset = await vision.FilesetResolver.forVisionTasks(
+        "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.20/wasm");
+    S.faceLandmarker = await vision.FaceLandmarker.createFromOptions(fileset,{
+        baseOptions:{
+            modelAssetPath:"https://storage.googleapis.com/mediapipe-models/face_landmarker/face_landmarker/float16/1/face_landmarker.task",
+            delegate:"GPU"
+        },
+        runningMode:"VIDEO",
+        numFaces:1,
+        outputFaceBlendshapes:true,
+        outputFacialTransformationMatrixes:false
     });
+    S.faceMesh = true;
 }
 
 function startMediaPipe(vid){
-    if(typeof Camera==='undefined'||!S.faceMesh)return;
-    S.mpCamera=new Camera(vid,{
-        onFrame:async()=>{
-            if(S.active&&S.faceMesh){
-                try{await S.faceMesh.send({image:vid});}catch(e){}
-            }
-        },
-        width:640,height:480
-    });
-    S.mpCamera.start();
+    if(!S.faceLandmarker)return;
+    let lastT=-1;
+    function loop(){
+        S._mpRAF=requestAnimationFrame(loop);
+        if(!S.active||!S.faceLandmarker)return;
+        if(vid.readyState<2)return;
+        if(vid.currentTime===lastT)return;
+        lastT=vid.currentTime;
+        let res;
+        try{res=S.faceLandmarker.detectForVideo(vid,performance.now());}catch(e){return;}
+        if(!res)return;
+        try{onFaceResults({multiFaceLandmarks:res.faceLandmarks||[]});}catch(e){}
+        if(res.faceBlendshapes&&res.faceBlendshapes.length){
+            updateEmotionFromBlendshapes(res.faceBlendshapes[0].categories);
+        }
+    }
+    S._mpRAF=requestAnimationFrame(loop);
 }
 
 /* ══════════════════════════════════════
-   HUME AI EMOTION DETECTION
+   ON-DEVICE EMOTION DETECTION
    48 facial expressions — streaming
    WebSocket, replaces face-api.js
 ══════════════════════════════════════ */
-const HUME_KEY = 'Asm54aWhfcangu2EFWKIAAtczidFFYcWHHJ1dH20dSMft4op';
-
-let _humeSocket  = null;
-let _humeCapture = null;
-
-async function initHumeAI(){
-    return new Promise((resolve,reject)=>{
-        const ws=new WebSocket(`wss://api.hume.ai/v0/stream/models?apiKey=${HUME_KEY}`);
-        const t=setTimeout(()=>{ws.close();reject(new Error('Hume AI timeout'));},8000);
-        ws.onopen=()=>{clearTimeout(t);ws.close(1000);resolve();console.log('✅ Hume AI ready');};
-        ws.onerror=()=>{clearTimeout(t);reject(new Error('Hume AI connection failed'));};
-    });
+// On-device emotion from MediaPipe blendshapes (no network, fully private)
+function updateEmotionFromBlendshapes(cats){
+    if(!cats||!cats.length)return;
+    const bs=n=>{const c=cats.find(x=>x.categoryName===n);return c?c.score:0;};
+    const smile=(bs('mouthSmileLeft')+bs('mouthSmileRight'))/2;
+    const cheek=(bs('cheekSquintLeft')+bs('cheekSquintRight'))/2;
+    const frown=(bs('mouthFrownLeft')+bs('mouthFrownRight'))/2;
+    const browDown=(bs('browDownLeft')+bs('browDownRight'))/2;
+    const browInner=bs('browInnerUp');
+    const eyeBlink=(bs('eyeBlinkLeft')+bs('eyeBlinkRight'))/2;
+    const jawOpen=bs('jawOpen');
+    const focusBrow=Math.max(0,browDown-0.15)*0.30;
+    const positive=smile*0.95+cheek*0.55+focusBrow;
+    const negative=frown*1.0+browInner*0.5+(eyeBlink>0.6?0.25:0);
+    let raw=0.5+positive*0.9-negative*0.8;
+    raw=Math.max(0,Math.min(1,raw));
+    S.emotionScore=S.emotionScore*0.6+raw*100*0.4;
+    S.faceApiOk=true;
+    let emoji='\u{1F610}';
+    if(smile>0.45)emoji=cheek>0.30?'\u{1F604}':'\u{1F642}';
+    else if(frown>0.30||browInner>0.45)emoji='\u{1F61F}';
+    else if(browDown>0.35)emoji='\u{1F9D0}';
+    else if(eyeBlink>0.60&&jawOpen<0.10)emoji='\u{1F634}';
+    S.lastEmotion=emoji;
 }
 
-function beginHumeLoop(){
-    if(_humeSocket||_humeCapture)return;
-    const vid=document.getElementById('video');
-    function connect(){
-        _humeSocket=new WebSocket(`wss://api.hume.ai/v0/stream/models?apiKey=${HUME_KEY}`);
-        _humeSocket.onopen=()=>{
-            console.log('✅ Hume AI stream open');
-            _humeCapture=setInterval(()=>{
-                if(!S.active||!_humeSocket||_humeSocket.readyState!==WebSocket.OPEN)return;
-                try{
-                    const cv=document.createElement('canvas');
-                    cv.width=320;cv.height=240;
-                    cv.getContext('2d').drawImage(vid,0,0,320,240);
-                    const b64=cv.toDataURL('image/jpeg',0.75).split(',')[1];
-                    _humeSocket.send(JSON.stringify({models:{face:{}},data:b64}));
-                }catch(e){}
-            },2000);
-        };
-        _humeSocket.onmessage=(evt)=>{
-            if(!S.active)return;
-            try{
-                const res=JSON.parse(evt.data);
-                const preds=res?.face?.predictions;
-                if(!preds||!preds.length)return;
-                const emo=preds[0].emotions||[];
-                const get=n=>(emo.find(e=>e.name===n)?.score||0);
-                const engaged=get('Joy')+get('Excitement')*0.9+get('Satisfaction')*0.8
-                              +get('Interest')*0.8+get('Concentration')*0.7+get('Calmness')*0.4;
-                const disengaged=get('Boredom')+get('Distress')*0.8+get('Anger')
-                                 +get('Disgust')*0.9+get('Tiredness')*0.7;
-                const raw=Math.max(0,Math.min(1,(engaged-disengaged*0.8+0.35)/1.6));
-                S.emotionScore=S.emotionScore*0.55+raw*100*0.45;
-                const top=emo.reduce((a,b)=>a.score>b.score?a:b,emo[0]);
-                const em={
-                    'Joy':'😊','Excitement':'🤩','Satisfaction':'😌','Interest':'🤔',
-                    'Concentration':'🧐','Calmness':'😐','Awe':'😯','Boredom':'😴',
-                    'Distress':'😟','Anger':'😠','Disgust':'🙄','Tiredness':'😴',
-                    'Confusion':'😕','Surprise (positive)':'😲','Fear':'😨','Sadness':'😢'
-                };
-                S.lastEmotion=em[top.name]||'😐';
-            }catch(e){}
-        };
-        _humeSocket.onerror=()=>{console.warn('Hume AI socket error');};
-        _humeSocket.onclose=(evt)=>{
-            if(S.active&&evt.code!==1000){
-                _humeSocket=null;
-                setTimeout(connect,2000);
-            }
-        };
-    }
-    connect();
-}
-
-function stopHumeLoop(){
-    if(_humeCapture){clearInterval(_humeCapture);_humeCapture=null;}
-    if(_humeSocket){try{_humeSocket.close(1000);}catch(e){}  _humeSocket=null;}
+function stopMediaPipe(){
+    if(S._mpRAF){cancelAnimationFrame(S._mpRAF);S._mpRAF=null;}
+    if(S.faceLandmarker){try{S.faceLandmarker.close();}catch(e){}S.faceLandmarker=null;}
 }
 
 /* ══════════════════════════════════════
@@ -2450,7 +2417,6 @@ function beginSession(){
         emotionScore:50,gazeOnText:true,lastEmotion:'–',
         calibrated:false,calibSamples:[],blinkCount:0,lastBlinkReset:Date.now(),
         mouthScore:0,_lastEarDip:false,faceApiInterval:null});
-    beginHumeLoop();
     if(S.webGazerOk){try{webgazer.resume();}catch(e){}}
     // Update streak
     const st=gs();
@@ -3022,8 +2988,10 @@ function endSession(){
     _dgUtteranceStart=0;
     clearInterval(S.faceTimer);clearInterval(S.mainTimer);
     if(S.faceApiInterval){clearInterval(S.faceApiInterval);S.faceApiInterval=null;}
-    stopHumeLoop();
+    stopMediaPipe();
     if(S.mpCamera)try{S.mpCamera.stop();}catch(e){}
+    const _v=document.getElementById('video');
+    if(_v&&_v.srcObject){try{_v.srcObject.getTracks().forEach(t=>t.stop());}catch(e){}_v.srcObject=null;}
     stopVoiceRecognition();
     if(S.webGazerOk){try{webgazer.pause();}catch(e){}}
     window.speechSynthesis&&window.speechSynthesis.cancel();
