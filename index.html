@@ -1532,6 +1532,70 @@ a1012:[
   text:"Mole abandoned his spring cleaning on impulse and dug upward into a world of sunlight and riverbanks he had never experienced. The Water Rat introduced him to the supreme pleasures of messing about in boats, and they became the best of friends. The ancient badger Mister Badger lived deep in the Wild Wood and rarely emerged but was fundamentally decent and wise. And then there was Toad of Toad Hall: wealthy, boastful, generous, absolutely incorrigible, and fatally susceptible to the next new obsession. Motor cars in particular consumed him entirely and led to his imprisonment, escape and ultimately the loss and recovery of his ancestral home. The English countryside had never seemed so worth defending."}
 ]
 };
+/* GUTENDEX Live Books */
+const GUTENBERG_IDS={
+  a34:[],
+  a56:[11,16,55,500,1597,2591,19993],
+  a78:[271,236,289,1232,1450,113,3793],
+  a810:[37,74,120,146,521,11023,1400],
+  a1012:[1661,345,76,98,135,1342,1260]
+};
+const GB_COLORS={'A':'#6366F1','B':'#EC4899','C':'#F59E0B','D':'#10B981','E':'#3B82F6','F':'#EF4444','G':'#8B5CF6','H':'#14B8A6','I':'#F97316','J':'#84CC16','K':'#0EA5E9','L':'#A855F7','M':'#06B6D4','N':'#F43F5E','O':'#22C55E','P':'#EAB308','R':'#E11D48','S':'#2563EB','T':'#D97706','W':'#059669'};
+const GB_CACHE='gb2_', GB_TTL=86400000;
+const _gbMem={};
+
+async function fetchGBMeta(ids){
+  if(!ids||!ids.length)return[];
+  const key=GB_CACHE+'m'+ids.join('_');
+  try{const x=JSON.parse(localStorage.getItem(key)||'null');if(x&&Date.now()-x.ts<GB_TTL)return x.d;}catch(e){}
+  try{
+    const r=await fetch('https://gutendex.com/books/?ids='+ids.join('%2C')+'&languages=en',{signal:AbortSignal.timeout(8000)});
+    if(!r.ok)return[];
+    const j=await r.json();
+    const books=(j.results||[]).map(b=>{
+      const u=b.formats['text/plain; charset=utf-8']||b.formats['text/plain; charset=us-ascii']||b.formats['text/plain']||'';
+      const a=b.authors[0]?(b.authors[0].name.split(',').reverse().join(' ').trim()):'Classic';
+      return{id:'gb_'+b.id,gbId:b.id,title:b.title,author:a,emoji:'📖',col:GB_COLORS[b.title.charAt(0).toUpperCase()]||'#6366F1',txtUrl:u,text:null,source:'gutenberg'};
+    });
+    try{localStorage.setItem(key,JSON.stringify({ts:Date.now(),d:books}));}catch(e){}
+    return books;
+  }catch(e){return[];}
+}
+
+async function fetchGBPassage(book){
+  const key=GB_CACHE+'t'+book.gbId;
+  try{const x=JSON.parse(localStorage.getItem(key)||'null');if(x&&x.text)return x.text;}catch(e){}
+  if(!book.txtUrl)return null;
+  try{
+    const r=await fetch(book.txtUrl,{signal:AbortSignal.timeout(12000)});
+    if(!r.ok)return null;
+    const reader=r.body.getReader();
+    let bytes=0,chunks=[];
+    while(bytes<25000){const{done,value}=await reader.read();if(done)break;chunks.push(value);bytes+=value.length;}
+    reader.cancel();
+    const buf=new Uint8Array(bytes);let off=0;chunks.forEach(ch=>{buf.set(ch,off);off+=ch.length;});
+    let text=new TextDecoder().decode(buf);
+    const markers=['*** START OF THE PROJECT GUTENBERG','***START OF THE PROJECT GUTENBERG'];
+    let si=-1;
+    for(const m of markers){const i=text.indexOf(m);if(i>-1){si=text.indexOf('\n',i)+1;break;}}
+    const content=si>0?text.slice(si):text.slice(Math.min(1500,Math.floor(text.length/4)));
+    const words=content.replace(/[\r\n]+/g,' ').split(/\s+/).filter(w=>w.length>0).slice(0,160);
+    const passage=words.join(' ').trim();
+    if(passage.length<50)return null;
+    try{localStorage.setItem(key,JSON.stringify({text:passage}));}catch(e){}
+    return passage;
+  }catch(e){return null;}
+}
+
+const _gbCache={};
+async function loadGBBooks(age){
+  if(_gbCache[age]!==undefined)return _gbCache[age];
+  _gbCache[age]=[];
+  const books=await fetchGBMeta(GUTENBERG_IDS[age]||[]);
+  _gbCache[age]=books;
+  return books;
+}
+
 
 
 /* ══════════════════════════════════════
@@ -1719,7 +1783,7 @@ const BOT={
 /* ══════════════════════════════════════
    STATE
 ══════════════════════════════════════ */
-const APP_VERSION='014';
+const APP_VERSION='015';
 const S={
     user:null,name:'',age:'a78',goal:10,module:'reading',
     sessionSecs:0,earnedSecs:0,
@@ -2973,35 +3037,39 @@ function sleep(ms){return new Promise(r=>setTimeout(r,ms));}
    BOOK LIBRARY
 ══════════════════════════════════════ */
 function showBookLibrary(){
-    const age = S.age || 'a78';
-    const ageLabelMap = {a34:'Ages 3–4',a56:'Ages 5–6',a78:'Ages 7–8',a810:'Ages 8–10',a1012:'Ages 10–12'};;
-    document.getElementById('libAgeBadge').textContent = ageLabelMap[age] || 'Ages 6–9';
-    document.getElementById('libSectionTitle').textContent =
-        'Pick a book and start reading to earn screen time!';
-    const grid = document.getElementById('booksGrid');
-    grid.innerHTML = '';
-    const bookList = BOOKS[age] || BOOKS.medium;
-    bookList.forEach(book => {
-        const card = document.createElement('button');
-        card.className = 'book-card';
-        card.innerHTML = `
-            <div class="book-emoji-wrap" style="background:${book.col}22">
-                <span>${book.emoji}</span>
-            </div>
-            <div class="book-card-title">${book.title}</div>
-            <div class="book-card-author">${book.author}</div>
-            <div class="book-card-btn">Read Now</div>
-        `;
-        card.onclick = () => selectBook(book);
-        grid.appendChild(card);
-    });
-    show('bookLibraryScreen');
+  const age=S.age||'a78';
+  const lbl={a34:'Ages 3-4',a56:'Ages 5-6',a78:'Ages 7-8',a810:'Ages 8-10',a1012:'Ages 10-12'};
+  document.getElementById('libAgeBadge').textContent=lbl[age]||'Ages 7-8';
+  document.getElementById('libSectionTitle').textContent='Pick a book and start reading!';
+  const grid=document.getElementById('booksGrid');
+  grid.innerHTML='';
+  show('bookLibraryScreen');
+  function addCard(book,live){
+    const card=document.createElement('button');
+    card.className='book-card';
+    const badge=live?'<div style="font-size:.5rem;background:#6366F1;color:white;border-radius:50px;padding:.1rem .4rem;font-weight:700;margin-bottom:.1rem;display:inline-block">🌐 Live</div><br>':'';
+    card.innerHTML='<div class="book-emoji-wrap" style="background:'+book.col+'22"><span>'+book.emoji+'</span></div><div class="book-card-title">'+book.title+'</div><div class="book-card-author">'+book.author+'</div>'+badge+'<div class="book-card-btn">Read Now</div>';
+    card.onclick=()=>selectBook(book);
+    grid.appendChild(card);
+  }
+  (BOOKS[age]||BOOKS.a78).forEach(b=>addCard(b,false));
+  loadGBBooks(age).then(bs=>bs.forEach(b=>addCard(b,true))).catch(()=>{});
 }
 
-function selectBook(book){
-    S.module = 'reading';
-    S.selectedBook = book;
-    startSetup();
+async function selectBook(book){
+  S.module='reading';
+  if(book.source==='gutenberg'&&!book.text){
+    const ov=document.createElement('div');
+    ov.id='_gbOv';ov.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.75);display:flex;align-items:center;justify-content:center;z-index:9999;color:white;font-size:1.1rem;flex-direction:column;gap:.75rem;';
+    ov.innerHTML='<span style="font-size:2.5rem">📖</span><span>Loading book from Project Gutenberg…</span>';
+    document.body.appendChild(ov);
+    const passage=await fetchGBPassage(book);
+    const el=document.getElementById('_gbOv');if(el)el.remove();
+    if(passage){book.text=passage;}
+    else{alert('Could not load this book right now. Try another one!');return;}
+  }
+  S.selectedBook=book;
+  startSetup();
 }
 
 /* Override loadPassage to use selected book when available */
