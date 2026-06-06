@@ -1868,7 +1868,7 @@ const BOT={
 /* ══════════════════════════════════════
    STATE
 ══════════════════════════════════════ */
-const APP_VERSION='017';
+const APP_VERSION='018';
 const S={
     user:null,name:'',age:'a78',goal:10,module:'reading',
     sessionSecs:0,earnedSecs:0,
@@ -2007,19 +2007,30 @@ function setLS(id,state){
 ══════════════════════════════════════ */
 async function loadMediaPipe(){
     // Unified on-device model: 478 landmarks + 52 expression blendshapes (emotion)
-    const vision = await import("https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.20/+esm");
-    const fileset = await vision.FilesetResolver.forVisionTasks(
-        "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.20/wasm");
-    S.faceLandmarker = await vision.FaceLandmarker.createFromOptions(fileset,{
+    const TV="https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.20";
+    const withTimeout=(p,ms,label)=>Promise.race([p,
+        new Promise((_,rej)=>setTimeout(()=>rej(new Error(label+" timeout")),ms))]);
+    const vision = await withTimeout(import(TV+"/vision_bundle.mjs"),20000,"vision import");
+    const fileset = await withTimeout(
+        vision.FilesetResolver.forVisionTasks(TV+"/wasm"),35000,"wasm load");
+    const opts=(delegate)=>({
         baseOptions:{
             modelAssetPath:"https://storage.googleapis.com/mediapipe-models/face_landmarker/face_landmarker/float16/1/face_landmarker.task",
-            delegate:"GPU"
+            delegate:delegate
         },
         runningMode:"VIDEO",
         numFaces:1,
         outputFaceBlendshapes:true,
         outputFacialTransformationMatrixes:false
     });
+    try{
+        S.faceLandmarker = await withTimeout(
+            vision.FaceLandmarker.createFromOptions(fileset,opts("GPU")),35000,"model(GPU)");
+    }catch(e){
+        console.warn("GPU delegate failed, falling back to CPU:",e);
+        S.faceLandmarker = await withTimeout(
+            vision.FaceLandmarker.createFromOptions(fileset,opts("CPU")),35000,"model(CPU)");
+    }
     S.faceMesh = true;
 }
 
