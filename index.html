@@ -994,6 +994,9 @@ input,select{display:none;}
             <div class="voice-bar">
                 <div class="mic-el" id="micEl">🎙️</div>
                 <div class="voice-txt" id="voiceTxt">Listening… read the text aloud!</div>
+<div id="dbgBar" style="font-size:.55rem;color:#A78BFA;text-align:center;padding:.15rem;letter-spacing:.03em;background:rgba(0,0,0,.3);border-radius:4px;margin:.2rem .5rem">
+  <span id="dbgConn">AAI: not started</span> | <span id="dbgWords">word -/-</span>
+</div>
                 <div class="prog-wrap">
                     <div class="prog-track"><div class="prog-fill" id="progFill" style="width:0%"></div></div>
                     <div class="prog-pct" id="progPct">0%</div>
@@ -1578,7 +1581,7 @@ const BOT={
 /* ══════════════════════════════════════
    STATE
 ══════════════════════════════════════ */
-const APP_VERSION='010';
+const APP_VERSION='011';
 const S={
     user:null,name:'',age:'medium',goal:10,module:'reading',
     sessionSecs:0,earnedSecs:0,
@@ -2175,6 +2178,19 @@ function beginSession(){
     loadPassage();
     show('sessionScreen');
     startVoiceRecognition();
+    setTimeout(()=>{
+        if(!S.active||Date.now()-S.lastSpeech<4000)return;
+        const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+        if(SR&&!S.recognition){
+            document.getElementById('dbgConn').textContent='AAI silent → browser SR';
+            S.recognition=new SR();
+            S.recognition.continuous=true;S.recognition.interimResults=true;S.recognition.lang='en-US';
+            S.recognition.onresult=onSpeech;
+            S.recognition.onerror=e=>{if(e.error!=='no-speech')console.warn('SR:',e.error);};
+            S.recognition.onend=()=>{if(S.active){try{S.recognition.start();}catch(e){}}};
+            try{S.recognition.start();}catch(e){}
+        }
+    },6000);
     if(!S.cameraOk||!S.faceMesh){
         S.faceTimer=setInterval(()=>{
             const sp=Date.now()-S.lastSpeech<6000;
@@ -2256,6 +2272,7 @@ function startAssemblyAIStream(){
         'wss://api.assemblyai.com/v2/realtime/ws?sample_rate=16000&end_utterance_silence_threshold=200&token='+_aaiToken
     );
 
+    document.getElementById('dbgConn').textContent='AAI: connecting…';
     _aaiSocket.onopen = async () => {
         try{
             _aaiStream = await navigator.mediaDevices.getUserMedia({
@@ -2282,6 +2299,7 @@ function startAssemblyAIStream(){
                 _aaiSocket.send(JSON.stringify({audio_data:btoa(b)}));
             };
             console.log('✅ AssemblyAI mic stream started');
+            document.getElementById('dbgConn').textContent='AAI: 🔴🔵 mic live';
         }catch(err){
             console.warn('AssemblyAI mic error:',err);
             document.getElementById('voiceTxt').textContent='⚠️ Mic permission denied — tap 🔒 in address bar';
@@ -2297,6 +2315,7 @@ function startAssemblyAIStream(){
 
         document.getElementById('voiceTxt').textContent='🎙 "'+t+'"';
         document.getElementById('micEl').classList.add('on');
+        document.getElementById('dbgConn').textContent='AAI: '+data.message_type;
         S.lastSpeech=Date.now();
 
         if(data.message_type==='FinalTranscript'){
@@ -2386,6 +2405,7 @@ function matchInterim(transcript){
 
 function matchReading(spoken,isFinal){
     if(isFinal===undefined)isFinal=true;
+    try{const d=document.getElementById('dbgWords');if(d&&S.words)d.textContent='word '+S.wordIdx+'/'+S.words.length+' | "'+spoken.slice(0,18)+'"';}catch(e){}
     if(S.wordIdx>=S.words.length)return;
     const sw=spoken.split(/\s+/).map(w=>cl(w)).filter(w=>w.length>1);
     if(!sw.length)return;
