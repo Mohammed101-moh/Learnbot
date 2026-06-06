@@ -1581,7 +1581,7 @@ const BOT={
 /* ══════════════════════════════════════
    STATE
 ══════════════════════════════════════ */
-const APP_VERSION='012';
+const APP_VERSION='013';
 const S={
     user:null,name:'',age:'medium',goal:10,module:'reading',
     sessionSecs:0,earnedSecs:0,
@@ -2347,17 +2347,37 @@ function onSpeech(e){
 }
 
 // Called on every partial — matches only NEW words since last partial
+// Deepgram utterance tracking
+let _dgUtteranceStart = 0;  // S.wordIdx when current utterance began
+let _dgInUtterance    = false;
+
+// Called on every interim (is_final=false) — words go green word-by-word
 function handlePartialTranscript(t){
-    // Partials = visual pulse only. matchReading runs on finals.
-    if(t.length>2) matchInterim(t);
+    if(!S.words||!t)return;
+    // Record where this utterance started (only on first partial)
+    if(!_dgInUtterance){
+        _dgInUtterance=true;
+        _dgUtteranceStart=S.wordIdx;
+    }
+    // Reset to utterance start, re-match full growing transcript
+    // This gives instant green per word with zero drift
+    S.wordIdx=_dgUtteranceStart;
+    matchReading(t,false);
+    matchInterim(t);
 }
 
+// Called on is_final=true — confirms words, catches anything partials missed
 function handleFinalTranscript(t){
     document.querySelectorAll('.word.speaking').forEach(el=>el.classList.remove('speaking'));
+    _dgInUtterance=false;
     S.speechEvents=S.speechEvents||[];
     S.speechEvents.push({time:Date.now(),matched:false});
     S.speechEvents=S.speechEvents.filter(e=>Date.now()-e.time<30000);
+    // Reset to utterance start for final pass
+    S.wordIdx=_dgUtteranceStart;
     matchReading(t,true);
+    // Update start for next utterance
+    _dgUtteranceStart=S.wordIdx;
 }
 
 function matchInterim(transcript){
@@ -2577,6 +2597,8 @@ function spawnCoin(){
 function confirmEnd(){if(confirm('End the session now?'))endSession();}
 function endSession(){
     S.active=false;
+    _dgInUtterance=false;
+    _dgUtteranceStart=0;
     clearInterval(S.faceTimer);clearInterval(S.mainTimer);
     if(S.faceApiInterval){clearInterval(S.faceApiInterval);S.faceApiInterval=null;}
     stopHumeLoop();
