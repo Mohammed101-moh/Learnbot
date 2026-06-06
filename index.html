@@ -1581,7 +1581,7 @@ const BOT={
 /* ══════════════════════════════════════
    STATE
 ══════════════════════════════════════ */
-const APP_VERSION='011';
+const APP_VERSION='012';
 const S={
     user:null,name:'',age:'medium',goal:10,module:'reading',
     sessionSecs:0,earnedSecs:0,
@@ -1677,9 +1677,7 @@ async function startSetup(){
         if(S.faceMesh) startMediaPipe(vid);
     }catch(e){setLS('ls2','fail');document.getElementById('camWrap').innerHTML='<div style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;color:var(--muted);gap:.5rem"><span style="font-size:2rem">📷</span><span style="font-size:.75rem">Camera unavailable</span></div>';}
 
-    // Speech — AssemblyAI Universal-2 (primary) + Web Speech API (fallback)
     setLS('ls3','loading');
-    // AssemblyAI token is fetched when the session starts — no blocking here
     S.speechOk=true;
     setLS('ls3','done');
 
@@ -2216,133 +2214,108 @@ function loadPassage(){
 
 
 /* ══════════════════════════════════════
-   ASSEMBLYAI UNIVERSAL-2 VOICE ENGINE
+   DEEPGRAM NOVA-2 VOICE ENGINE
    Real-time streaming — best accuracy
    for children's voices (5.9% WER)
 ══════════════════════════════════════ */
-const ASSEMBLYAI_KEY = '589eeaf3db6740b8be6c5384b4de78e6';
+
 
 // Module-level state
-let _aaiToken  = null;
-let _aaiSocket = null;
-// speech tracking vars removed — using simple matchReading on finals only
-let _aaiCtx    = null;
-let _aaiStream = null;
-let _aaiNode   = null;
+const DEEPGRAM_KEY = 'ce9500cbb97c89d6eedcd01bf04e09952cc8f480';
+let _dgSocket = null;
+let _dgCtx    = null;
+let _dgStream = null;
+let _dgNode   = null;
 
-// Step 1 — called during loading screen: get short-lived token
-async function initAssemblyAI(){
-    const ctrl = new AbortController();
-    const t = setTimeout(()=>ctrl.abort(), 10000); // 10s timeout
-    try{
-        const resp = await fetch('https://api.assemblyai.com/v2/realtime/token',{
-            method:'POST',
-            headers:{'authorization':ASSEMBLYAI_KEY,'content-type':'application/json'},
-            body:JSON.stringify({expires_in:7200}),
-            signal:ctrl.signal
-        });
-        clearTimeout(t);
-        if(!resp.ok) throw new Error('AssemblyAI token failed: '+resp.status);
-        const json = await resp.json();
-        _aaiToken = json.token;
-        console.log('✅ AssemblyAI token obtained');
-    }catch(e){ clearTimeout(t); throw e; }
-}
+function startDeepgramStream(){
+    if(_dgSocket && _dgSocket.readyState === WebSocket.OPEN) return;
+    const url = 'wss://api.deepgram.com/v1/listen?' +
+        'model=nova-2&language=en-US&' +
+        'interim_results=true&endpointing=200&' +
+        'encoding=linear16&sample_rate=16000&channels=1';
+    _dgSocket = new WebSocket(url, ['token', DEEPGRAM_KEY]);
 
-// Step 2 — called in beginSession
-async function startVoiceRecognition(){
-    try{
-        if(!_aaiToken) await initAssemblyAI();
-        startAssemblyAIStream();
-    }catch(e){
-        console.warn('AssemblyAI connect failed, retrying in 3s:',e);
-        setTimeout(()=>{ if(S.active) startVoiceRecognition(); },3000);
-    }
-}
+    document.getElementById('dbgConn').textContent = 'DG: connecting…';
 
-// Called in endSession
-function stopVoiceRecognition(){
-    stopAssemblyAIStream();
-    if(S.recognition){ try{S.recognition.stop();}catch(e){} }
-}
-
-function startAssemblyAIStream(){
-    if(_aaiSocket && _aaiSocket.readyState===WebSocket.OPEN) return;
-    _aaiSocket = new WebSocket(
-        'wss://api.assemblyai.com/v2/realtime/ws?sample_rate=16000&end_utterance_silence_threshold=200&token='+_aaiToken
-    );
-
-    document.getElementById('dbgConn').textContent='AAI: connecting…';
-    _aaiSocket.onopen = async () => {
+    _dgSocket.onopen = async () => {
+        document.getElementById('dbgConn').textContent = 'DG: connected, starting mic…';
         try{
-            _aaiStream = await navigator.mediaDevices.getUserMedia({
+            _dgStream = await navigator.mediaDevices.getUserMedia({
                 audio:{ sampleRate:16000, channelCount:1,
-                          echoCancellation:true, noiseSuppression:true }
+                         echoCancellation:true, noiseSuppression:true }
             });
-            _aaiCtx = new (window.AudioContext||window.webkitAudioContext)({sampleRate:16000});
-            const src = _aaiCtx.createMediaStreamSource(_aaiStream);
-            // ScriptProcessor is deprecated but universally supported;
-            // AudioWorklet requires serving over HTTPS with correct MIME types
-            _aaiNode = _aaiCtx.createScriptProcessor(4096,1,1);
-            src.connect(_aaiNode);
-            _aaiNode.connect(_aaiCtx.destination);
-            _aaiNode.onaudioprocess = (evt) => {
-                if(!S.active||!_aaiSocket||_aaiSocket.readyState!==WebSocket.OPEN) return;
+            _dgCtx = new (window.AudioContext||window.webkitAudioContext)({sampleRate:16000});
+            const src = _dgCtx.createMediaStreamSource(_dgStream);
+            _dgNode = _dgCtx.createScriptProcessor(4096,1,1);
+            src.connect(_dgNode);
+            _dgNode.connect(_dgCtx.destination);
+            _dgNode.onaudioprocess = (evt) => {
+                if(!S.active||!_dgSocket||_dgSocket.readyState!==WebSocket.OPEN) return;
                 const raw = evt.inputBuffer.getChannelData(0);
                 const pcm = new Int16Array(raw.length);
                 for(let i=0;i<raw.length;i++)
                     pcm[i]=Math.max(-32768,Math.min(32767,Math.round(raw[i]*32767)));
-                // base64 encode the PCM buffer
                 const bytes = new Uint8Array(pcm.buffer);
                 let b='';
                 for(let i=0;i<bytes.length;i++) b+=String.fromCharCode(bytes[i]);
-                _aaiSocket.send(JSON.stringify({audio_data:btoa(b)}));
+                _dgSocket.send(btoa(b));
             };
-            console.log('✅ AssemblyAI mic stream started');
-            document.getElementById('dbgConn').textContent='AAI: 🔴🔵 mic live';
+            document.getElementById('dbgConn').textContent = 'DG: 🎤 mic live';
+            console.log('✅ Deepgram mic stream started');
         }catch(err){
-            console.warn('AssemblyAI mic error:',err);
+            console.warn('Deepgram mic error:',err);
             document.getElementById('voiceTxt').textContent='⚠️ Mic permission denied — tap 🔒 in address bar';
         }
     };
 
-    _aaiSocket.onmessage = (evt) => {
+    _dgSocket.onmessage = (evt) => {
         if(!S.active) return;
         let data;
         try{data=JSON.parse(evt.data);}catch(e){return;}
-        const t=(data.text||'').toLowerCase().trim();
+        if(data.type!=='Results') return;
+        const t=(data.channel?.alternatives?.[0]?.transcript||'').toLowerCase().trim();
         if(!t) return;
 
         document.getElementById('voiceTxt').textContent='🎙 "'+t+'"';
         document.getElementById('micEl').classList.add('on');
-        document.getElementById('dbgConn').textContent='AAI: '+data.message_type;
         S.lastSpeech=Date.now();
+        document.getElementById('dbgConn').textContent='DG: '+(data.is_final?'final':'partial');
 
-        if(data.message_type==='FinalTranscript'){
+        if(data.is_final){
             handleFinalTranscript(t);
-        }else if(data.message_type==='PartialTranscript'){
-            if(t.length>2)handlePartialTranscript(t);
+        }else{
+            handlePartialTranscript(t);
         }
     };
 
-    _aaiSocket.onerror = () => {
-        console.warn('AssemblyAI socket error');
+    _dgSocket.onerror = (e) => {
+        console.warn('Deepgram socket error', e);
+        document.getElementById('dbgConn').textContent = 'DG: ❌ error';
     };
 
-    _aaiSocket.onclose = (evt) => {
-        // Auto-reconnect unless session ended or intentional close
+    _dgSocket.onclose = (evt) => {
+        document.getElementById('dbgConn').textContent = 'DG: closed ('+evt.code+')';
         if(S.active && evt.code!==1000){
-            console.log('AssemblyAI disconnected — reconnecting in 1.5s...');
-            setTimeout(()=>{ if(S.active) startAssemblyAIStream(); },1500);
+            console.log('Deepgram disconnected — reconnecting in 2s…');
+            setTimeout(()=>{ if(S.active) startDeepgramStream(); },2000);
         }
     };
 }
 
-function stopAssemblyAIStream(){
-    if(_aaiNode){   try{_aaiNode.disconnect();}catch(e){}    _aaiNode=null;   }
-    if(_aaiCtx){    try{_aaiCtx.close();}catch(e){}          _aaiCtx=null;    }
-    if(_aaiStream){ _aaiStream.getTracks().forEach(t=>t.stop()); _aaiStream=null; }
-    if(_aaiSocket){ try{_aaiSocket.close(1000);}catch(e){}   _aaiSocket=null; }
+function stopDeepgramStream(){
+    if(_dgNode){   try{_dgNode.disconnect();}catch(e){}    _dgNode=null;   }
+    if(_dgCtx){    try{_dgCtx.close();}catch(e){}          _dgCtx=null;    }
+    if(_dgStream){ _dgStream.getTracks().forEach(t=>t.stop()); _dgStream=null; }
+    if(_dgSocket){ try{_dgSocket.close(1000);}catch(e){}   _dgSocket=null; }
+}
+
+function startVoiceRecognition(){
+    startDeepgramStream();
+}
+
+function stopVoiceRecognition(){
+    stopDeepgramStream();
+    if(S.recognition){ try{S.recognition.stop();}catch(e){} }
 }
 
 /* ══════════════════════════════════════
