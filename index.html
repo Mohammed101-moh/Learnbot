@@ -679,6 +679,37 @@ input,select{display:none;}
     box-shadow:0 16px 50px rgba(0,0,0,.2);
 }
 
+
+/* ── BOOK INTRO SCREEN ── */
+#bookIntroScreen{flex-direction:column;align-items:center;justify-content:center;padding:1.5rem;background:linear-gradient(160deg,#0D1225 0%,#1C2537 100%);}
+.book-intro-card{background:#1C2537;border:1px solid #2D3748;border-radius:20px;padding:2rem 1.5rem;max-width:480px;width:100%;text-align:center;}
+.book-intro-emoji{font-size:4rem;margin-bottom:.75rem;display:block;}
+.book-intro-title{font-size:1.4rem;font-weight:800;color:#E2E8F0;margin-bottom:.25rem;}
+.book-intro-author{font-size:.85rem;color:#A78BFA;margin-bottom:1.25rem;}
+.book-intro-summary{font-size:.9rem;color:#94A3B8;line-height:1.6;background:rgba(0,0,0,.3);border-radius:12px;padding:1rem;margin-bottom:1.5rem;text-align:left;}
+.btn-start-reading{background:linear-gradient(135deg,#6C63FF,#A78BFA);color:white;border:none;border-radius:50px;padding:.9rem 2.5rem;font-size:1rem;font-weight:700;cursor:pointer;width:100%;}
+
+/* ── TWO-PAGE BOOK SPREAD ── */
+.book-spread-wrap{display:flex;flex-direction:column;flex:1;overflow:hidden;margin:.5rem;}
+.book-spread{display:flex;flex:1;gap:0;border-radius:8px;overflow:hidden;box-shadow:0 8px 40px rgba(0,0,0,.6);}
+.book-page{flex:1;background:#FEFCF0;padding:1.25rem 1.5rem 2rem;overflow-y:auto;font-family:Georgia,'Times New Roman',serif;font-size:1rem;line-height:1.85;color:#1C1C2E;position:relative;}
+.book-page-left{box-shadow:inset -6px 0 12px rgba(0,0,0,.12),3px 0 8px rgba(0,0,0,.2);}
+.book-page-right{box-shadow:inset 6px 0 12px rgba(0,0,0,.12),-3px 0 8px rgba(0,0,0,.2);}
+.book-spine{width:18px;background:linear-gradient(to right,#5C4A2A,#8B7355,#5C4A2A);flex-shrink:0;}
+.book-page-num{position:absolute;bottom:.6rem;font-size:.65rem;color:#999;font-family:sans-serif;}
+.book-page-left .book-page-num{right:1rem;}
+.book-page-right .book-page-num{left:1rem;}
+.book-nav{display:flex;align-items:center;justify-content:space-between;padding:.5rem .25rem;gap:.5rem;flex-shrink:0;}
+.btn-page-nav{background:#2D3748;color:#E2E8F0;border:1px solid #4A5568;border-radius:50px;padding:.4rem 1rem;font-size:.8rem;font-weight:600;cursor:pointer;}
+.btn-page-nav:disabled{opacity:.35;cursor:default;}
+.spread-indicator{font-size:.72rem;color:#A78BFA;font-weight:600;text-align:center;}
+
+/* word colours on book pages */
+.book-page .word.current{background:rgba(255,184,0,.35);border-radius:3px;color:#92400E;}
+.book-page .word.read{background:rgba(0,200,100,.2);color:#065F46;border-radius:2px;}
+.book-page .word.speaking{background:rgba(56,189,248,.35);color:#0369A1;border-radius:3px;}
+.book-page .word.wrong{color:#DC2626;}
+
 </style>
 </head>
 <body>
@@ -1003,7 +1034,18 @@ input,select{display:none;}
                     <span class="book-title-el" id="bkTitle">Loading…</span>
                     <span class="mod-tag" id="bkTag">Reading</span>
                 </div>
-                <div id="readingText"></div>
+                <div class="book-spread-wrap" id="bookSpreadWrap">
+                  <div class="book-spread">
+                    <div class="book-page book-page-left" id="leftPage"><span class="book-page-num" id="leftPageNum">1</span></div>
+                    <div class="book-spine"></div>
+                    <div class="book-page book-page-right" id="rightPage"><span class="book-page-num" id="rightPageNum">2</span></div>
+                  </div>
+                  <div class="book-nav">
+                    <button class="btn-page-nav" id="btnPrevSpread" onclick="prevSpread()" disabled>← Previous</button>
+                    <span class="spread-indicator" id="spreadIndicator">Page 1–2</span>
+                    <button class="btn-page-nav" id="btnNextSpread" onclick="nextSpread()">Next →</button>
+                  </div>
+                </div>
             </div>
             <div class="voice-bar">
                 <div class="mic-el" id="micEl">🎙️</div>
@@ -1140,6 +1182,18 @@ input,select{display:none;}
         <div class="lib-section-title" id="libSectionTitle">Pick a book and start reading to earn screen time!</div>
         <div class="books-grid" id="booksGrid"></div>
     </div>
+</div>
+
+
+<!-- ══════ BOOK INTRO ══════ -->
+<div id="bookIntroScreen" class="screen">
+  <div class="book-intro-card">
+    <span class="book-intro-emoji" id="introEmoji">📖</span>
+    <div class="book-intro-title" id="introTitle">Book Title</div>
+    <div class="book-intro-author" id="introAuthor">by Author</div>
+    <div class="book-intro-summary" id="introSummary">Loading summary…</div>
+    <button class="btn-start-reading" onclick="startBookReading()">📖 Start Reading</button>
+  </div>
 </div>
 
 <!-- ══════ SHORT QUIZ ══════ -->
@@ -1587,6 +1641,37 @@ async function fetchGBPassage(book){
   }catch(e){return null;}
 }
 
+async function fetchGBFullText(book){
+    const key=GB_CACHE+'full'+book.gbId;
+    try{const x=JSON.parse(localStorage.getItem(key)||'null');if(x&&x.text&&x.text.length>500)return x.text;}catch(e){}
+    if(!book.txtUrl)return null;
+    try{
+        const r=await fetch(book.txtUrl,{signal:AbortSignal.timeout(20000)});
+        if(!r.ok)return null;
+        // Read up to 150KB
+        const reader=r.body.getReader();
+        let bytes=0,chunks=[];
+        while(bytes<150000){const{done,value}=await reader.read();if(done)break;chunks.push(value);bytes+=value.length;}
+        reader.cancel();
+        const buf=new Uint8Array(bytes);let off=0;chunks.forEach(ch=>{buf.set(ch,off);off+=ch.length;});
+        let text=new TextDecoder().decode(buf);
+        // Strip Gutenberg header
+        const markers=['*** START OF THE PROJECT GUTENBERG','***START OF THE PROJECT GUTENBERG'];
+        let si=-1;
+        for(const m of markers){const i=text.indexOf(m);if(i>-1){si=text.indexOf('\n',i)+1;break;}}
+        // Strip Gutenberg footer
+        let ei=text.indexOf('*** END OF THE PROJECT GUTENBERG');
+        if(ei===-1)ei=text.indexOf('End of the Project Gutenberg');
+        const raw=text.slice(si>0?si:Math.min(1500,text.length/4), ei>0?ei:text.length);
+        // Clean up excessive whitespace/chapter headings
+        const cleaned=raw.replace(/\r\n/g,'\n').replace(/\n{3,}/g,'\n\n').trim();
+        if(cleaned.length<200)return null;
+        try{localStorage.setItem(key,JSON.stringify({text:cleaned}));}catch(e){}
+        return cleaned;
+    }catch(e){console.warn('fetchGBFullText failed:',e);return null;}
+}
+
+
 const _gbCache={};
 async function loadGBBooks(age){
   if(_gbCache[age]!==undefined)return _gbCache[age];
@@ -1783,7 +1868,7 @@ const BOT={
 /* ══════════════════════════════════════
    STATE
 ══════════════════════════════════════ */
-const APP_VERSION='015';
+const APP_VERSION='016';
 const S={
     user:null,name:'',age:'a78',goal:10,module:'reading',
     sessionSecs:0,earnedSecs:0,
@@ -2404,16 +2489,144 @@ function beginSession(){
 }
 
 function loadPassage(){
+    if(S.module === 'reading' && S.selectedBook){
+        const book = S.selectedBook;
+        document.getElementById('bkTitle').textContent = book.title;
+        document.getElementById('bkIcon').textContent  = book.emoji || '📖';
+        document.getElementById('bkTag').textContent   = 'Reading';
+        // Build pages from full text or passage
+        const fullContent = book.fullText || book.text || 'Once upon a time...';
+        S.bookPages = splitIntoPages(fullContent, 240);
+        S.currentSpread = 0;
+        showSpread(0);
+        return;
+    }
     let p;
     if(S.module==='quran'){p=LIBRARY.quran[Math.floor(Math.random()*LIBRARY.quran.length)];document.getElementById('bkIcon').textContent='🕌';document.getElementById('bkTag').textContent='Quran';}
-    else if(S.module==='hadith'){const pool=FUNFACTS[S.age]||FUNFACTS.medium;p=pool[Math.floor(Math.random()*pool.length)];document.getElementById('bkIcon').textContent='⭐';document.getElementById('bkTag').textContent='+'+p.bonus+' bonus mins!';}
+    else if(S.module==='hadith'){const pool=FUNFACTS[S.age]||FUNFACTS.a78;p=pool[Math.floor(Math.random()*pool.length)];document.getElementById('bkIcon').textContent='⭐';document.getElementById('bkTag').textContent='+'+p.bonus+' bonus mins!';}
     else{const pool=LIBRARY.reading[S.age];p=pool[Math.floor(Math.random()*pool.length)];document.getElementById('bkIcon').textContent='📖';document.getElementById('bkTag').textContent='Reading';}
-    S.passage=p;S.words=p.text.split(/\s+/);S.wordIdx=0;
+    S.passage=p;
     document.getElementById('bkTitle').textContent=p.title;
-    document.getElementById('readingText').innerHTML=S.words.map((w,i)=>`<span class="word${i===0?' current':''}" id="w${i}">${w}</span>`).join(' ');
+    // For non-book modules, still use spread layout with single page
+    S.bookPages = splitIntoPages(p.text, 240);
+    S.currentSpread = 0;
+    showSpread(0);
+}
+
+
+
+/* ══════════════════════════════════════
+   BOOK READER — full-page spread system
+══════════════════════════════════════ */
+
+// Split full text into pages of ~wordsPerPage words
+function splitIntoPages(text, wordsPerPage){
+    if(!wordsPerPage) wordsPerPage = 240;
+    const words = text.split(/\s+/).filter(w => w.length > 0);
+    const pages = [];
+    for(let i = 0; i < words.length; i += wordsPerPage){
+        pages.push(words.slice(i, i + wordsPerPage).join(' '));
+    }
+    if(!pages.length) pages.push(text);
+    return pages;
+}
+
+// Show a spread (two pages side by side)
+function showSpread(n){
+    if(!S.bookPages || !S.bookPages.length) return;
+    const total = S.bookPages.length;
+    S.currentSpread = Math.max(0, Math.min(n, Math.ceil(total / 2) - 1));
+    const li = S.currentSpread * 2;       // left page index
+    const ri = li + 1;                     // right page index
+    const leftText  = S.bookPages[li] || '';
+    const rightText = ri < total ? S.bookPages[ri] : '';
+
+    // Render left page words
+    const leftWords = leftText.split(/\s+/).filter(w => w.length > 0);
+    const leftEl = document.getElementById('leftPage');
+    const leftNum = document.getElementById('leftPageNum');
+    leftEl.innerHTML = leftWords.map((w,i) =>
+        `<span class="word${i===0&&S.currentSpread===0?' current':''}" id="w${i}">${w}</span>`
+    ).join(' ');
+    leftEl.appendChild(leftNum);
+    leftNum.textContent = (li + 1);
+
+    // Render right page words (indices continue from left)
+    const lc = leftWords.length;
+    const rightWords = rightText.split(/\s+/).filter(w => w.length > 0);
+    const rightEl = document.getElementById('rightPage');
+    const rightNum = document.getElementById('rightPageNum');
+    rightEl.innerHTML = rightWords.map((w,i) =>
+        `<span class="word" id="w${lc + i}">${w}</span>`
+    ).join(' ');
+    rightEl.appendChild(rightNum);
+    rightNum.textContent = ri < total ? (ri + 1) : '';
+
+    // Update S.words for tracking
+    S.words = [...leftWords, ...rightWords];
+    S.wordIdx = 0;
+    _dgUtteranceStart = 0;
+    _dgInUtterance = false;
+
+    // Nav buttons
+    const totalSpreads = Math.ceil(total / 2);
+    document.getElementById('btnPrevSpread').disabled = S.currentSpread === 0;
+    document.getElementById('btnNextSpread').disabled = S.currentSpread >= totalSpreads - 1;
+    document.getElementById('spreadIndicator').textContent =
+        'Pages ' + (li+1) + (rightText ? '–'+(ri+1) : '') + ' of ' + total;
     updateProg();
 }
 
+function nextSpread(){
+    if(!S.bookPages) return;
+    const totalSpreads = Math.ceil(S.bookPages.length / 2);
+    if(S.currentSpread < totalSpreads - 1) showSpread(S.currentSpread + 1);
+}
+
+function prevSpread(){
+    if(S.currentSpread > 0) showSpread(S.currentSpread - 1);
+}
+
+// Show book intro screen when user taps a book card
+function showBookIntro(book){
+    S._pendingBook = book;
+    document.getElementById('introEmoji').textContent  = book.emoji || '📖';
+    document.getElementById('introTitle').textContent  = book.title;
+    document.getElementById('introAuthor').textContent = 'by ' + book.author;
+    document.getElementById('introSummary').textContent =
+        book.summary || (book.source === 'gutenberg'
+            ? 'A classic story from Project Gutenberg — the world\'s largest collection of free books. Click Start Reading to begin the full book.'
+            : 'Read this passage aloud and earn screen time! The AI bot will track your reading and give you credit for each word you say.');
+    show('bookIntroScreen');
+}
+
+// Called when "Start Reading" is clicked on intro screen
+async function startBookReading(){
+    const book = S._pendingBook;
+    if(!book){show('bookLibraryScreen');return;}
+    S.module = 'reading';
+
+    // For Gutenberg books, fetch FULL text (not just passage)
+    if(book.source === 'gutenberg'){
+        const ov = document.createElement('div');
+        ov.id = '_gbOv';
+        ov.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.8);display:flex;align-items:center;justify-content:center;z-index:9999;color:white;font-size:1rem;flex-direction:column;gap:1rem;';
+        ov.innerHTML = '<span style="font-size:3rem">📖</span><span>Loading full book from Project Gutenberg…</span><span style="font-size:.8rem;color:#94A3B8">This may take a few seconds</span>';
+        document.body.appendChild(ov);
+        const fullText = await fetchGBFullText(book);
+        const el = document.getElementById('_gbOv');
+        if(el) el.remove();
+        if(fullText){
+            book.fullText = fullText;
+        } else {
+            // Fall back to short passage
+            if(!book.text){ alert('Could not load book. Try another one!'); return; }
+        }
+    }
+
+    S.selectedBook = book;
+    startSetup();
+}
 
 /* ══════════════════════════════════════
    DEEPGRAM NOVA-2 VOICE ENGINE
@@ -2635,10 +2848,16 @@ function matchReading(spoken,isFinal){
     if(S.wordIdx>=Math.floor(S.words.length*0.9)){
         for(let i=S.wordIdx;i<S.words.length;i++)markRead(i);
         S.wordIdx=S.words.length;updateProg();
-        const bon=(S.module==='hadith'&&S.passage.bonus)?S.passage.bonus:0;
-        if(bon>0){S.earnedSecs+=bon*60;speak(`Congratulations! You earned ${bon} bonus minutes!`);toast('🌟 Bonus!',`+${bon} minutes added!`,'#FFD700');}
-        else toast('📖 Passage Complete!','Loading next passage…','#00FF88');
-        setTimeout(loadPassage,2200);
+        // If more spreads available, advance automatically after a pause
+        if(S.bookPages && S.currentSpread < Math.ceil(S.bookPages.length/2)-1){
+            toast('📖 Page Complete!','Turning page…','#00FF88');
+            setTimeout(()=>{if(S.active)showSpread(S.currentSpread+1);},1800);
+        } else {
+            const bon=(S.module==='hadith'&&S.passage&&S.passage.bonus)?S.passage.bonus:0;
+            if(bon>0){S.earnedSecs+=bon*60;speak('Congratulations! You earned '+bon+' bonus minutes!');toast('🌟 Bonus!','+'+bon+' minutes added!','#FFD700');}
+            else toast('📖 Book Complete! Amazing!','','#00FF88');
+            setTimeout(loadPassage,2200);
+        }
     }
 }
 function cl(w){return w.replace(/[^a-zA-Z]/g,'').toLowerCase();}
@@ -3056,20 +3275,8 @@ function showBookLibrary(){
   loadGBBooks(age).then(bs=>bs.forEach(b=>addCard(b,true))).catch(()=>{});
 }
 
-async function selectBook(book){
-  S.module='reading';
-  if(book.source==='gutenberg'&&!book.text){
-    const ov=document.createElement('div');
-    ov.id='_gbOv';ov.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.75);display:flex;align-items:center;justify-content:center;z-index:9999;color:white;font-size:1.1rem;flex-direction:column;gap:.75rem;';
-    ov.innerHTML='<span style="font-size:2.5rem">📖</span><span>Loading book from Project Gutenberg…</span>';
-    document.body.appendChild(ov);
-    const passage=await fetchGBPassage(book);
-    const el=document.getElementById('_gbOv');if(el)el.remove();
-    if(passage){book.text=passage;}
-    else{alert('Could not load this book right now. Try another one!');return;}
-  }
-  S.selectedBook=book;
-  startSetup();
+function selectBook(book){
+    showBookIntro(book);
 }
 
 /* Override loadPassage to use selected book when available */
