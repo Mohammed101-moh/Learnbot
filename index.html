@@ -1868,7 +1868,7 @@ const BOT={
 /* ══════════════════════════════════════
    STATE
 ══════════════════════════════════════ */
-const APP_VERSION='019';
+const APP_VERSION='020';
 const S={
     user:null,name:'',age:'a78',goal:10,module:'reading',
     sessionSecs:0,earnedSecs:0,
@@ -2096,9 +2096,9 @@ function stopMediaPipe(){
 function onGaze(data){
     if(!data||!S.active)return;
     try{
-        const book=document.getElementById('readingText');
-        if(!book)return;
-        const rect=book.getBoundingClientRect();
+        const lp=document.getElementById('leftPage');
+        if(!lp)return;
+        const rect=(lp.parentElement||lp).getBoundingClientRect();
         const margin=100;
         S.gazeOnText=(data.x>=rect.left-margin&&data.x<=rect.right+margin&&
                       data.y>=rect.top-margin&&data.y<=rect.bottom+margin);
@@ -3271,24 +3271,8 @@ function selectBook(book){
     showBookIntro(book);
 }
 
-/* Override loadPassage to use selected book when available */
-const _origLoadPassage = loadPassage;
-loadPassage = function(){
-    if(S.module === 'reading' && S.selectedBook){
-        const book = S.selectedBook;
-        S.passage = {title:book.title, text:book.text};
-        S.words = book.text.split(/\s+/);
-        S.wordIdx = 0;
-        document.getElementById('bkTitle').textContent = book.title;
-        document.getElementById('bkIcon').textContent = book.emoji;
-        document.getElementById('bkTag').textContent = 'Reading';
-        document.getElementById('readingText').innerHTML =
-            S.words.map((w,i)=>`<span class="word${i===0?' current':''}" id="w${i}">${w}</span>`).join(' ');
-        updateProg();
-    } else {
-        _origLoadPassage();
-    }
-};
+/* (Removed a stale loadPassage override that wrote to a non-existent #readingText
+   element and crashed book reading. The paged loadPassage() above handles books.) */
 
 /* ══════════════════════════════════════
    SHORT QUIZ
