@@ -764,6 +764,19 @@ img.emoji{width:1em;height:1em;vertical-align:-.12em;display:inline-block;margin
 #signInScreen .btn-next:active,#signInScreen .btn-adventure:active{transform:translateY(3px);box-shadow:0 3px 0 #7152D8;}
 #signInScreen .age-card{border-radius:18px;}
 .kz-dino-signin{display:flex;justify-content:center;margin-bottom:.4rem;animation:kzbob 2.4s ease-in-out infinite;position:relative;z-index:1;}
+#bookLibraryScreen{background:linear-gradient(160deg,#8B7CF6 0%,#6FA8FF 45%,#5FD0E0 100%);font-family:'Fredoka',system-ui,sans-serif;}
+#bookIntroScreen{background:linear-gradient(160deg,#8B7CF6 0%,#6FA8FF 45%,#5FD0E0 100%)!important;}
+#bookLibraryScreen *,#bookIntroScreen *{font-family:'Fredoka',system-ui,sans-serif;}
+#bookLibraryScreen .lib-header-title,#bookLibraryScreen .lib-section-title{color:#fff;text-shadow:0 1px 3px rgba(40,30,90,.25);}
+#bookLibraryScreen .lib-age-badge{background:rgba(255,255,255,.25);color:#fff;}
+#bookIntroScreen .book-intro-card{border-radius:28px;box-shadow:0 16px 44px rgba(40,30,90,.3);}
+#bookIntroScreen .btn-start-reading,#bookLibraryScreen .lib-back-btn{background:#9B7BFF;color:#fff;border:none;border-radius:30px;font-weight:700;box-shadow:0 6px 0 #7152D8;transition:transform .1s,box-shadow .1s;cursor:pointer;}
+#bookIntroScreen .btn-start-reading:active,#bookLibraryScreen .lib-back-btn:active{transform:translateY(3px);box-shadow:0 3px 0 #7152D8;}
+#shortQuizScreen,#flagScreen,#summaryScreen,#parentScreen{background:linear-gradient(160deg,#8B7CF6 0%,#6FA8FF 45%,#5FD0E0 100%)!important;font-family:'Fredoka',system-ui,sans-serif;}
+#shortQuizScreen *,#flagScreen *,#summaryScreen *,#parentScreen *{font-family:'Fredoka',system-ui,sans-serif;}
+#parentScreen h1,#parentScreen .pin-title{color:#fff!important;}
+#shortQuizScreen .sq-next-btn,#summaryScreen .btn-filled,#summaryScreen .btn-outline,#parentScreen .btn-back,#parentScreen .btn-parent,#flagNextBtn{background:#9B7BFF!important;color:#fff!important;border:none!important;border-radius:30px!important;font-weight:700!important;box-shadow:0 6px 0 #7152D8!important;transition:transform .1s,box-shadow .1s;}
+#shortQuizScreen .sq-next-btn:active,#summaryScreen .btn-filled:active,#summaryScreen .btn-outline:active,#flagNextBtn:active{transform:translateY(3px);box-shadow:0 3px 0 #7152D8!important;}
 </style>
 </head>
 <body>
@@ -1894,7 +1907,7 @@ const BOT={
 /* ══════════════════════════════════════
    STATE
 ══════════════════════════════════════ */
-const APP_VERSION='024';
+const APP_VERSION='026';
 const S={
     user:null,name:'',age:'a78',goal:10,module:'reading',
     sessionSecs:0,earnedSecs:0,
