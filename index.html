@@ -756,7 +756,7 @@ input,select{display:none;}
 .kz-nav a span{font-size:22px;}
 .kz-nav a.on{color:#7152D8;}
 img.emoji{width:1em;height:1em;vertical-align:-.12em;display:inline-block;margin:0 .05em;}
-@media(min-width:560px){#welcomeScreen.active{align-items:center;}.kz-app{margin:24px auto;max-height:calc(100vh - 48px);overflow-y:auto;padding:10px 16px 16px;}.kz-nav{position:static;transform:none;width:auto;max-width:none;margin-top:16px;border-radius:22px;box-shadow:0 4px 0 rgba(120,110,200,.12);}}
+@media(min-width:560px){#welcomeScreen.active{align-items:center;}.kz-app{margin:24px auto;max-width:600px;max-height:calc(100vh - 48px);overflow-y:auto;padding:10px 16px 16px;}.kz-nav{position:static;transform:none;width:auto;max-width:none;margin-top:16px;border-radius:22px;box-shadow:0 4px 0 rgba(120,110,200,.12);}}
 #signInScreen{background:linear-gradient(160deg,#8B7CF6 0%,#6FA8FF 45%,#5FD0E0 100%);font-family:'Fredoka',system-ui,sans-serif;}
 #signInScreen h1,#signInScreen p,#signInScreen button,#signInScreen input,#signInScreen .age-card,#signInScreen .age-card-label,#signInScreen .age-card-sub,#signInScreen .reward-chip,#signInScreen .trust-item,#signInScreen .step-label{font-family:'Fredoka',system-ui,sans-serif!important;}
 #signInScreen .signin-card{border-radius:28px;box-shadow:0 16px 44px rgba(40,30,90,.28);}
@@ -777,6 +777,10 @@ img.emoji{width:1em;height:1em;vertical-align:-.12em;display:inline-block;margin
 #parentScreen h1,#parentScreen .pin-title{color:#fff!important;}
 #shortQuizScreen .sq-next-btn,#summaryScreen .btn-filled,#summaryScreen .btn-outline,#parentScreen .btn-back,#parentScreen .btn-parent,#flagNextBtn{background:#9B7BFF!important;color:#fff!important;border:none!important;border-radius:30px!important;font-weight:700!important;box-shadow:0 6px 0 #7152D8!important;transition:transform .1s,box-shadow .1s;}
 #shortQuizScreen .sq-next-btn:active,#summaryScreen .btn-filled:active,#summaryScreen .btn-outline:active,#flagNextBtn:active{transform:translateY(3px);box-shadow:0 3px 0 #7152D8!important;}
+#sessionScreen,#sessionScreen *{font-family:'Fredoka',system-ui,sans-serif;}
+#sessionScreen .btn-end-hud{background:#FF6B6B!important;color:#fff!important;font-weight:700!important;}
+#sessionScreen .btn-page-nav{background:#9B7BFF!important;color:#fff!important;border:none!important;font-weight:700!important;border-radius:30px!important;}
+#sessionScreen .btn-page-nav:disabled{background:#4A5568!important;color:#94A3B8!important;}
 </style>
 </head>
 <body>
@@ -1907,7 +1911,7 @@ const BOT={
 /* ══════════════════════════════════════
    STATE
 ══════════════════════════════════════ */
-const APP_VERSION='026';
+const APP_VERSION='027';
 const S={
     user:null,name:'',age:'a78',goal:10,module:'reading',
     sessionSecs:0,earnedSecs:0,
@@ -3263,7 +3267,7 @@ function celebrate(){const t=parseInt(document.getElementById('sumEarned').textC
 /* ══════════════════════════════════════
    PARENT
 ══════════════════════════════════════ */
-function openParent(){show('parentScreen');document.getElementById('pinScreen').style.display='flex';document.getElementById('dashContent').style.display='none';}
+function openParent(){show('parentScreen');document.getElementById('pinScreen').style.display='none';document.getElementById('dashContent').style.display='flex';loadDash();}
 function checkPin(){const p=document.getElementById('pinInput').value;const st=gs();if(p===(st.pin||'0000')){document.getElementById('pinScreen').style.display='none';document.getElementById('dashContent').style.display='flex';loadDash();}else{document.getElementById('pinErr').style.display='block';document.getElementById('pinInput').value='';}}
 function lockParent(){document.getElementById('pinScreen').style.display='flex';document.getElementById('dashContent').style.display='none';document.getElementById('pinInput').value='';}
 function changePin(){const np=document.getElementById('newPin').value;if(np.length===4&&/^\d+$/.test(np)){const st=gs();st.pin=np;ss(st);alert('PIN changed!');document.getElementById('newPin').value='';}else alert('PIN must be 4 digits.');}
