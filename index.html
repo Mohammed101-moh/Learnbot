@@ -757,6 +757,13 @@ input,select{display:none;}
 .kz-nav a.on{color:#7152D8;}
 img.emoji{width:1em;height:1em;vertical-align:-.12em;display:inline-block;margin:0 .05em;}
 @media(min-width:560px){#welcomeScreen.active{align-items:center;}.kz-app{margin:24px auto;max-height:calc(100vh - 48px);overflow-y:auto;padding:10px 16px 16px;}.kz-nav{position:static;transform:none;width:auto;max-width:none;margin-top:16px;border-radius:22px;box-shadow:0 4px 0 rgba(120,110,200,.12);}}
+#signInScreen{background:linear-gradient(160deg,#8B7CF6 0%,#6FA8FF 45%,#5FD0E0 100%);font-family:'Fredoka',system-ui,sans-serif;}
+#signInScreen h1,#signInScreen p,#signInScreen button,#signInScreen input,#signInScreen .age-card,#signInScreen .age-card-label,#signInScreen .age-card-sub,#signInScreen .reward-chip,#signInScreen .trust-item,#signInScreen .step-label{font-family:'Fredoka',system-ui,sans-serif!important;}
+#signInScreen .signin-card{border-radius:28px;box-shadow:0 16px 44px rgba(40,30,90,.28);}
+#signInScreen .btn-next,#signInScreen .btn-adventure{background:#9B7BFF;border:none;color:#fff;border-radius:30px;font-weight:700;box-shadow:0 6px 0 #7152D8;transition:transform .1s,box-shadow .1s;}
+#signInScreen .btn-next:active,#signInScreen .btn-adventure:active{transform:translateY(3px);box-shadow:0 3px 0 #7152D8;}
+#signInScreen .age-card{border-radius:18px;}
+.kz-dino-signin{display:flex;justify-content:center;margin-bottom:.4rem;animation:kzbob 2.4s ease-in-out infinite;position:relative;z-index:1;}
 </style>
 </head>
 <body>
@@ -770,17 +777,17 @@ img.emoji{width:1em;height:1em;vertical-align:-.12em;display:inline-block;margin
     <div class="floaters" id="floaters"></div>
 
     <!-- Big LearnBot Character -->
-    <div class="mega-bot-wrap">
-        <div class="mega-antenna"></div>
-        <div class="mega-bot-body">
-            <div class="mega-bot-eyes">
-                <div class="mega-eye"><div class="mega-pupil"></div><div class="mega-eye-shine"></div></div>
-                <div class="mega-eye"><div class="mega-pupil"></div><div class="mega-eye-shine"></div></div>
-            </div>
-            <div class="mega-bot-smile"></div>
-            <div class="mega-bot-cheeks"><div class="cheek"></div><div class="cheek"></div></div>
-        </div>
-        <div class="wave-arm"></div>
+    <div class="kz-dino-signin">
+        <svg width="118" height="118" viewBox="0 0 100 100" aria-hidden="true">
+            <ellipse cx="50" cy="92" rx="26" ry="6" fill="rgba(0,0,0,.10)"/>
+            <path d="M30 50 Q22 30 38 26 Q44 12 60 20 Q80 22 78 46 Q88 56 78 70 Q80 86 62 84 L40 84 Q24 84 26 68 Q18 60 30 50Z" fill="#5FD06A"/>
+            <path d="M40 84 L40 92 M52 84 L52 92 M64 82 L64 90" stroke="#3FA84B" stroke-width="7" stroke-linecap="round"/>
+            <circle cx="48" cy="44" r="9" fill="#fff"/><circle cx="66" cy="42" r="9" fill="#fff"/>
+            <circle cx="50" cy="46" r="4.5" fill="#2B2B40"/><circle cx="67" cy="44" r="4.5" fill="#2B2B40"/>
+            <path d="M46 60 Q56 68 68 58" stroke="#2B7A36" stroke-width="4" fill="none" stroke-linecap="round"/>
+            <path d="M36 24 L40 16 L46 22 M52 16 L58 12 L62 20" stroke="#3FA84B" stroke-width="5" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+            <circle cx="40" cy="58" r="4" fill="#FF9DB0" opacity=".7"/><circle cx="72" cy="55" r="4" fill="#FF9DB0" opacity=".7"/>
+        </svg>
     </div>
 
     <div style="text-align:center;margin-bottom:.75rem;position:relative;z-index:1">
@@ -1887,7 +1894,7 @@ const BOT={
 /* ══════════════════════════════════════
    STATE
 ══════════════════════════════════════ */
-const APP_VERSION='023';
+const APP_VERSION='024';
 const S={
     user:null,name:'',age:'a78',goal:10,module:'reading',
     sessionSecs:0,earnedSecs:0,
