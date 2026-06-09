@@ -756,7 +756,7 @@ input,select{display:none;}
 .kz-nav a span{font-size:22px;}
 .kz-nav a.on{color:#7152D8;}
 img.emoji{width:1em;height:1em;vertical-align:-.12em;display:inline-block;margin:0 .05em;}
-@media(min-width:560px){.kz-app{padding-top:28px;}}
+@media(min-width:560px){#welcomeScreen.active{align-items:center;}.kz-app{margin:24px auto;max-height:calc(100vh - 48px);overflow-y:auto;padding:10px 16px 16px;}.kz-nav{position:static;transform:none;width:auto;max-width:none;margin-top:16px;border-radius:22px;box-shadow:0 4px 0 rgba(120,110,200,.12);}}
 </style>
 </head>
 <body>
@@ -1887,7 +1887,7 @@ const BOT={
 /* ══════════════════════════════════════
    STATE
 ══════════════════════════════════════ */
-const APP_VERSION='021';
+const APP_VERSION='022';
 const S={
     user:null,name:'',age:'a78',goal:10,module:'reading',
     sessionSecs:0,earnedSecs:0,
@@ -3321,71 +3321,4 @@ function showQuizQ(){
     document.getElementById('sqScoreDisp').textContent = `⭐ ${sqState.score} correct`;
     document.getElementById('sqEarnedDisp').textContent = `🎮 +${sqState.earned} min`;
     document.getElementById('sqProgressFill').style.width = ((sqState.q/sqState.total)*100)+'%';
-    document.getElementById('sqQuestion').textContent = q.q;
-    document.getElementById('sqFeedback').textContent = '';
-    document.getElementById('sqNextBtn').style.display = 'none';
-    const opts = [...q.opts].sort(()=>Math.random()-.5);
-    const container = document.getElementById('sqOptions');
-    container.innerHTML = '';
-    opts.forEach(o => {
-        const btn = document.createElement('button');
-        btn.className = 'sq-opt';
-        btn.textContent = o;
-        btn.onclick = () => answerQuizQ(o, q.ans, btn);
-        container.appendChild(btn);
-    });
-}
-
-function answerQuizQ(chosen, correct, btn){
-    document.querySelectorAll('.sq-opt').forEach(b=>b.disabled=true);
-    const fb = document.getElementById('sqFeedback');
-    if(chosen === correct){
-        btn.style.background='#10B981';btn.style.color='white';btn.style.borderColor='#10B981';
-        sqState.score++;
-        if(sqState.score%5===0) sqState.earned+=2; // +2 min every 5 correct
-        fb.textContent='✅ Correct! Well done!';fb.style.color='#10B981';
-    } else {
-        btn.style.background='#EF4444';btn.style.color='white';btn.style.borderColor='#EF4444';
-        document.querySelectorAll('.sq-opt').forEach(b=>{
-            if(b.textContent===correct){b.style.background='#10B981';b.style.color='white';b.style.borderColor='#10B981';}
-        });
-        fb.textContent='❌ The answer was: '+correct;fb.style.color='#EF4444';
-    }
-    document.getElementById('sqScoreDisp').textContent=`⭐ ${sqState.score} correct`;
-    document.getElementById('sqEarnedDisp').textContent=`🎮 +${sqState.earned} min`;
-    document.getElementById('sqNextBtn').style.display='block';
-}
-
-function nextQuizQ(){
-    sqState.q++;
-    if(sqState.q>=sqState.total){ endShortQuiz(); return; }
-    showQuizQ();
-}
-
-function endShortQuiz(){
-    const st=gs();
-    st.totalMins=(st.totalMins||0)+sqState.earned;
-    st.todayMins=(st.todayDate===todayStr()?(st.todayMins||0):0)+sqState.earned;
-    st.todayDate=todayStr();ss(st);
-    document.getElementById('sqCard').style.display='none';
-    document.getElementById('sqResult').style.display='block';
-    document.getElementById('sqResultScore').textContent=sqState.score+'/'+sqState.total;
-    document.getElementById('sqResultEarned').textContent='+'+sqState.earned;
-    if(sqState.score>=8)confetti();
-    speak('Great job! You got '+sqState.score+' out of '+sqState.total+'!');
-}
-
-/* ══════════════════════════════════════
-   LIVE RELOAD
-══════════════════════════════════════ */
-(function(){let t=null;setInterval(async()=>{try{const r=await fetch('/reload-check',{cache:'no-store'});const d=await r.json();if(t===null){t=d.mtime;return;}if(d.mtime!==t)location.reload();}catch(e){}},2000);})();
-</script>
-<script>
-const vc=document.getElementById('versionChip');
-if(vc)vc.textContent='v'+APP_VERSION;
-const gv=document.getElementById('globalVersionBadge');
-if(gv)gv.textContent='v'+APP_VERSION;
-</script>
-<script>window.addEventListener('load',function(){if(window.twemoji){try{twemoji.parse(document.body,{folder:'svg',ext:'.svg',base:'https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/'});}catch(e){}}});</script>
-</body>
-</html>
+   
