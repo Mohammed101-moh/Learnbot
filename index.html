@@ -1724,6 +1724,39 @@ async function loadGBBooks(age){
   return books;
 }
 
+let _swCache={};
+async function loadStoryWeaverBooks(age){
+  if(_swCache[age]!==undefined)return _swCache[age];
+  _swCache[age]=[];
+  const levelMap={a34:['1'],a56:['1','2'],a78:['2','3'],a810:['3'],a1012:['3','4']};
+  const want=levelMap[age]||['2','3'];
+  const cols=['#FF6B9D','#F59E0B','#6C63FF','#0EA5E9','#10B981','#EF4444','#14B8A6','#F97316'];
+  try{
+    const page=1+Math.floor(Math.random()*60);
+    const url='https://storyweaver.org.in/api/v1/books-search?page='+page+'&per_page=24';
+    const ctrl=new AbortController(); const tm=setTimeout(()=>ctrl.abort(),5500);
+    const r=await fetch(url,{signal:ctrl.signal}); clearTimeout(tm);
+    const d=await r.json();
+    if(!d||!d.data)return [];
+    const books=d.data
+      .filter(b=>b.language==='English' && want.includes(String(b.level)) && b.description && b.description.length>20)
+      .slice(0,8)
+      .map((b,i)=>({
+        id:'sw'+b.id,
+        title:b.title,
+        author:(b.authors&&b.authors[0]&&b.authors[0].name)||'StoryWeaver',
+        emoji:'\U0001F4D6',
+        col:cols[i%cols.length],
+        cover:(b.coverImage&&b.coverImage.sizes&&(b.coverImage.sizes[2]||b.coverImage.sizes[1])||{}).url||'',
+        text:b.description,
+        summary:b.description+' \u2014 a free illustrated story from StoryWeaver (Pratham Books).',
+        source:'storyweaver'
+      }));
+    _swCache[age]=books;
+    return books;
+  }catch(e){ return []; }
+}
+
 
 
 /* ══════════════════════════════════════
@@ -1911,7 +1944,7 @@ const BOT={
 /* ══════════════════════════════════════
    STATE
 ══════════════════════════════════════ */
-const APP_VERSION='027';
+const APP_VERSION='029';
 const S={
     user:null,name:'',age:'a78',goal:10,module:'reading',
     sessionSecs:0,earnedSecs:0,
@@ -3306,12 +3339,14 @@ function showBookLibrary(){
     const card=document.createElement('button');
     card.className='book-card';
     const badge=live?'<div style="font-size:.5rem;background:#6366F1;color:white;border-radius:50px;padding:.1rem .4rem;font-weight:700;margin-bottom:.1rem;display:inline-block">🌐 Live</div><br>':'';
-    card.innerHTML='<div class="book-emoji-wrap" style="background:'+book.col+'22"><span>'+book.emoji+'</span></div><div class="book-card-title">'+book.title+'</div><div class="book-card-author">'+book.author+'</div>'+badge+'<div class="book-card-btn">Read Now</div>';
+    const visual=book.cover?'<div class="book-emoji-wrap" style="padding:0;overflow:hidden;background:#eef"><img src="'+book.cover+'" loading="lazy" style="width:100%;height:100%;object-fit:cover;border-radius:18px" alt=""></div>':'<div class="book-emoji-wrap" style="background:'+book.col+'22"><span>'+book.emoji+'</span></div>';
+    card.innerHTML=visual+'<div class="book-card-title">'+book.title+'</div><div class="book-card-author">'+book.author+'</div>'+badge+'<div class="book-card-btn">Read Now</div>';
     card.onclick=()=>selectBook(book);
     grid.appendChild(card);
   }
   (BOOKS[age]||BOOKS.a78).forEach(b=>addCard(b,false));
   loadGBBooks(age).then(bs=>bs.forEach(b=>addCard(b,true))).catch(()=>{});
+  loadStoryWeaverBooks(age).then(bs=>bs.forEach(b=>addCard(b,true))).catch(()=>{});
 }
 
 function selectBook(book){
@@ -3328,15 +3363,41 @@ var sqState = {q:0,score:0,earned:0,total:10,questions:[]};
 
 function showShortQuiz(){ startShortQuiz(); }
 
-function startShortQuiz(){
+async function fetchTriviaQuestions(age){
+    if(age==='a34'||age==='a56') return [];            // youngest: curated only (API is too advanced)
+    const diff=(age==='a78')?'easy':'medium';
+    const cats=[27,17,22];                              // Animals, Science & Nature, Geography (kid-safe)
+    const cat=cats[Math.floor(Math.random()*cats.length)];
+    const url='https://opentdb.com/api.php?amount=10&category='+cat+'&difficulty='+diff+'&type=multiple';
+    try{
+        const ctrl=new AbortController();
+        const tm=setTimeout(()=>ctrl.abort(),4500);
+        const r=await fetch(url,{signal:ctrl.signal});
+        clearTimeout(tm);
+        const d=await r.json();
+        if(!d||d.response_code!==0||!d.results||!d.results.length) return [];
+        const dec=s=>{const t=document.createElement('textarea');t.innerHTML=s;return t.value;};
+        return d.results
+            .filter(x=>x.incorrect_answers && x.incorrect_answers.length===3)
+            .map(x=>({q:dec(x.question),opts:[dec(x.correct_answer),...x.incorrect_answers.map(dec)],ans:dec(x.correct_answer)}));
+    }catch(e){ return []; }
+}
+
+async function startShortQuiz(){
     const age = S.age || 'a78';
-    const pool = QUIZ_QUESTIONS[age] || QUIZ_QUESTIONS.a78;
-    const shuffled = [...pool].sort(()=>Math.random()-.5).slice(0,10);
-    sqState = {q:0,score:0,earned:0,total:10,questions:shuffled};
+    const curated = QUIZ_QUESTIONS[age] || QUIZ_QUESTIONS.a78;
+    show('shortQuizScreen');
     document.getElementById('sqCard').style.display='block';
     document.getElementById('sqResult').style.display='none';
+    document.getElementById('sqNextBtn').style.display='none';
+    document.getElementById('sqQuestion').textContent='Loading fresh questions… \u23F3';
+    document.getElementById('sqOptions').innerHTML='';
+    let api=[];
+    try{ api=await fetchTriviaQuestions(age); }catch(e){}
+    const pool = api.length ? [...api, ...curated] : [...curated];
+    const shuffled = pool.sort(()=>Math.random()-.5).slice(0,10);
+    sqState = {q:0,score:0,earned:0,total:10,questions:shuffled};
     showQuizQ();
-    show('shortQuizScreen');
 }
 
 function showQuizQ(){
