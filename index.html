@@ -4,6 +4,10 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
 <title>Kidzilla — Earn Your Screen Time</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script defer src="https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/dist/twemoji.min.js" crossorigin="anonymous"></script>
 <script>
 window.onerror=function(msg,src,line){var d=document.getElementById('_errbanner');if(!d){d=document.createElement('div');d.id='_errbanner';d.style.cssText='position:fixed;top:0;left:0;right:0;background:#ff4444;color:white;padding:8px 12px;font-size:12px;z-index:99999;font-family:monospace;';document.body.appendChild(d);}d.textContent='JS ERROR: '+msg+' (line '+line+')';return false;};
 </script>
@@ -710,6 +714,49 @@ input,select{display:none;}
 .book-page .word.speaking{background:rgba(56,189,248,.35);color:#0369A1;border-radius:3px;}
 .book-page .word.wrong{color:#DC2626;}
 
+.kz-app{max-width:470px;margin:0 auto;padding:18px 16px 96px;font-family:'Fredoka',system-ui,sans-serif;}
+#welcomeScreen{background:linear-gradient(160deg,#8B7CF6 0%,#6FA8FF 45%,#5FD0E0 100%);overflow-y:auto;-webkit-overflow-scrolling:touch;}
+.kz-top{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:14px;}
+.kz-brand{display:flex;align-items:center;gap:8px;}
+.kz-logo{width:40px;height:40px;border-radius:13px;background:#FFD23F;display:flex;align-items:center;justify-content:center;font-size:24px;box-shadow:0 4px 0 #E5B800;}
+.kz-brand b{font-size:21px;color:#fff;font-weight:700;letter-spacing:.3px;text-shadow:0 2px 3px rgba(40,30,90,.25);}
+.kz-stats{display:flex;align-items:center;gap:7px;}
+.kz-pill{display:flex;align-items:center;gap:4px;background:#fff;border-radius:30px;padding:6px 11px;font-weight:600;font-size:14px;color:#5A4ABF;box-shadow:0 3px 0 rgba(120,110,200,.18);}
+.kz-pill.kz-flame{color:#FF7A3D;}
+.kz-parent{background:#3B2F87;color:#fff;border:none;border-radius:30px;padding:8px 13px;font-weight:600;font-size:13px;font-family:'Fredoka',sans-serif;box-shadow:0 4px 0 #271E5C;cursor:pointer;}
+.kz-hero{background:#fff;border-radius:24px;padding:16px;display:flex;align-items:center;gap:14px;margin-bottom:14px;box-shadow:0 6px 0 rgba(120,110,200,.12);}
+.kz-mascot{flex:0 0 auto;animation:kzbob 2.4s ease-in-out infinite;}
+@keyframes kzbob{0%,100%{transform:translateY(0)}50%{transform:translateY(-7px)}}
+.kz-bubble{background:#EEF1FF;border-radius:18px;padding:11px 14px;position:relative;flex:1;}
+.kz-bubble:before{content:"";position:absolute;left:-9px;top:22px;border:8px solid transparent;border-right-color:#EEF1FF;}
+.kz-bubble h2{font-size:18px;color:#3B2F87;font-weight:600;line-height:1.25;}
+.kz-bubble p{font-size:13px;color:#7E78A8;margin-top:2px;}
+.kz-xpwrap{margin-bottom:18px;}
+.kz-xprow{display:flex;justify-content:space-between;font-size:13px;color:#fff;font-weight:600;margin-bottom:5px;padding:0 4px;text-shadow:0 1px 2px rgba(40,30,90,.25);}
+.kz-xpbar{height:16px;background:rgba(255,255,255,.45);border-radius:30px;overflow:hidden;box-shadow:inset 0 2px 4px rgba(40,30,90,.18);}
+.kz-xpfill{height:100%;width:0%;background:linear-gradient(90deg,#FFD23F,#FF9F1C);border-radius:30px;transition:width .5s;}
+.kz-grid{display:grid;grid-template-columns:1fr 1fr;gap:13px;}
+.kz-card{border-radius:24px;padding:16px 14px 14px;color:#fff;position:relative;min-height:158px;display:flex;flex-direction:column;cursor:pointer;transition:transform .12s;}
+.kz-card:active{transform:scale(.97);}
+.kz-card .kz-ico{width:54px;height:54px;border-radius:17px;background:rgba(255,255,255,.28);display:flex;align-items:center;justify-content:center;font-size:30px;margin-bottom:10px;}
+.kz-card h3{font-size:19px;font-weight:700;line-height:1.1;}
+.kz-card p{font-size:12.5px;opacity:.92;margin-top:3px;flex:1;}
+.kz-tag{position:absolute;top:13px;right:13px;background:#FFD23F;color:#8A5300;border-radius:20px;padding:5px 11px;font-size:12px;font-weight:700;box-shadow:0 3px 0 #E0A800;z-index:2;white-space:nowrap;}
+.kz-read{background:#FF7A5C;box-shadow:0 7px 0 #D8543A;}
+.kz-quiz{background:#9B7BFF;box-shadow:0 7px 0 #7152D8;}
+.kz-world{background:#2BC4A8;box-shadow:0 7px 0 #169B83;}
+.kz-quran{background:#3D9BFF;box-shadow:0 7px 0 #1E73D8;}
+.kz-funfact{margin-top:14px;background:linear-gradient(100deg,#FFD23F,#FF9F1C);border-radius:22px;padding:14px 16px;display:flex;align-items:center;gap:12px;box-shadow:0 6px 0 #E08600;cursor:pointer;}
+.kz-ffico{font-size:30px;}
+.kz-funfact h4{color:#7A4A00;font-size:15px;font-weight:700;}
+.kz-funfact p{color:#9A6200;font-size:12.5px;}
+.kz-ffgo{margin-left:auto;background:#fff;color:#E08600;border-radius:30px;padding:7px 13px;font-weight:700;font-size:13px;white-space:nowrap;}
+.kz-nav{position:fixed;left:50%;transform:translateX(-50%);bottom:0;width:100%;max-width:470px;background:#fff;display:flex;justify-content:space-around;padding:11px 0 16px;border-radius:28px 28px 0 0;box-shadow:0 -4px 20px rgba(120,110,200,.12);z-index:50;}
+.kz-nav a{display:flex;flex-direction:column;align-items:center;gap:2px;font-size:11px;color:#B4AED0;font-weight:600;text-decoration:none;cursor:pointer;}
+.kz-nav a span{font-size:22px;}
+.kz-nav a.on{color:#7152D8;}
+img.emoji{width:1em;height:1em;vertical-align:-.12em;display:inline-block;margin:0 .05em;}
+@media(min-width:560px){.kz-app{padding-top:28px;}}
 </style>
 </head>
 <body>
@@ -834,100 +881,72 @@ input,select{display:none;}
 <!-- ══════ HOME SCREEN ══════ -->
 <div id="welcomeScreen" class="screen">
 
-    <!-- Background decoration -->
-    <div class="home-cloud hc1" aria-hidden="true"></div>
-    <div class="home-cloud hc2" aria-hidden="true"></div>
-    <div class="home-cloud hc3" aria-hidden="true"></div>
-    <div class="home-star" style="top:10%;left:14%;animation-delay:0s" aria-hidden="true">⭐</div>
-    <div class="home-star" style="top:7%;right:22%;animation-delay:.9s" aria-hidden="true">✨</div>
-    <div class="home-star" style="top:50%;right:4%;animation-delay:1.6s;font-size:.9rem" aria-hidden="true">⭐</div>
-    <div class="home-star" style="top:68%;left:2%;animation-delay:.4s;font-size:.85rem" aria-hidden="true">✨</div>
-
-    <!-- Header -->
-    <div class="home-header">
-        <div class="home-greet-wrap">
-            <div class="home-avatar-circle">⭐</div>
-            <div class="home-greeting">
-                Hi, <span id="homeGreetName">there</span>! 👋
-                <span class="hsub">What are we learning today?</span>
-            </div>
-        </div>
-        <div class="home-stats">
-            <div class="home-stat hstreak" id="homeStreak" style="display:none">🔥 <span id="homeStreakVal">0</span></div>
-            <div class="home-stat">🎮 <span id="homeTodayMins">0</span>m earned</div>
-            <button class="parent-btn" onclick="openParent()">🔒 Parent</button>
-        </div>
-    </div>
-
-    <!-- Hidden fields still needed by session logic -->
     <input type="hidden" id="childName" />
     <select id="ageGroup" style="display:none"><option value="a34">a34</option><option value="a56">a56</option><option value="a78" selected>a78</option><option value="a810">a810</option><option value="a1012">a1012</option></select>
     <select id="readingGoal" style="display:none"><option value="10" selected>10</option></select>
 
-    <div class="home-body">
-
-        <!-- White activity container -->
-        <div class="home-content-box">
-            <div class="activity-grid">
-
-                <!-- Reading -->
-                <div class="act-card reading" onclick="launchActivity('reading')">
-                    <div class="act-card-content">
-                        <div class="act-card-title">Reading</div>
-                        <div class="act-card-sub">Stories, science &amp; adventures</div>
-                        <div class="act-earn">⏱ 1 min per min</div>
-                    </div>
-                    <div class="act-card-illus">📚</div>
-                </div>
-
-                <!-- Short Quiz -->
-                <div class="act-card quiz" onclick="launchActivity('quiz')">
-                    <div class="act-card-content">
-                        <div class="act-card-title">Short Quiz</div>
-                        <div class="act-card-sub">Answer questions, earn bonus time</div>
-                        <div class="act-earn">⭐ +5 min bonus</div>
-                    </div>
-                    <div class="act-card-illus">🧠</div>
-                </div>
-
-                <!-- World Quiz -->
-                <div class="act-card flags" onclick="launchActivity('flags')">
-                    <div class="act-card-content">
-                        <div class="act-card-title">World Quiz</div>
-                        <div class="act-card-sub">Guess the flag — how many can you get?</div>
-                        <div class="act-earn">🏆 +2 min per 5 correct</div>
-                    </div>
-                    <div class="act-card-illus">🌍</div>
-                </div>
-
-                <!-- Holy Quran -->
-                <div class="act-card quran" onclick="launchActivity('quran')">
-                    <div class="act-card-content">
-                        <div class="act-card-title">Holy Quran</div>
-                        <div class="act-card-sub">Recite surahs and earn rewards</div>
-                        <div class="act-earn">🎮 1 min per min</div>
-                    </div>
-                    <div class="act-card-illus">🕌</div>
-                </div>
-
+    <div class="kz-app">
+        <div class="kz-top">
+            <div class="kz-brand"><div class="kz-logo">🦖</div><b>Kidzilla</b></div>
+            <div class="kz-stats">
+                <div class="kz-pill kz-flame" id="homeStreak" style="display:none"><span id="homeStreakVal">🔥 0</span></div>
+                <div class="kz-pill">🎮 <span id="homeTodayMins">0</span>m</div>
+                <button class="kz-parent" onclick="openParent()">🔒 Parent</button>
             </div>
         </div>
-
-        <!-- Fun Fact banner -->
-        <div class="funfact-card" onclick="launchActivity('hadith')">
-            <div class="funfact-icon">⭐</div>
-            <div class="funfact-content">
-                <div class="funfact-label">Today's Bonus</div>
-                <div class="funfact-title">Fun Fact of the Day</div>
-                <div class="funfact-sub">Read today's hadith or fun fact and earn bonus minutes!</div>
+        <div class="kz-hero">
+            <div class="kz-mascot">
+                <svg width="74" height="74" viewBox="0 0 100 100" aria-hidden="true">
+                    <ellipse cx="50" cy="92" rx="26" ry="6" fill="rgba(0,0,0,.08)"/>
+                    <path d="M30 50 Q22 30 38 26 Q44 12 60 20 Q80 22 78 46 Q88 56 78 70 Q80 86 62 84 L40 84 Q24 84 26 68 Q18 60 30 50Z" fill="#5FD06A"/>
+                    <path d="M40 84 L40 92 M52 84 L52 92 M64 82 L64 90" stroke="#3FA84B" stroke-width="7" stroke-linecap="round"/>
+                    <circle cx="48" cy="44" r="9" fill="#fff"/><circle cx="66" cy="42" r="9" fill="#fff"/>
+                    <circle cx="50" cy="46" r="4.5" fill="#2B2B40"/><circle cx="67" cy="44" r="4.5" fill="#2B2B40"/>
+                    <path d="M46 60 Q56 68 68 58" stroke="#2B7A36" stroke-width="4" fill="none" stroke-linecap="round"/>
+                    <path d="M36 24 L40 16 L46 22 M52 16 L58 12 L62 20" stroke="#3FA84B" stroke-width="5" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
             </div>
-            <div class="funfact-earn">⭐ +5 min</div>
+            <div class="kz-bubble">
+                <h2>Hi, <span id="homeGreetName">there</span>! 👋</h2>
+                <p>What do you want to play today?</p>
+            </div>
         </div>
-
+        <div class="kz-xpwrap">
+            <div class="kz-xprow"><span>Today's goal ⭐</span><span id="homeGoalTxt">0 / 10 min</span></div>
+            <div class="kz-xpbar"><div class="kz-xpfill" id="homeGoalFill"></div></div>
+        </div>
+        <div class="kz-grid">
+            <div class="kz-card kz-read" onclick="launchActivity('reading')">
+                <div class="kz-ico">📚</div><h3>Read a Book</h3>
+                <p>Stories, science &amp; adventures</p><span class="kz-tag">⏱ 1 = 1 min</span>
+            </div>
+            <div class="kz-card kz-quiz" onclick="launchActivity('quiz')">
+                <div class="kz-ico">🧠</div><h3>Brain Quiz</h3>
+                <p>Answer &amp; earn bonus time</p><span class="kz-tag">⭐ +5 min</span>
+            </div>
+            <div class="kz-card kz-world" onclick="launchActivity('flags')">
+                <div class="kz-ico">🌍</div><h3>Flag Game</h3>
+                <p>Guess the country flag</p><span class="kz-tag">🏆 +2 / 5</span>
+            </div>
+            <div class="kz-card kz-quran" onclick="launchActivity('quran')">
+                <div class="kz-ico">🕌</div><h3>Holy Quran</h3>
+                <p>Recite &amp; earn rewards</p><span class="kz-tag">🎮 1 = 1 min</span>
+            </div>
+        </div>
+        <div class="kz-funfact" onclick="launchActivity('hadith')">
+            <div class="kz-ffico">💡</div>
+            <div><h4>Fun Fact of the Day</h4><p>Read today's fact, earn bonus minutes!</p></div>
+            <div class="kz-ffgo">+5 ⭐</div>
+        </div>
+        <div class="kz-nav">
+            <a class="on" onclick="window.scrollTo({top:0,behavior:'smooth'})"><span>🏠</span>Home</a>
+            <a onclick="launchActivity('reading')"><span>📖</span>Books</a>
+            <a onclick="openParent()"><span>🏆</span>Rewards</a>
+            <a onclick="openParent()"><span>😊</span>Me</a>
+        </div>
     </div>
 </div>
 
-<!-- ══════ LOADING ══════ -->
 <div id="loadingScreen" class="screen">
     <div style="font-size:4rem;animation:botFloat 2s ease-in-out infinite">🤖</div>
     <div class="spinner"></div>
@@ -1868,7 +1887,7 @@ const BOT={
 /* ══════════════════════════════════════
    STATE
 ══════════════════════════════════════ */
-const APP_VERSION='020';
+const APP_VERSION='021';
 const S={
     user:null,name:'',age:'a78',goal:10,module:'reading',
     sessionSecs:0,earnedSecs:0,
@@ -1902,7 +1921,7 @@ function todayStr(){return today();}
 /* ══════════════════════════════════════
    SCREENS / MODULE
 ══════════════════════════════════════ */
-function show(id){document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));document.getElementById(id).classList.add('active');}
+function show(id){document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));document.getElementById(id).classList.add('active');if(window.twemoji){try{twemoji.parse(document.getElementById(id),{folder:'svg',ext:'.svg',base:'https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/'});}catch(e){}}}
 function pickMod(m){S.module=m;}
 
 function launchActivity(type) {
@@ -1920,6 +1939,10 @@ function refreshHomeStats() {
     document.getElementById('homeGreetName').textContent = name;
     const today = st.todayDate === todayStr() ? (st.todayMins||0) : 0;
     document.getElementById('homeTodayMins').textContent = today;
+    const goalMax = 10;
+    const gpct = Math.max(0, Math.min(100, Math.round((today/goalMax)*100)));
+    const _gf = document.getElementById('homeGoalFill'); if(_gf) _gf.style.width = gpct + '%';
+    const _gt = document.getElementById('homeGoalTxt'); if(_gt) _gt.textContent = today + ' / ' + goalMax + ' min';
     if ((st.streak||0) >= 2) {
         document.getElementById('homeStreak').style.display = 'flex';
         document.getElementById('homeStreakVal').textContent = '🔥 ' + st.streak;
@@ -3363,5 +3386,6 @@ if(vc)vc.textContent='v'+APP_VERSION;
 const gv=document.getElementById('globalVersionBadge');
 if(gv)gv.textContent='v'+APP_VERSION;
 </script>
+<script>window.addEventListener('load',function(){if(window.twemoji){try{twemoji.parse(document.body,{folder:'svg',ext:'.svg',base:'https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/'});}catch(e){}}});</script>
 </body>
 </html>
