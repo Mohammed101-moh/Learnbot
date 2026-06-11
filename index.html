@@ -1675,7 +1675,7 @@ async function fetchGBMeta(ids){
   const key=GB_CACHE+'m'+ids.join('_');
   try{const x=JSON.parse(localStorage.getItem(key)||'null');if(x&&Date.now()-x.ts<GB_TTL)return x.d;}catch(e){}
   try{
-    const r=await fetch('https://gutendex.com/books/?ids='+ids.join('%2C')+'&languages=en',{signal:AbortSignal.timeout(8000)});
+    const r=await fetch(PROXY_URL+'/book?url='+encodeURIComponent('https://gutendex.com/books/?ids='+ids.join(',')+'&languages=en'),{signal:AbortSignal.timeout(12000)});
     if(!r.ok)return[];
     const j=await r.json();
     const books=(j.results||[]).map(b=>{
@@ -1764,7 +1764,7 @@ async function loadStoryWeaverBooks(age){
     const page=1+Math.floor(Math.random()*60);
     const url='https://storyweaver.org.in/api/v1/books-search?page='+page+'&per_page=48';
     const ctrl=new AbortController(); const tm=setTimeout(()=>ctrl.abort(),5500);
-    const r=await fetch(url,{signal:ctrl.signal}); clearTimeout(tm);
+    const r=await fetch(PROXY_URL+'/book?url='+encodeURIComponent(url),{signal:ctrl.signal}); clearTimeout(tm);
     const d=await r.json();
     if(!d||!d.data)return [];
     const books=d.data
@@ -1973,7 +1973,7 @@ const BOT={
 /* ══════════════════════════════════════
    STATE
 ══════════════════════════════════════ */
-const APP_VERSION='034';
+const APP_VERSION='035';
 const S={
     user:null,name:'',age:'a78',goal:10,module:'reading',
     sessionSecs:0,earnedSecs:0,
