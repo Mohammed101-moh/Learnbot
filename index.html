@@ -805,7 +805,7 @@ img.emoji{width:1em;height:1em;vertical-align:-.12em;display:inline-block;margin
 #sessionScreen .mod-tag{background:#EEF2FF!important;color:#6C63FF!important;}
 #sessionScreen .book-spread-wrap{flex:1;display:flex;flex-direction:column;min-height:0;}
 #sessionScreen .book-spread{flex:1;min-height:0;}
-#sessionScreen .book-page{background:#FBF6E9!important;color:#3A3327!important;font-family:Georgia,'Times New Roman',serif!important;font-size:1.04rem;line-height:2.05;border:none!important;box-shadow:inset 0 0 26px rgba(120,90,40,.06)!important;}
+#sessionScreen .book-page{background:#FBF6E9!important;color:#3A3327!important;font-family:Georgia,'Times New Roman',serif!important;font-size:1rem!important;line-height:1.8!important;border:none!important;overflow:hidden!important;box-shadow:inset 0 0 26px rgba(120,90,40,.06)!important;}
 #sessionScreen .book-spine{background:linear-gradient(90deg,rgba(120,90,40,.14),rgba(120,90,40,.03),rgba(120,90,40,.14))!important;}
 #sessionScreen .book-page-num{color:#B7A77F!important;}
 #sessionScreen .book-page .word{color:#3A3327;}
@@ -1802,7 +1802,7 @@ async function fetchGBPassage(book){
 }
 
 async function fetchGBFullText(book){
-    const key=GB_CACHE+'full'+book.gbId;
+    const key=GB_CACHE+'full2'+book.gbId;
     try{const x=JSON.parse(localStorage.getItem(key)||'null');if(x&&x.text&&x.text.length>500)return x.text;}catch(e){}
     if(!book.txtUrl)return null;
     try{
@@ -1823,8 +1823,15 @@ async function fetchGBFullText(book){
         let ei=text.indexOf('*** END OF THE PROJECT GUTENBERG');
         if(ei===-1)ei=text.indexOf('End of the Project Gutenberg');
         const raw=text.slice(si>0?si:Math.min(1500,text.length/4), ei>0?ei:text.length);
-        // Clean up excessive whitespace/chapter headings
-        const cleaned=raw.replace(/\r\n/g,'\n').replace(/\n{3,}/g,'\n\n').trim();
+        let cleaned=raw.replace(/\r\n/g,'\n').replace(/\n{3,}/g,'\n\n').trim();
+        // Skip front matter (title page, contents, chapter list) -> jump to first real prose
+        const paras=cleaned.split(/\n\n+/);
+        let startIdx=0;
+        for(let k=0;k<paras.length&&k<80;k++){
+            const para=paras[k].replace(/\s+/g,' ').trim();
+            if(para.length>200&&/[.!?]/.test(para)&&para.split(' ').length>30){startIdx=k;break;}
+        }
+        if(startIdx>0)cleaned=paras.slice(startIdx).join('\n\n');
         if(cleaned.length<200)return null;
         try{localStorage.setItem(key,JSON.stringify({text:cleaned}));}catch(e){}
         return cleaned;
@@ -2061,7 +2068,7 @@ const BOT={
 /* ══════════════════════════════════════
    STATE
 ══════════════════════════════════════ */
-const APP_VERSION='038';
+const APP_VERSION='039';
 const S={
     user:null,name:'',age:'a78',goal:10,module:'reading',
     sessionSecs:0,earnedSecs:0,
@@ -2672,7 +2679,7 @@ function loadPassage(){
         document.getElementById('bkTag').textContent   = 'Reading';
         // Build pages from full text or passage
         const fullContent = book.fullText || book.text || 'Once upon a time...';
-        S.bookPages = splitIntoPages(fullContent, 240);
+        S.bookPages = splitIntoPages(fullContent, 95);
         S.currentSpread = 0;
         showSpread(0);
         return;
@@ -2684,7 +2691,7 @@ function loadPassage(){
     S.passage=p;
     document.getElementById('bkTitle').textContent=p.title;
     // For non-book modules, still use spread layout with single page
-    S.bookPages = splitIntoPages(p.text, 240);
+    S.bookPages = splitIntoPages(p.text, 95);
     S.currentSpread = 0;
     showSpread(0);
 }
