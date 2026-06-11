@@ -832,6 +832,13 @@ img.emoji{width:1em;height:1em;vertical-align:-.12em;display:inline-block;margin
 #sessionScreen .prog-track{background:#E3ECFA!important;}
 #sessionScreen .prog-fill{background:#6C63FF!important;}
 @media(max-width:820px){#sessionScreen .sess-body{grid-template-columns:1fr!important;}#sessionScreen .left-panel{flex-direction:row!important;flex-wrap:wrap;}}
+#sessionScreen .title-page{display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;text-align:center;padding:24px;}
+#sessionScreen .tp-mark{font-size:.68rem;letter-spacing:.18em;text-transform:uppercase;color:#B0975A;font-weight:700;margin-bottom:20px;font-family:Georgia,serif;}
+#sessionScreen .tp-title{font-family:Georgia,'Times New Roman',serif;font-size:1.7rem;font-weight:700;color:#3A3327;line-height:1.25;margin-bottom:12px;}
+#sessionScreen .tp-author{font-family:Georgia,serif;font-style:italic;font-size:1.05rem;color:#6B5E45;margin-bottom:26px;}
+#sessionScreen .tp-summary{font-family:Georgia,serif;font-size:.92rem;line-height:1.7;color:#5A5042;max-width:92%;}
+#sessionScreen .tp-begin{display:flex;align-items:center;justify-content:center;height:100%;text-align:center;color:#A99E86;font-family:Georgia,serif;font-size:1.05rem;line-height:1.9;padding:24px;}
+#sessionScreen .para-break{display:block;height:.7em;}
 </style>
 </head>
 <body>
@@ -2068,7 +2075,7 @@ const BOT={
 /* ══════════════════════════════════════
    STATE
 ══════════════════════════════════════ */
-const APP_VERSION='039';
+const APP_VERSION='040';
 const S={
     user:null,name:'',age:'a78',goal:10,module:'reading',
     sessionSecs:0,earnedSecs:0,
@@ -2679,7 +2686,8 @@ function loadPassage(){
         document.getElementById('bkTag').textContent   = 'Reading';
         // Build pages from full text or passage
         const fullContent = book.fullText || book.text || 'Once upon a time...';
-        S.bookPages = splitIntoPages(fullContent, 95);
+        S.bookTitlePage = {title:book.title, author:book.author||'Unknown', summary:book.summary||(typeof SUMMARIES!=='undefined'?SUMMARIES[book.gbId]:'')||''};
+        S.bookPages = ['__TITLE__',''].concat(splitIntoPages(fullContent, 95));
         S.currentSpread = 0;
         showSpread(0);
         return;
@@ -2704,13 +2712,18 @@ function loadPassage(){
 
 // Split full text into pages of ~wordsPerPage words
 function splitIntoPages(text, wordsPerPage){
-    if(!wordsPerPage) wordsPerPage = 240;
-    const words = text.split(/\s+/).filter(w => w.length > 0);
+    if(!wordsPerPage) wordsPerPage = 95;
+    const marked = String(text).replace(/\r/g,'').replace(/\n\n+/g,' ||PARA|| ').replace(/\n/g,' ');
+    const tokens = marked.split(/\s+/).filter(t => t.length > 0);
     const pages = [];
-    for(let i = 0; i < words.length; i += wordsPerPage){
-        pages.push(words.slice(i, i + wordsPerPage).join(' '));
+    let cur = [], wc = 0;
+    for(const t of tokens){
+        if(t === '||PARA||'){ if(cur.length && cur[cur.length-1] !== '||PARA||') cur.push(t); continue; }
+        cur.push(t); wc++;
+        if(wc >= wordsPerPage){ pages.push(cur.join(' ')); cur = []; wc = 0; }
     }
-    if(!pages.length) pages.push(text);
+    if(cur.length) pages.push(cur.join(' '));
+    if(!pages.length) pages.push(String(text));
     return pages;
 }
 
@@ -2719,44 +2732,56 @@ function showSpread(n){
     if(!S.bookPages || !S.bookPages.length) return;
     const total = S.bookPages.length;
     S.currentSpread = Math.max(0, Math.min(n, Math.ceil(total / 2) - 1));
-    const li = S.currentSpread * 2;       // left page index
-    const ri = li + 1;                     // right page index
+    const li = S.currentSpread * 2;
+    const ri = li + 1;
     const leftText  = S.bookPages[li] || '';
     const rightText = ri < total ? S.bookPages[ri] : '';
-
-    // Render left page words
-    const leftWords = leftText.split(/\s+/).filter(w => w.length > 0);
-    const leftEl = document.getElementById('leftPage');
+    const leftEl  = document.getElementById('leftPage');
     const leftNum = document.getElementById('leftPageNum');
-    leftEl.innerHTML = leftWords.map((w,i) =>
-        `<span class="word${i===0&&S.currentSpread===0?' current':''}" id="w${i}">${w}</span>`
-    ).join(' ');
-    leftEl.appendChild(leftNum);
-    leftNum.textContent = (li + 1);
-
-    // Render right page words (indices continue from left)
-    const lc = leftWords.length;
-    const rightWords = rightText.split(/\s+/).filter(w => w.length > 0);
     const rightEl = document.getElementById('rightPage');
-    const rightNum = document.getElementById('rightPageNum');
-    rightEl.innerHTML = rightWords.map((w,i) =>
-        `<span class="word" id="w${lc + i}">${w}</span>`
-    ).join(' ');
-    rightEl.appendChild(rightNum);
-    rightNum.textContent = ri < total ? (ri + 1) : '';
+    const rightNum= document.getElementById('rightPageNum');
 
-    // Update S.words for tracking
-    S.words = [...leftWords, ...rightWords];
-    S.wordIdx = 0;
-    _dgUtteranceStart = 0;
-    _dgInUtterance = false;
+    if(leftText === '__TITLE__'){
+        const tp = S.bookTitlePage || {};
+        leftEl.innerHTML = '<div class="title-page"><div class="tp-mark">A Classic Story</div><div class="tp-title">'+(tp.title||'')+'</div><div class="tp-author">by '+(tp.author||'Unknown')+'</div>'+(tp.summary?'<div class="tp-summary">'+tp.summary+'</div>':'')+'</div>';
+        rightEl.innerHTML = '<div class="tp-begin">Press <b>Next \u2192</b><br>to begin reading</div>';
+        leftEl.appendChild(leftNum); leftNum.textContent = '';
+        rightEl.appendChild(rightNum); rightNum.textContent = '';
+        S.words = []; S.wordIdx = 0; _dgUtteranceStart = 0; _dgInUtterance = false;
+        document.getElementById('btnPrevSpread').disabled = true;
+        document.getElementById('btnNextSpread').disabled = false;
+        document.getElementById('spreadIndicator').textContent = 'Title page';
+        updateProg();
+        return;
+    }
 
-    // Nav buttons
+    const off = (S.bookPages[0] === '__TITLE__') ? 2 : 0;
+    const firstStorySpread = off / 2;
+    const renderPage = (txt, startIdx) => {
+        const toks = String(txt).split(/\s+/).filter(t => t.length > 0);
+        const words = [];
+        let html = '', idx = startIdx;
+        for(const t of toks){
+            if(t === '||PARA||'){ html += '<span class="para-break"></span>'; continue; }
+            const cur = (idx === 0 && S.currentSpread === firstStorySpread) ? ' current' : '';
+            html += '<span class="word'+cur+'" id="w'+idx+'">'+t+'</span> ';
+            words.push(t); idx++;
+        }
+        return { html: html, words: words };
+    };
+    const left = renderPage(leftText, 0);
+    leftEl.innerHTML = left.html; leftEl.appendChild(leftNum); leftNum.textContent = (li - off + 1);
+    const right = renderPage(rightText, left.words.length);
+    rightEl.innerHTML = right.html; rightEl.appendChild(rightNum); rightNum.textContent = rightText ? (ri - off + 1) : '';
+
+    S.words = [...left.words, ...right.words];
+    S.wordIdx = 0; _dgUtteranceStart = 0; _dgInUtterance = false;
+
     const totalSpreads = Math.ceil(total / 2);
     document.getElementById('btnPrevSpread').disabled = S.currentSpread === 0;
     document.getElementById('btnNextSpread').disabled = S.currentSpread >= totalSpreads - 1;
     document.getElementById('spreadIndicator').textContent =
-        'Pages ' + (li+1) + (rightText ? '–'+(ri+1) : '') + ' of ' + total;
+        'Pages ' + (li - off + 1) + (rightText ? '\u2013'+(ri - off + 1) : '') + ' of ' + (total - off);
     updateProg();
 }
 
@@ -3492,7 +3517,7 @@ function showBookLibrary(){
     grid.appendChild(card);
   }
   loadClassics(age).forEach(b=>addCard(b));
-  loadStoryWeaverBooks(age).then(bs=>bs.forEach(b=>addCard(b))).catch(()=>{});
+  // StoryWeaver removed: those are short blurbs, not full books
   setTimeout(()=>{if(!any)grid.innerHTML='<div style="grid-column:1/-1;color:#fff;text-align:center;padding:1.5rem">Could not load books right now. Please check your connection and try again.</div>';},10000);
 }
 
