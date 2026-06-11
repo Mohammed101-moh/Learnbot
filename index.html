@@ -1944,7 +1944,7 @@ const BOT={
 /* ══════════════════════════════════════
    STATE
 ══════════════════════════════════════ */
-const APP_VERSION='029';
+const APP_VERSION='030';
 const S={
     user:null,name:'',age:'a78',goal:10,module:'reading',
     sessionSecs:0,earnedSecs:0,
@@ -2116,13 +2116,15 @@ async function loadMediaPipe(){
 
 function startMediaPipe(vid){
     if(!S.faceLandmarker)return;
-    let lastT=-1;
+    let lastT=-1, lastDet=0;
     function loop(){
         S._mpRAF=requestAnimationFrame(loop);
         if(!S.active||!S.faceLandmarker)return;
         if(vid.readyState<2)return;
+        const now=performance.now();
+        if(now-lastDet<66)return;
         if(vid.currentTime===lastT)return;
-        lastT=vid.currentTime;
+        lastT=vid.currentTime; lastDet=now;
         let res;
         try{res=S.faceLandmarker.detectForVideo(vid,performance.now());}catch(e){return;}
         if(!res)return;
@@ -2698,6 +2700,27 @@ let _dgSocket = null;
 let _dgCtx    = null;
 let _dgStream = null;
 let _dgNode   = null;
+let _dgWorkletUrl=null;
+function _dgGetWorkletUrl(){
+    if(_dgWorkletUrl) return _dgWorkletUrl;
+    const code="class DGProc extends AudioWorkletProcessor{constructor(){super();this._buf=[];this._len=0;}process(inputs){const ch=inputs[0]&&inputs[0][0];if(ch){this._buf.push(new Float32Array(ch));this._len+=ch.length;if(this._len>=2048){const pcm=new Int16Array(this._len);let o=0;for(const c of this._buf){for(let i=0;i<c.length;i++){let s=c[i];s=s<-1?-1:s>1?1:s;pcm[o++]=s<0?s*32768:s*32767;}}this.port.postMessage(pcm.buffer,[pcm.buffer]);this._buf=[];this._len=0;}}return true;}}registerProcessor('dg-proc',DGProc);";
+    _dgWorkletUrl=URL.createObjectURL(new Blob([code],{type:'application/javascript'}));
+    return _dgWorkletUrl;
+}
+function buildKeyterms(){
+    try{
+        let src=[];
+        if(S.bookPages && S.bookPages.length) src=S.bookPages.join(' ').split(/\s+/);
+        else if(S.words) src=S.words;
+        else return '';
+        const seen={}, terms=[];
+        for(const w of src){
+            const c=cl(w);
+            if(c.length>=4 && !seen[c]){ seen[c]=1; terms.push(c); if(terms.length>=45) break; }
+        }
+        return terms.map(t=>'&keyterm='+encodeURIComponent(t)).join('');
+    }catch(e){ return ''; }
+}
 
 async function startDeepgramStream(){
     if(_dgSocket && _dgSocket.readyState === WebSocket.OPEN) return;
@@ -2715,9 +2738,9 @@ async function startDeepgramStream(){
         return;
     }
     const url = 'wss://api.deepgram.com/v1/listen?' +
-        'model=nova-2&language=en-US&' +
-        'interim_results=true&endpointing=200&' +
-        'encoding=linear16&sample_rate=16000&channels=1';
+        'model=nova-3&language=en&' +
+        'interim_results=true&endpointing=300&utterance_end_ms=1000&' +
+        'encoding=linear16&sample_rate=16000&channels=1' + buildKeyterms();
     _dgSocket = new WebSocket(url, ['token', dgKey]);
 
     document.getElementById('dbgConn').textContent = 'DG: connecting…';
@@ -2731,20 +2754,15 @@ async function startDeepgramStream(){
             });
             _dgCtx = new (window.AudioContext||window.webkitAudioContext)({sampleRate:16000});
             const src = _dgCtx.createMediaStreamSource(_dgStream);
-            _dgNode = _dgCtx.createScriptProcessor(4096,1,1);
+            await _dgCtx.audioWorklet.addModule(_dgGetWorkletUrl());
+            _dgNode = new AudioWorkletNode(_dgCtx,'dg-proc');
+            _dgNode.port.onmessage = (e) => {
+                if(S.active && _dgSocket && _dgSocket.readyState===WebSocket.OPEN){
+                    try{ _dgSocket.send(e.data); }catch(err){}
+                }
+            };
             src.connect(_dgNode);
             _dgNode.connect(_dgCtx.destination);
-            _dgNode.onaudioprocess = (evt) => {
-                if(!S.active||!_dgSocket||_dgSocket.readyState!==WebSocket.OPEN) return;
-                const raw = evt.inputBuffer.getChannelData(0);
-                const pcm = new Int16Array(raw.length);
-                for(let i=0;i<raw.length;i++)
-                    pcm[i]=Math.max(-32768,Math.min(32767,Math.round(raw[i]*32767)));
-                const bytes = new Uint8Array(pcm.buffer);
-                let b='';
-                for(let i=0;i<bytes.length;i++) b+=String.fromCharCode(bytes[i]);
-                _dgSocket.send(btoa(b));
-            };
             document.getElementById('dbgConn').textContent = 'DG: 🎤 mic live';
             console.log('✅ Deepgram mic stream started');
         }catch(err){
