@@ -2075,7 +2075,7 @@ const BOT={
 /* ══════════════════════════════════════
    STATE
 ══════════════════════════════════════ */
-const APP_VERSION='040';
+const APP_VERSION='041';
 const S={
     user:null,name:'',age:'a78',goal:10,module:'reading',
     sessionSecs:0,earnedSecs:0,
@@ -3101,15 +3101,46 @@ function matchReading(spoken,isFinal){
     }
 }
 function cl(w){return w.replace(/[^a-zA-Z]/g,'').toLowerCase();}
+function _lev(a,b){
+    const m=a.length,n=b.length;
+    if(!m)return n; if(!n)return m;
+    let prev=[]; for(let j=0;j<=n;j++)prev[j]=j;
+    for(let i=1;i<=m;i++){
+        let cur=[i];
+        for(let j=1;j<=n;j++){
+            const cost=a.charCodeAt(i-1)===b.charCodeAt(j-1)?0:1;
+            cur[j]=Math.min(prev[j]+1,cur[j-1]+1,prev[j-1]+cost);
+        }
+        prev=cur;
+    }
+    return prev[n];
+}
+// Lightweight phonetic key (sounds-alike): keep first letter, group similar consonants, drop vowels
+function _phon(w){
+    w=(w||'').toLowerCase().replace(/[^a-z]/g,'');
+    if(!w)return '';
+    const map={b:'1',p:'1',f:'2',v:'2',c:'3',k:'3',q:'3',g:'3',j:'3',s:'4',z:'4',x:'4',d:'5',t:'5',l:'6',m:'7',n:'7',r:'8'};
+    let key=w[0],last='';
+    for(let i=1;i<w.length;i++){
+        const ch=w[i];
+        if('aeiouhwy'.indexOf(ch)>=0)continue;
+        const code=map[ch]||ch;
+        if(code!==last){key+=code;last=code;}
+    }
+    return key.slice(0,5);
+}
+// Flexible pronunciation match: exact, shared prefix, sounds-alike, or a small slip away.
 function isMatch(a,b){
     if(!a||!b)return false;
     if(a===b)return true;
-    if(a.length<=3||b.length<=3)return a===b;
+    if(a.length<=2||b.length<=2)return a===b;
     const n=Math.min(4,a.length,b.length);
-    if(a.slice(0,n)===b.slice(0,n))return true;
-    if(Math.abs(a.length-b.length)<=1){let d=0;for(let i=0;i<Math.min(a.length,b.length);i++)if(a[i]!==b[i])d++;if(d<=1)return true;}
-    if(a.length>=5&&b.length>=5&&a.slice(0,3)===b.slice(0,3))return true;
-    return false;
+    if(a.slice(0,n)===b.slice(0,n))return true;          // shared start
+    if(_phon(a)===_phon(b))return true;                  // sounds alike
+    const d=_lev(a,b), maxLen=Math.max(a.length,b.length);
+    if(maxLen<=3)return d<=1;
+    if(maxLen<=7)return d<=2;                             // e.g. want/warm, cozy/cosy slide through
+    return d<=3;                                          // long words: up to 3 small slips
 }
 function markRead(i){const e=document.getElementById('w'+i);if(e){e.classList.remove('current','speaking','wrong');e.classList.add('read');}}
 
