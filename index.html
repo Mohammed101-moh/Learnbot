@@ -7,7 +7,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&display=swap" rel="stylesheet">
-<script defer src="https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/dist/twemoji.min.js" crossorigin="anonymous"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/@twemoji/api@15.1.0/dist/twemoji.min.js" crossorigin="anonymous"></script>
 <script>
 window.onerror=function(msg,src,line){var d=document.getElementById('_errbanner');if(!d){d=document.createElement('div');d.id='_errbanner';d.style.cssText='position:fixed;top:0;left:0;right:0;background:#ff4444;color:white;padding:8px 12px;font-size:12px;z-index:99999;font-family:monospace;';document.body.appendChild(d);}d.textContent='JS ERROR: '+msg+' (line '+line+')';return false;};
 </script>
@@ -1631,11 +1631,11 @@ a1012:[
 };
 /* GUTENDEX Live Books */
 const GUTENBERG_IDS={
-  a34:[2591,902,500],
-  a56:[11,55,500,16,2591,12],
-  a78:[236,289,271,113,146,11,55],
-  a810:[74,120,45,521,514,103,41],
-  a1012:[76,1661,46,829,35,164,1257,36]
+  a34:[2591,902,500,55,11],
+  a56:[11,55,500,16,2591,12,902,41],
+  a78:[236,289,271,113,146,11,55,16,902],
+  a810:[74,120,45,521,514,103,41,113,236,289],
+  a1012:[76,1661,46,829,35,164,1257,36,120,74]
 };
 const SUMMARIES={
   11:"Alice follows a White Rabbit down a hole into a topsy-turvy world where she meets a grinning cat, a mad hatter, and a bad-tempered queen. Nothing is ever quite the right size, and everything is wonderfully strange.",
@@ -1666,6 +1666,43 @@ const SUMMARIES={
   1257:"Young d'Artagnan rides to Paris dreaming of becoming a king's musketeer. He befriends the daring Athos, Porthos and Aramis, and together they cry their famous motto: all for one, and one for all!",
   36:"Strange cylinders crash down from Mars, and out climb towering machines set on conquering the Earth. One man fights to survive as the world he knows is turned upside down."
 };
+const GB_DATA={
+  11:["Alice's Adventures in Wonderland","Lewis Carroll","🐰"],
+  12:["Through the Looking-Glass","Lewis Carroll","🪞"],
+  16:["Peter Pan","J. M. Barrie","🧚"],
+  35:["The Time Machine","H. G. Wells","⏳"],
+  36:["The War of the Worlds","H. G. Wells","👽"],
+  41:["The Legend of Sleepy Hollow","Washington Irving","🎃"],
+  45:["Anne of Green Gables","L. M. Montgomery","🌸"],
+  46:["A Christmas Carol","Charles Dickens","🎄"],
+  55:["The Wonderful Wizard of Oz","L. Frank Baum","🌈"],
+  74:["The Adventures of Tom Sawyer","Mark Twain","🪝"],
+  76:["Adventures of Huckleberry Finn","Mark Twain","🛶"],
+  103:["Around the World in Eighty Days","Jules Verne","🎈"],
+  113:["The Secret Garden","Frances Hodgson Burnett","🌷"],
+  120:["Treasure Island","Robert Louis Stevenson","🗺"],
+  146:["A Little Princess","Frances Hodgson Burnett","👑"],
+  164:["Twenty Thousand Leagues Under the Sea","Jules Verne","🐙"],
+  236:["The Jungle Book","Rudyard Kipling","🐅"],
+  271:["Black Beauty","Anna Sewell","🐎"],
+  289:["The Wind in the Willows","Kenneth Grahame","🐸"],
+  500:["The Adventures of Pinocchio","Carlo Collodi","🪵"],
+  514:["Little Women","Louisa May Alcott","👧"],
+  521:["Robinson Crusoe","Daniel Defoe","🏝"],
+  829:["Gulliver's Travels","Jonathan Swift","🧍"],
+  902:["The Happy Prince and Other Tales","Oscar Wilde","💛"],
+  1257:["The Three Musketeers","Alexandre Dumas","⚔"],
+  1661:["The Adventures of Sherlock Holmes","Arthur Conan Doyle","🔍"],
+  2591:["Grimms' Fairy Tales","The Brothers Grimm","🧙"]
+};
+function loadClassics(age){
+  const cols=['#FF6B9D','#F59E0B','#6C63FF','#0EA5E9','#10B981','#EF4444','#14B8A6','#F97316','#8B5CF6','#06B6D4'];
+  return (GUTENBERG_IDS[age]||[]).map(function(id,i){
+    const d=GB_DATA[id]||['A Classic Tale','Public Domain','📖'];
+    return {id:'gb_'+id,gbId:id,title:d[0],author:d[1],emoji:d[2]||'📖',col:cols[i%cols.length],
+            txtUrl:'https://www.gutenberg.org/cache/epub/'+id+'/pg'+id+'.txt',text:null,source:'gutenberg',summary:SUMMARIES[id]};
+  });
+}
 const GB_COLORS={'A':'#6366F1','B':'#EC4899','C':'#F59E0B','D':'#10B981','E':'#3B82F6','F':'#EF4444','G':'#8B5CF6','H':'#14B8A6','I':'#F97316','J':'#84CC16','K':'#0EA5E9','L':'#A855F7','M':'#06B6D4','N':'#F43F5E','O':'#22C55E','P':'#EAB308','R':'#E11D48','S':'#2563EB','T':'#D97706','W':'#059669'};
 const GB_CACHE='gb2_', GB_TTL=86400000;
 const _gbMem={};
@@ -1973,7 +2010,7 @@ const BOT={
 /* ══════════════════════════════════════
    STATE
 ══════════════════════════════════════ */
-const APP_VERSION='035';
+const APP_VERSION='036';
 const S={
     user:null,name:'',age:'a78',goal:10,module:'reading',
     sessionSecs:0,earnedSecs:0,
@@ -2007,7 +2044,7 @@ function todayStr(){return today();}
 /* ══════════════════════════════════════
    SCREENS / MODULE
 ══════════════════════════════════════ */
-function show(id){document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));document.getElementById(id).classList.add('active');if(window.twemoji){try{twemoji.parse(document.getElementById(id),{folder:'svg',ext:'.svg',base:'https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/'});}catch(e){}}}
+function show(id){document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));document.getElementById(id).classList.add('active');if(window.twemoji){try{twemoji.parse(document.getElementById(id),{folder:'72x72',ext:'.png',base:'https://cdn.jsdelivr.net/gh/jdecked/twemoji@15.1.0/assets/'});}catch(e){}}}
 function pickMod(m){S.module=m;}
 
 function launchActivity(type) {
@@ -3396,7 +3433,7 @@ function showBookLibrary(){
     card.onclick=()=>selectBook(book);
     grid.appendChild(card);
   }
-  loadGBBooks(age).then(bs=>bs.forEach(b=>addCard(b))).catch(()=>{});
+  loadClassics(age).forEach(b=>addCard(b));
   loadStoryWeaverBooks(age).then(bs=>bs.forEach(b=>addCard(b))).catch(()=>{});
   setTimeout(()=>{if(!any)grid.innerHTML='<div style="grid-column:1/-1;color:#fff;text-align:center;padding:1.5rem">Could not load books right now. Please check your connection and try again.</div>';},10000);
 }
@@ -3523,6 +3560,6 @@ if(vc)vc.textContent='v'+APP_VERSION;
 const gv=document.getElementById('globalVersionBadge');
 if(gv)gv.textContent='v'+APP_VERSION;
 </script>
-<script>window.addEventListener('load',function(){if(window.twemoji){try{twemoji.parse(document.body,{folder:'svg',ext:'.svg',base:'https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/'});}catch(e){}}});</script>
+<script>window.addEventListener('load',function(){if(window.twemoji){try{twemoji.parse(document.body,{folder:'72x72',ext:'.png',base:'https://cdn.jsdelivr.net/gh/jdecked/twemoji@15.1.0/assets/'});}catch(e){}}});</script>
 </body>
 </html>
