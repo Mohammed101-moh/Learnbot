@@ -1631,11 +1631,40 @@ a1012:[
 };
 /* GUTENDEX Live Books */
 const GUTENBERG_IDS={
-  a34:[],
-  a56:[11,16,55,500,1597,2591,19993],
-  a78:[271,236,289,1232,1450,113,3793],
-  a810:[37,74,120,146,521,11023,1400],
-  a1012:[1661,345,76,98,135,1342,1260]
+  a34:[2591,902,500],
+  a56:[11,55,500,16,2591,12],
+  a78:[236,289,271,113,146,11,55],
+  a810:[74,120,45,521,514,103,41],
+  a1012:[76,1661,46,829,35,164,1257,36]
+};
+const SUMMARIES={
+  11:"Alice follows a White Rabbit down a hole into a topsy-turvy world where she meets a grinning cat, a mad hatter, and a bad-tempered queen. Nothing is ever quite the right size, and everything is wonderfully strange.",
+  55:"A whirlwind sweeps Dorothy and her little dog Toto far away to the magical land of Oz. To find her way home she follows the yellow brick road, making friends with a Scarecrow, a Tin Man, and a Cowardly Lion.",
+  500:"A kind old woodcarver makes a wooden puppet that comes to life. Pinocchio longs to become a real boy, but first he must learn to be brave, honest and good - and his nose grows longer every time he tells a lie!",
+  16:"Peter Pan, the boy who never grows up, whisks Wendy and her brothers away to Neverland. There they meet fairies, mermaids, the Lost Boys, and the fearsome pirate Captain Hook.",
+  2591:"A treasury of classic fairy tales - Cinderella, Hansel and Gretel, Rapunzel, Snow White and many more - brimming with brave children, clever animals, and a sprinkle of magic.",
+  236:"Raised by wolves deep in the Indian jungle, the boy Mowgli learns the laws of the wild from Baloo the bear and Bagheera the panther, while the fierce tiger Shere Khan hunts him.",
+  289:"Down by the riverbank, gentle Mole, loyal Rat, wise old Badger and the boastful Mr. Toad share grand adventures - until Toad's love of fast motor-cars lands them all in trouble.",
+  271:"Told by the horse himself, this is the life story of Black Beauty, from a happy colt in green meadows through many owners both kind and cruel. A gentle tale about being kind to animals.",
+  113:"Sour, lonely Mary Lennox is sent to a gloomy manor on the windy moors, where she discovers a hidden, locked-up garden. As she brings it back to life, the garden works a quiet magic on everyone.",
+  146:"Sara Crewe arrives at a London boarding school as a kind-hearted, well-off girl. When she suddenly loses everything, she must hold tight to her imagination and her courage to make it through hard times.",
+  74:"Mischievous Tom Sawyer skips school, hunts for buried treasure, and tumbles from one scrape into another along the Mississippi River - until he and Huck Finn witness something truly dangerous.",
+  120:"When young Jim Hawkins finds a treasure map, he sets sail for a faraway island. But the ship's cook, one-legged Long John Silver, and his crew of pirates have secret plans of their own.",
+  45:"A chatterbox red-haired orphan named Anne is sent by mistake to live with an elderly brother and sister. With her wild imagination and warm heart, she turns their quiet farm life upside down.",
+  521:"Shipwrecked all alone on a deserted island, Robinson Crusoe must use his wits to survive - building a shelter, growing food, and taming the wild - across twenty-eight extraordinary years.",
+  514:"Follow the four March sisters - sensible Meg, tomboy Jo, gentle Beth and artistic Amy - as they grow up together, sharing dreams, squabbles, and love through happy days and hard ones.",
+  76:"Huck Finn fakes his own death and escapes down the mighty Mississippi on a raft with his friend Jim. Together they share thrilling adventures as they search for freedom.",
+  1661:"Meet the world's greatest detective. With razor-sharp eyes and a brilliant mind, Sherlock Holmes and his friend Dr. Watson crack a series of baffling mysteries no one else can solve.",
+  46:"On a cold Christmas Eve, the miserly old Scrooge is visited by three ghosts who show him his past, his present, and a frightening future. Can they thaw his frozen heart in time?",
+  829:"The traveller Lemuel Gulliver is shipwrecked in strange lands - first among the tiny people of Lilliput, then among towering giants - in one of the most famous adventure stories ever told.",
+  35:"A brilliant inventor builds a machine that carries him thousands of years into the future, where he discovers two strange peoples and learns the surprising fate of humankind.",
+  902:"Gentle, touching fairy tales by Oscar Wilde - including the golden statue of the Happy Prince and the little swallow who helps him give everything away to those in need. Beautiful stories about kindness.",
+  12:"Alice steps through a mirror into a backwards world that works like a giant chess game. She meets Tweedledum and Tweedledee, the gentle White Knight, and the very bad-tempered Red Queen.",
+  41:"In a sleepy little village haunted by an old legend, the nervous schoolteacher Ichabod Crane has a hair-raising midnight encounter with the dreaded Headless Horseman. A deliciously spooky classic.",
+  103:"The unflappable Phileas Fogg bets his entire fortune that he can travel all the way around the world in just eighty days. With his loyal servant Passepartout, the great race against the clock begins!",
+  164:"Aboard the mysterious submarine Nautilus, the brooding Captain Nemo takes his captives on an incredible underwater voyage - past giant squid, sunken treasure, and wonders no one has ever seen.",
+  1257:"Young d'Artagnan rides to Paris dreaming of becoming a king's musketeer. He befriends the daring Athos, Porthos and Aramis, and together they cry their famous motto: all for one, and one for all!",
+  36:"Strange cylinders crash down from Mars, and out climb towering machines set on conquering the Earth. One man fights to survive as the world he knows is turned upside down."
 };
 const GB_COLORS={'A':'#6366F1','B':'#EC4899','C':'#F59E0B','D':'#10B981','E':'#3B82F6','F':'#EF4444','G':'#8B5CF6','H':'#14B8A6','I':'#F97316','J':'#84CC16','K':'#0EA5E9','L':'#A855F7','M':'#06B6D4','N':'#F43F5E','O':'#22C55E','P':'#EAB308','R':'#E11D48','S':'#2563EB','T':'#D97706','W':'#059669'};
 const GB_CACHE='gb2_', GB_TTL=86400000;
@@ -1664,7 +1693,7 @@ async function fetchGBPassage(book){
   try{const x=JSON.parse(localStorage.getItem(key)||'null');if(x&&x.text)return x.text;}catch(e){}
   if(!book.txtUrl)return null;
   try{
-    const r=await fetch(book.txtUrl,{signal:AbortSignal.timeout(12000)});
+    const r=await fetch(PROXY_URL+'/book?url='+encodeURIComponent(book.txtUrl),{signal:AbortSignal.timeout(15000)});
     if(!r.ok)return null;
     const reader=r.body.getReader();
     let bytes=0,chunks=[];
@@ -1689,12 +1718,12 @@ async function fetchGBFullText(book){
     try{const x=JSON.parse(localStorage.getItem(key)||'null');if(x&&x.text&&x.text.length>500)return x.text;}catch(e){}
     if(!book.txtUrl)return null;
     try{
-        const r=await fetch(book.txtUrl,{signal:AbortSignal.timeout(20000)});
+        const r=await fetch(PROXY_URL+'/book?url='+encodeURIComponent(book.txtUrl),{signal:AbortSignal.timeout(30000)});
         if(!r.ok)return null;
         // Read up to 150KB
         const reader=r.body.getReader();
         let bytes=0,chunks=[];
-        while(bytes<150000){const{done,value}=await reader.read();if(done)break;chunks.push(value);bytes+=value.length;}
+        while(bytes<900000){const{done,value}=await reader.read();if(done)break;chunks.push(value);bytes+=value.length;}
         reader.cancel();
         const buf=new Uint8Array(bytes);let off=0;chunks.forEach(ch=>{buf.set(ch,off);off+=ch.length;});
         let text=new TextDecoder().decode(buf);
@@ -1733,14 +1762,14 @@ async function loadStoryWeaverBooks(age){
   const cols=['#FF6B9D','#F59E0B','#6C63FF','#0EA5E9','#10B981','#EF4444','#14B8A6','#F97316'];
   try{
     const page=1+Math.floor(Math.random()*60);
-    const url='https://storyweaver.org.in/api/v1/books-search?page='+page+'&per_page=24';
+    const url='https://storyweaver.org.in/api/v1/books-search?page='+page+'&per_page=48';
     const ctrl=new AbortController(); const tm=setTimeout(()=>ctrl.abort(),5500);
     const r=await fetch(url,{signal:ctrl.signal}); clearTimeout(tm);
     const d=await r.json();
     if(!d||!d.data)return [];
     const books=d.data
       .filter(b=>b.language==='English' && want.includes(String(b.level)) && b.description && b.description.length>20)
-      .slice(0,8)
+      .slice(0,24)
       .map((b,i)=>({
         id:'sw'+b.id,
         title:b.title,
@@ -1944,7 +1973,7 @@ const BOT={
 /* ══════════════════════════════════════
    STATE
 ══════════════════════════════════════ */
-const APP_VERSION='032';
+const APP_VERSION='034';
 const S={
     user:null,name:'',age:'a78',goal:10,module:'reading',
     sessionSecs:0,earnedSecs:0,
@@ -2653,7 +2682,7 @@ function showBookIntro(book){
     document.getElementById('introTitle').textContent  = book.title;
     document.getElementById('introAuthor').textContent = 'by ' + book.author;
     document.getElementById('introSummary').textContent =
-        book.summary || (book.source === 'gutenberg'
+        (book.gbId && SUMMARIES[book.gbId]) || book.summary || (book.source === 'gutenberg'
             ? 'A classic story from Project Gutenberg — the world\'s largest collection of free books. Click Start Reading to begin the full book.'
             : 'Read this passage aloud and earn screen time! The AI bot will track your reading and give you credit for each word you say.');
     show('bookIntroScreen');
@@ -3352,22 +3381,24 @@ function showBookLibrary(){
   const age=S.age||'a78';
   const lbl={a34:'Ages 3-4',a56:'Ages 5-6',a78:'Ages 7-8',a810:'Ages 8-10',a1012:'Ages 10-12'};
   document.getElementById('libAgeBadge').textContent=lbl[age]||'Ages 7-8';
-  document.getElementById('libSectionTitle').textContent='Pick a book and start reading!';
+  document.getElementById('libSectionTitle').textContent='Pick a book - full stories you can read page by page!';
   const grid=document.getElementById('booksGrid');
-  grid.innerHTML='';
+  grid.innerHTML='<div style="grid-column:1/-1;color:#fff;opacity:.92;text-align:center;padding:1.5rem;font-weight:600">Loading your library... 📚</div>';
   show('bookLibraryScreen');
-  function addCard(book,live){
+  let any=false;
+  function addCard(book){
+    if(!any){grid.innerHTML='';any=true;}
     const card=document.createElement('button');
     card.className='book-card';
-    const badge=live?'<div style="font-size:.5rem;background:#6366F1;color:white;border-radius:50px;padding:.1rem .4rem;font-weight:700;margin-bottom:.1rem;display:inline-block">🌐 Live</div><br>':'';
+    const badge=book.source==='gutenberg'?'<div style="font-size:.5rem;background:#10B981;color:white;border-radius:50px;padding:.1rem .45rem;font-weight:700;margin:.15rem 0;display:inline-block">📖 Full book</div><br>':(book.source==='storyweaver'?'<div style="font-size:.5rem;background:#9B7BFF;color:white;border-radius:50px;padding:.1rem .45rem;font-weight:700;margin:.15rem 0;display:inline-block">🌐 Story</div><br>':'');
     const visual=book.cover?'<div class="book-emoji-wrap" style="padding:0;overflow:hidden;background:#eef"><img src="'+book.cover+'" loading="lazy" style="width:100%;height:100%;object-fit:cover;border-radius:18px" alt=""></div>':'<div class="book-emoji-wrap" style="background:'+book.col+'22"><span>'+book.emoji+'</span></div>';
     card.innerHTML=visual+'<div class="book-card-title">'+book.title+'</div><div class="book-card-author">'+book.author+'</div>'+badge+'<div class="book-card-btn">Read Now</div>';
     card.onclick=()=>selectBook(book);
     grid.appendChild(card);
   }
-  (BOOKS[age]||BOOKS.a78).forEach(b=>addCard(b,false));
-  loadGBBooks(age).then(bs=>bs.forEach(b=>addCard(b,true))).catch(()=>{});
-  loadStoryWeaverBooks(age).then(bs=>bs.forEach(b=>addCard(b,true))).catch(()=>{});
+  loadGBBooks(age).then(bs=>bs.forEach(b=>addCard(b))).catch(()=>{});
+  loadStoryWeaverBooks(age).then(bs=>bs.forEach(b=>addCard(b))).catch(()=>{});
+  setTimeout(()=>{if(!any)grid.innerHTML='<div style="grid-column:1/-1;color:#fff;text-align:center;padding:1.5rem">Could not load books right now. Please check your connection and try again.</div>';},10000);
 }
 
 function selectBook(book){
