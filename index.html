@@ -1944,7 +1944,7 @@ const BOT={
 /* ══════════════════════════════════════
    STATE
 ══════════════════════════════════════ */
-const APP_VERSION='030';
+const APP_VERSION='031';
 const S={
     user:null,name:'',age:'a78',goal:10,module:'reading',
     sessionSecs:0,earnedSecs:0,
@@ -2908,7 +2908,6 @@ function matchReading(spoken,isFinal){
     let si=0,ti=S.wordIdx,matched=false;
     while(si<sw.length&&ti<S.words.length){
         const exp=cl(S.words[ti]);
-        if(exp.length<=2&&!isMatch(sw[si],exp)){markRead(ti);ti++;continue;}
         if(isMatch(sw[si],exp)){
             markRead(ti);ti++;si++;S.wordsRead++;matched=true;
             S.lastWordAdvance=Date.now();S.voiceMismatchCount=0;
@@ -2916,6 +2915,9 @@ function matchReading(spoken,isFinal){
             let found=false;
             for(let ahead=1;ahead<=2&&ti+ahead<S.words.length;ahead++){
                 if(isMatch(sw[si],cl(S.words[ti+ahead]))){
+                    let bridgeable=true;
+                    for(let k=ti;k<ti+ahead;k++){ if(cl(S.words[k]).length>2){bridgeable=false;break;} }
+                    if(!bridgeable) break;
                     for(let k=ti;k<ti+ahead;k++)markRead(k);
                     markRead(ti+ahead);ti+=ahead+1;si++;S.wordsRead++;matched=true;
                     S.lastWordAdvance=Date.now();found=true;break;
@@ -2933,7 +2935,7 @@ function matchReading(spoken,isFinal){
         if(S.voiceMismatchCount>=3)flashWrong();
         if(S.voiceMismatchCount===3)botSay('silent');
     }
-    if(S.wordIdx>=Math.floor(S.words.length*0.9)){
+    if(S.wordIdx>=S.words.length-2){
         for(let i=S.wordIdx;i<S.words.length;i++)markRead(i);
         S.wordIdx=S.words.length;updateProg();
         // If more spreads available, advance automatically after a pause
