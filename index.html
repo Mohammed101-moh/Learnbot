@@ -2077,7 +2077,7 @@ const BOT={
 /* ══════════════════════════════════════
    STATE
 ══════════════════════════════════════ */
-const APP_VERSION='043';
+const APP_VERSION='044';
 const S={
     user:null,name:'',age:'a78',goal:10,module:'reading',
     sessionSecs:0,earnedSecs:0,
@@ -3043,7 +3043,7 @@ function matchInterim(transcript){
     for(let i=0;i<=1;i++){
         const idx=S.wordIdx+i;
         if(idx>=S.words.length)break;
-        if(isMatch(lastSpoken,cl(S.words[idx]))){
+        if(isMatch(lastSpoken,cl(S.words[idx]),S.words[idx])){
             const el=document.getElementById('w'+idx);
             if(el){el.classList.remove('current','wrong');el.classList.add('speaking');}
             break;
@@ -3060,14 +3060,14 @@ function matchReading(spoken,isFinal){
     let si=0,ti=S.wordIdx,matched=false;
     while(si<sw.length&&ti<S.words.length){
         const exp=cl(S.words[ti]);
-        if(exp.length<=1&&!isMatch(sw[si],exp)){markRead(ti);ti++;continue;}
-        if(isMatch(sw[si],exp)){
+        if(exp.length<=1&&!isMatch(sw[si],exp,S.words[ti])){markRead(ti);ti++;continue;}
+        if(isMatch(sw[si],exp,S.words[ti])){
             markRead(ti);ti++;si++;S.wordsRead++;matched=true;
             S.lastWordAdvance=Date.now();S.voiceMismatchCount=0;
         } else {
             let found=false;
             for(let ahead=1;ahead<=2&&ti+ahead<S.words.length;ahead++){
-                if(isMatch(sw[si],cl(S.words[ti+ahead]))){
+                if(isMatch(sw[si],cl(S.words[ti+ahead]),S.words[ti+ahead])){
                     let bridgeable=true;
                     for(let k=ti;k<ti+ahead;k++){ if(cl(S.words[k]).length>3){bridgeable=false;break;} }
                     if(!bridgeable) break;
@@ -3155,18 +3155,67 @@ function _phon(w){
     }
     return key.slice(0,5);
 }
-// Flexible pronunciation match: exact, shared prefix, sounds-alike, or a small slip away.
-function isMatch(a,b){
-    if(!a||!b)return false;
-    if(a===b)return true;
-    if(a.length<=2||b.length<=2)return a===b;
-    const n=Math.min(4,a.length,b.length);
-    if(a.slice(0,n)===b.slice(0,n))return true;          // shared start
-    if(_phon(a)===_phon(b))return true;                  // sounds alike
-    const d=_lev(a,b), maxLen=Math.max(a.length,b.length);
-    if(maxLen<=3)return d<=1;
-    if(maxLen<=7)return d<=2;                             // e.g. want/warm, cozy/cosy slide through
-    return d<=3;                                          // long words: up to 3 small slips
+/* ════════════════════════════════════════════════════════════════════
+   DIFFICULTY-AWARE PRONUNCIATION MATCHING
+   Scores how CLOSE the spoken word SOUNDS to the target (phonetic + edit
+   distance), then accepts it against a threshold that TIGHTENS for easy /
+   common words and LOOSENS for hard names, fantasy words & long words —
+   with a guard so it never just marks everything correct.
+   Used everywhere voice is matched (all books, Quran, every page).
+   ──────────────────────────────────────────────────────────────────── */
+// Single dial: raise to make the WHOLE app more forgiving (0 = default, 0.1 = looser).
+const MATCH_EASE = 0;
+// Common/easy words — matched strictly (must be said accurately).
+const COMMON_WORDS = new Set(('the a an and or but of to in into on at it its is am are was were be been '+
+'being have has had do does did not no yes will would shall can could should may might must '+
+'i you he she we they me him her us them my your his hers our their mine this that these those '+
+'there here then than when what who how why where which while as by for from with up down out off '+
+'over under again very so too also just only even much many more most some any all both each one '+
+'two three four five six seven eight nine ten said say see saw seen go goes went gone get got come '+
+'came look looked like little big small good bad new old day night man boy girl run walk play want '+
+'make made take give know think tell ask find call keep let put home house tree book read water '+
+'food time way thing place hand eye head').split(/\s+/));
+// How hard is the TARGET word? 0 = easy/common, 1 = very hard.
+function _difficulty(clean, raw){
+    if(!clean) return 0;
+    if(COMMON_WORDS.has(clean)) return 0;
+    let d = 0;
+    if(clean.length<=3) d += 0.10;
+    else if(clean.length<=5) d += 0.30;
+    else if(clean.length<=8) d += 0.55;
+    else d += 0.75;
+    if(raw && /^[A-Z]/.test(String(raw).replace(/[^A-Za-z]/g,''))) d += 0.30; // proper noun / name
+    if(/[^aeiou]{3}/.test(clean) || /(gh|kh|gw|mw|zh|wl|yr|aa|ii|oo)/.test(clean)) d += 0.15; // unusual sounds
+    return Math.min(1, d);
+}
+// 0..1 — how close two words SOUND.
+function _simScore(a,b){
+    if(a===b) return 1;
+    const maxLen = Math.max(a.length,b.length) || 1;
+    const editSim = 1 - _lev(a,b)/maxLen;
+    const pa=_phon(a), pb=_phon(b);
+    const pmax = Math.max(pa.length,pb.length) || 1;
+    const phonSim = (pa&&pb) ? 1 - _lev(pa,pb)/pmax : 0;
+    let pre=0; const n=Math.min(a.length,b.length);
+    while(pre<n && a[pre]===b[pre]) pre++;
+    const preSim = pre/maxLen;
+    return Math.max(0.45*editSim + 0.55*phonSim, 0.7*phonSim + 0.3*preSim);
+}
+// Does the spoken word (a) sound close enough to the target (b)?  raw = original target token.
+function isMatch(a,b,raw){
+    if(!a||!b) return false;
+    if(a===b) return true;
+    if(a.length<=2 || b.length<=2) return a===b;          // tiny words must be near-exact
+    if(_phon(a)===_phon(b) && _phon(b).length>=2) return true; // identical "sounds-like" key
+    const diff  = _difficulty(b, raw);
+    const score = _simScore(a,b);
+    // threshold: easy/common ~0.84  ·  medium ~0.72  ·  hard names ~0.56
+    const thr = (0.84 - 0.28*diff) - MATCH_EASE;
+    if(score < thr) return false;
+    if(diff < 0.55){                                       // easy/medium: also need a related start
+        return a[0]===b[0] || _phon(a).slice(0,2)===_phon(b).slice(0,2);
+    }
+    return true;                                           // hard/name words: close sound is enough
 }
 function markRead(i){const e=document.getElementById('w'+i);if(e){e.classList.remove('current','speaking','wrong');e.classList.add('read');}}
 
