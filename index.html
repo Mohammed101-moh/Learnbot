@@ -839,6 +839,8 @@ img.emoji{width:1em;height:1em;vertical-align:-.12em;display:inline-block;margin
 #sessionScreen .tp-summary{font-family:Georgia,serif;font-size:.92rem;line-height:1.7;color:#5A5042;max-width:92%;}
 #sessionScreen .tp-begin{display:flex;align-items:center;justify-content:center;height:100%;text-align:center;color:#A99E86;font-family:Georgia,serif;font-size:1.05rem;line-height:1.9;padding:24px;}
 #sessionScreen .para-break{display:block;height:.7em;}
+.word.buddy-hint{background:#BBE2FF!important;border-radius:3px;box-shadow:0 0 0 2px rgba(56,189,248,.45);animation:buddyPulse 1s ease-in-out 2;}
+@keyframes buddyPulse{0%,100%{background:#BBE2FF}50%{background:#7FC4FF}}
 </style>
 </head>
 <body>
@@ -2075,7 +2077,7 @@ const BOT={
 /* ══════════════════════════════════════
    STATE
 ══════════════════════════════════════ */
-const APP_VERSION='041';
+const APP_VERSION='043';
 const S={
     user:null,name:'',age:'a78',goal:10,module:'reading',
     sessionSecs:0,earnedSecs:0,
@@ -2776,6 +2778,7 @@ function showSpread(n){
 
     S.words = [...left.words, ...right.words];
     S.wordIdx = 0; _dgUtteranceStart = 0; _dgInUtterance = false;
+    S.lastWordAdvance = Date.now(); S._readStart = Date.now(); S._helpWordIdx = -1; S._helpCount = 0;
 
     const totalSpreads = Math.ceil(total / 2);
     document.getElementById('btnPrevSpread').disabled = S.currentSpread === 0;
@@ -3083,14 +3086,15 @@ function matchReading(spoken,isFinal){
     } else if(isFinal){
         S.voiceMismatchCount=(S.voiceMismatchCount||0)+1;
         if(S.voiceMismatchCount>=3)flashWrong();
-        if(S.voiceMismatchCount===3)botSay('silent');
+        if(S.voiceMismatchCount===2)buddyHelp();
     }
     if(S.wordIdx>=Math.max(S.words.length-3, Math.ceil(S.words.length*0.85))){
         for(let i=S.wordIdx;i<S.words.length;i++)markRead(i);
         S.wordIdx=S.words.length;updateProg();
+        awardPageTime();   // 2 minutes of screen time per page read on this spread
         // If more spreads available, advance automatically after a pause
         if(S.bookPages && S.currentSpread < Math.ceil(S.bookPages.length/2)-1){
-            toast('📖 Page Complete!','Turning page…','#00FF88');
+            toast('📖 Page Complete!','Turning page…','#00FF88'); setBotTxt('Great reading! 🌟'); speak('Great reading!');
             setTimeout(()=>{if(S.active)showSpread(S.currentSpread+1);},1800);
         } else {
             const bon=(S.module==='hadith'&&S.passage&&S.passage.bonus)?S.passage.bonus:0;
@@ -3099,6 +3103,28 @@ function matchReading(spoken,isFinal){
             setTimeout(loadPassage,2200);
         }
     }
+}
+// Screen time reward: 2 minutes per page the child actually reads aloud.
+const SECS_PER_PAGE = 120;
+function awardPageTime(){
+    if(!S.bookPages) return;
+    S._awardedSpreads = S._awardedSpreads || {};
+    if(S._awardedSpreads[S.currentSpread]) return;   // don't pay twice for a re-read page
+    S._awardedSpreads[S.currentSpread] = true;
+    const total = S.bookPages.length;
+    const off = (S.bookPages[0]==='__TITLE__') ? 2 : 0;
+    const li = S.currentSpread*2, ri = li+1;
+    let pages = 0;
+    if(li>=off && S.bookPages[li] && S.bookPages[li]!=='__TITLE__' && String(S.bookPages[li]).trim()) pages++;
+    if(ri<total && S.bookPages[ri] && String(S.bookPages[ri]).trim()) pages++;
+    if(pages<=0) return;
+    const add = pages*SECS_PER_PAGE;
+    S.earnedSecs += add;
+    S.pagesRead = (S.pagesRead||0) + pages;
+    toast('🎮 +'+(add/60)+' min!', pages+' page'+(pages>1?'s':'')+' read aloud', '#FFD700');
+    const mins = S.earnedSecs/60;
+    const ed=document.getElementById('earnedDisp'); if(ed) ed.textContent=mins.toFixed(1);
+    const bv=document.getElementById('bankVal');   if(bv) bv.textContent=mins.toFixed(1);
 }
 function cl(w){return w.replace(/[^a-zA-Z]/g,'').toLowerCase();}
 function _lev(a,b){
@@ -3165,16 +3191,16 @@ function tick(){
     const m=Math.floor(S.sessionSecs/60).toString().padStart(2,'0');
     const s=(S.sessionSecs%60).toString().padStart(2,'0');
     document.getElementById('sessTimer').textContent=m+':'+s;
+    // Reading buddy: help when the child has been stuck on a word for a few seconds
+    if(S.active && S.module==='reading' && S.words && S.words.length && S.wordIdx < S.words.length && Date.now()-(S.lastWordAdvance||S._readStart||Date.now()) > 6000) buddyHelp();
 
     const speaking=(Date.now()-S.lastSpeech)<8000&&S.lastSpeech>0;
     const focused=S.cameraOk?S.focusScore>=42:true;
     const earning=speaking&&focused;
 
-    if(earning){
-        S.earnedSecs++;
-        // Spawn coin every 10 seconds
-        if(S.earnedSecs%10===0)spawnCoin();
-    }
+    // Screen time is earned per PAGE completed (see awardPageTime) — 2 min/page —
+    // NOT per second. The chip below is just a live "is the child actively reading" signal.
+    if(earning && S.sessionSecs%6===0)spawnCoin();
 
     const chip=document.getElementById('earnChip');
     if(earning){chip.className='earn-chip on';chip.textContent='✅ Earning';}
@@ -3223,6 +3249,24 @@ function botSay(k){
     S.lastBot=now;S.lastBotKind=k;
 }
 function setBotTxt(t){document.getElementById('botTxt').textContent=t;}
+
+// Reading buddy: gently say + highlight the current word when the child is stuck or misreads.
+function buddyHelp(){
+    if(!S.active || S.module!=='reading' || !S.words || !S.words.length) return;
+    if(S.wordIdx >= S.words.length) return;
+    const now = Date.now();
+    if(now - (S._lastHelp||0) < 6000) return;                 // not too often
+    if(S._helpWordIdx === S.wordIdx && (S._helpCount||0) >= 2) return; // max twice per word
+    const word = (S.words[S.wordIdx]||'').replace(/[^a-zA-Z'\-]/g,'');
+    if(word.length < 1) return;
+    const el = document.getElementById('w'+S.wordIdx);
+    if(el){ el.classList.add('buddy-hint'); setTimeout(function(){ el.classList.remove('buddy-hint'); }, 2600); try{el.scrollIntoView({behavior:'smooth',block:'nearest'});}catch(e){} }
+    const leads = ['This word is, ', 'Try this one: ', 'You can do it. The word is, ', 'Let me help. This says, '];
+    speak(leads[Math.floor(Math.random()*leads.length)] + word + '.');
+    setBotTxt('Try this word: ' + word);
+    if(S._helpWordIdx === S.wordIdx){ S._helpCount = (S._helpCount||0)+1; } else { S._helpWordIdx = S.wordIdx; S._helpCount = 1; }
+    S._lastHelp = now;
+}
 // Cache the best voice after first lookup
 let _cachedVoice=null;
 function getBestVoice(){
@@ -3662,11 +3706,6 @@ function endShortQuiz(){
     if(sqState.score>=8)confetti();
     speak('Great job! You got '+sqState.score+' out of '+sqState.total+'!');
 }
-
-/* ══════════════════════════════════════
-   LIVE RELOAD
-══════════════════════════════════════ */
-(function(){let t=null;setInterval(async()=>{try{const r=await fetch('/reload-check',{cache:'no-store'});const d=await r.json();if(t===null){t=d.mtime;return;}if(d.mtime!==t)location.reload();}catch(e){}},2000);})();
 </script>
 <script>
 const vc=document.getElementById('versionChip');
@@ -3674,6 +3713,5 @@ if(vc)vc.textContent='v'+APP_VERSION;
 const gv=document.getElementById('globalVersionBadge');
 if(gv)gv.textContent='v'+APP_VERSION;
 </script>
-<script>window.addEventListener('load',function(){if(window.twemoji){try{twemoji.parse(document.body,{folder:'72x72',ext:'.png',base:'https://cdn.jsdelivr.net/gh/jdecked/twemoji@15.1.0/assets/'});}catch(e){}}});</script>
 </body>
 </html>
